@@ -1,0 +1,10 @@
+procedure echo { 
+    read num1;
+    index = num1;
+    num2 = 27;
+    num3=09;
+    num 4 = 57;
+    
+    print num1;
+    print index;
+}
