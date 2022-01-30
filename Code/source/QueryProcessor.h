@@ -17,4 +17,6 @@ public:
 
 	// method for evaluating a query
 	void evaluate(Query query, vector<string>& results);
+
+	void removeDupe(vector<string>& results);
 };

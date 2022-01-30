@@ -6,7 +6,7 @@ lambda
 2 - Variable
 variable v;
 Select v
-num1, num2, r, a1, num9, num3, p, num, a1
+num1, num2, r, a1, num9, num3, p, num
 5000
 3 - Constant
 constant c;
@@ -31,5 +31,5 @@ Select rd
 7 - Statement
 stmt s;
 Select s
-1, 2, 3, 4, 7, 8, 9
+1, 2, 3, 4, 5, 6, 7, 8, 9
 5000

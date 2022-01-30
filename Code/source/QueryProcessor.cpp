@@ -2,6 +2,7 @@
 #include "Tokenizer.h"
 #include "Database.h"
 #include <iostream>
+#include <algorithm> 
 
 // constructor
 QueryProcessor::QueryProcessor() {}
@@ -13,6 +14,8 @@ QueryProcessor::~QueryProcessor() {}
 // This method currently only handles queries for getting all the procedure names,
 // using some highly simplified logic.
 // You should modify this method to complete the logic for handling all required queries.
+
+
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	// clear the output vector
 	output.clear();
@@ -22,12 +25,12 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 
 	// create a vector for storing the results from database
 	vector<string> tempDatabaseResult;
+	
 
 	// call the method in database to retrieve the results
 	// This logic is highly simplified based on iteration 1 requirements and 
 	// the assumption that the queries are valid.
 	string designEntityString = queryObj.selectClauses[0].designEntity;
-	std::cout << designEntityString << "\n";
 	if (designEntityString == "procedure") {
 		Database::getProcedure(tempDatabaseResult);
 	}
@@ -57,9 +60,18 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	}
 
 
+	//remove duplicates from vector before pushing it into databaseResult string
+	removeDupe(tempDatabaseResult);
+
 	// post process the results to fill in the output vector
 	for (string databaseResult : tempDatabaseResult) {
 		output.push_back(databaseResult);
-		std::cout << to_string(output.size()) << "\n";
 	}
+
+}
+
+void QueryProcessor::removeDupe(vector<string>& results)
+{
+	sort(results.begin(), results.end());
+	results.erase(unique(results.begin(), results.end()), results.end());
 }
