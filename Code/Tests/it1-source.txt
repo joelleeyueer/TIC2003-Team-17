@@ -1,0 +1,13 @@
+procedure lambda {
+	num1 = 3000;
+	num2 =    2;
+	read r;
+	read   a1;
+	read num9;
+
+	num3 = 9999;
+	print p;
+	print num;
+	print a1  ;
+
+}

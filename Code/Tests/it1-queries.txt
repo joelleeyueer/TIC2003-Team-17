@@ -1,45 +1,35 @@
 1 - Procedure
 procedure p;
-Select p
-echo
-5000
-2 - Procedure no whitespace
-procedurep;
-Select p
-
-5000
-3 - Select no whitespace
-procedure p;
-Selectp
-
+Select p;
+lambda
 5000
 2 - Variable
 variable v;
 Select v
-num1, index, num2, num3
+num1, num2, r, a1, num9, num3, p, num
 5000
 3 - Constant
 constant c;
 Select c
-27
+3000, 2, 9999
 5000
 4 - Assignment
 assign a;
 Select a
-2, 3, 4
+1, 2, 6
 5000
 5 - Print
 print pr;
 Select pr
-3, 4
+7, 8, 9
 5000
 6 - Read
 read rd;
 Select rd
-1
+3, 4, 5
 5000
 7 - Statement
 stmt s;
 Select s
-1, 2, 3, 6, 7
+1, 2, 3, 4, 5, 6, 7, 8, 9
 5000
