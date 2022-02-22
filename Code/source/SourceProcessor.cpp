@@ -36,6 +36,7 @@ void SourceProcessor::process(string program) {
 		{
 			string variableName = tokens.at(i += 1);
 			Database::insertVariable(variableName); // insert the variable into the database
+
 			string readLine;
 			stringstream ss;
 			ss << countlines;
@@ -69,6 +70,9 @@ void SourceProcessor::process(string program) {
 		}
 		else if (tokens.at(i) == "print")
 		{
+			string variableName = tokens.at(i += 1);
+			Database::insertVariable(variableName); // insert the variable into the database
+
 			string printLine;
 			stringstream ss;
 			ss << countlines;
@@ -76,7 +80,7 @@ void SourceProcessor::process(string program) {
 			Database::insertPrint(printLine); // insert current line into the database under prints
 			i++;
 		}
-		else if (10 > c && c > 0)
+		else if (INT_MAX > c && c > 0)
 		{
 			string constantName;
 			stringstream ss;
