@@ -50,14 +50,25 @@ void QueryParser::next()
 void QueryParser::parseDeclarationList()
 {
 	try {
-		string designEntity = remainingTokens.front();
-		validateDesignEntity(designEntity);
-		next();
-		string synonym = remainingTokens.front();
-		validateSynonym(synonym, false);
-		next();
-		currentDeclarationList[synonym] = designEntity;
-		expect(";");
+		while (remainingTokens.front() != "Select") {
+			string designEntity = remainingTokens.front();
+			validateDesignEntity(designEntity);
+			next();
+			string synonym = remainingTokens.front();
+			//validateSynonym(synonym, false);
+			currentDeclarationList[synonym] = designEntity;
+			next();
+			string separator = remainingTokens.front();
+			while (separator == ",") {
+				expect(",");
+				string nextSynonym = remainingTokens.front();
+				//validateSynonym(synonym, false);
+				currentDeclarationList[nextSynonym] = designEntity;
+				next();
+				separator = remainingTokens.front();
+			}
+			expect(";");
+		}
 	}
 	catch (const std::exception& ex) {
 		std::throw_with_nested("error in declaration list");
