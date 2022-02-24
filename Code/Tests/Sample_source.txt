@@ -1,7 +1,23 @@
-procedure echo { 
-    read num1;
-    index = num1;
-    
-    print num1;
-    print index;
+procedure q {
+
+	read x;
+	read y;
+
+	while (y < 5) {
+		print y; } 
+
+	read z;
+	x = 2 + 3;
+	print a;
+	print b;
+
+	if (x > 1) then {
+    		read d; 
+	} else {
+		read s;
+	}
+
+	
+	read m;
+
 }

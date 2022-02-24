@@ -25,8 +25,6 @@ void Database::initialize() {
 	string createVariableTableSQL = "CREATE TABLE variables ( variableName VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createVariableTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
-
 	// drop the existing assignment table (if any)
 	string dropAssignmentTableSQL = "DROP TABLE IF EXISTS assignments";
 	sqlite3_exec(dbConnection, dropAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -34,8 +32,6 @@ void Database::initialize() {
 	// create an assignment table
 	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
-
-
 
 	// drop the existing print table (if any)
 	string dropPrintTableSQL = "DROP TABLE IF EXISTS prints";
@@ -45,8 +41,6 @@ void Database::initialize() {
 	string createPrintTableSQL = "CREATE TABLE prints ( printLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createPrintTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
-
 	// drop the existing read table (if any)
 	string dropReadTableSQL = "DROP TABLE IF EXISTS reads";
 	sqlite3_exec(dbConnection, dropReadTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -54,8 +48,6 @@ void Database::initialize() {
 	// create a read table
 	string createReadTableSQL = "CREATE TABLE reads ( readLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createReadTableSQL.c_str(), NULL, 0, &errorMessage);
-
-
 
 	// drop the existing statement table (if any)
 	string dropStatementTableSQL = "DROP TABLE IF EXISTS statements";
@@ -65,8 +57,6 @@ void Database::initialize() {
 	string createStatementTableSQL = "CREATE TABLE statements ( statementLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createStatementTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
-
 	// drop the existing constant table (if any)
 	string dropConstantTableSQL = "DROP TABLE IF EXISTS constants";
 	sqlite3_exec(dbConnection, dropConstantTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -74,6 +64,24 @@ void Database::initialize() {
 	// create a constant table
 	string createConstantTableSQL = "CREATE TABLE constants ( constantName VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createConstantTableSQL.c_str(), NULL, 0, &errorMessage);
+
+
+	// drop the existing while table (if any)
+	string dropWhileTableSQL = "DROP TABLE IF EXISTS whiles";
+	sqlite3_exec(dbConnection, dropWhileTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create a while table
+	string createWhileTableSQL = "CREATE TABLE whiles ( whileLine VARCHAR(255) PRIMARY KEY);";
+	sqlite3_exec(dbConnection, createWhileTableSQL.c_str(), NULL, 0, &errorMessage);
+
+
+	// drop the existing if table (if any)
+	string dropIfTableSQL = "DROP TABLE IF EXISTS ifs";
+	sqlite3_exec(dbConnection, dropIfTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create an if table
+	string createIfTableSQL = "CREATE TABLE ifs ( whileLine VARCHAR(255) PRIMARY KEY);";
+	sqlite3_exec(dbConnection, createIfTableSQL.c_str(), NULL, 0, &errorMessage);
 
 
 
@@ -139,6 +147,22 @@ void Database::insertConstant(string constantName) {
 	string insertConstantSQL = "INSERT INTO constants ('constantName') VALUES ('" + constantName + "');";
 	sqlite3_exec(dbConnection, insertConstantSQL.c_str(), NULL, 0, &errorMessage);
 }
+
+
+
+// method to insert a while into the database
+void Database::insertWhile(string whileLine) {
+	string insertWhileSQL = "INSERT INTO whiles ('whileLine') VALUES ('" + whileLine + "');";
+	sqlite3_exec(dbConnection, insertWhileSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert an if into the database
+void Database::insertIf(string ifLine) {
+	string insertIfSQL = "INSERT INTO ifs ('ifLine') VALUES ('" + ifLine + "');";
+	sqlite3_exec(dbConnection, insertIfSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+
 
 
 // method to get all the procedures from the database

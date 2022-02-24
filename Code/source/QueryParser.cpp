@@ -53,7 +53,7 @@ void QueryParser::parseDeclarationList()
 		string designEntity = remainingTokens.front();
 		validateDesignEntity(designEntity);
 		next();
-		string synonym = remainingTokens.front();
+		string synonym = remainingTokens.front(); // expecting a synonm
 		validateSynonym(synonym, false);
 		next();
 		currentDeclarationList[synonym] = designEntity;

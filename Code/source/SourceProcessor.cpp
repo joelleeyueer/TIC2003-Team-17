@@ -1,5 +1,13 @@
 #include "SourceProcessor.h"
 
+#include <regex>
+#include <iostream>
+
+#define INTEGER_PATTERN "[0-9]+"
+#define NAME_PATTERN "[a-zA-Z][a-zA-Z0-9]*"
+
+// using namespace std;
+
 // method for processing the source program
 // This method currently only inserts the procedure name into the database
 // using some highly simplified logic.
@@ -15,84 +23,255 @@ void SourceProcessor::process(string program) {
 	// This logic is highly simplified based on iteration 1 requirements and 
 	// the assumption that the programs are valid.
 
-	int i = 0; // use for iterating through the vector token
-	int countlines = 1; // to keep track of which line in the source for storing into database for Assignment, Print, Read, Statement
-
-
+	list<string> ltokens;
+	int i = 0;
 	while (i < tokens.size())
 	{
-		string constant = tokens.at(i);
-		stringstream geek(constant);
-		int c = 0;
-		geek >> c;
+		string insert = tokens.at(i);
+		ltokens.push_back(insert);
+		i++;
+	}
 
-		if (tokens.at(i) == "procedure")
+	
+	parse(ltokens);
+
+}
+
+void SourceProcessor::parse(list<string> tokens) {
+	remainingTokens = tokens;
+
+	try {
+		parseProgram();
+	}
+	catch (const std::exception& ex) {
+		std::throw_with_nested("error in parsing query");
+	}
+}
+
+void SourceProcessor::expect(string symbol)
+{
+	if (match(symbol)) {
+		next();
+		return;
+	}
+
+	std::throw_with_nested("expected: '" + symbol + "', got '" + remainingTokens.front() + "' instead");
+}
+
+bool SourceProcessor::match(string symbol)
+{
+	if (symbol == remainingTokens.front()) {
+		return 1;
+	}
+
+	return 0;
+}
+
+void SourceProcessor::next()
+{
+	if (!remainingTokens.empty()) {
+		remainingTokens.pop_front();
+	}
+}
+
+bool SourceProcessor::checkName(string token)
+{
+	return regex_match(token, regex(NAME_PATTERN));
+}
+
+bool SourceProcessor::checkInteger(string token)
+{
+	return regex_match(token, regex(INTEGER_PATTERN));
+}
+
+
+void SourceProcessor::parseProgram()
+{
+	try {
+		parseProcedure();
+
+	}
+	catch (const std::exception& ex) {
+		std::throw_with_nested("error in declaration list");
+	}
+}
+
+void SourceProcessor::parseProcedure()
+{
+	if (remainingTokens.front() == "procedure")
+	{
+		next();
+		if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
 		{
-			string procedureName = tokens.at(i += 1);
-			Database::insertProcedure(procedureName); // insert the procedure into the database
-			i++;
+			Database::insertProcedure(remainingTokens.front()); // insert the procedure into the database
+			next();
+			expect("{");
+			parseStatement();
 		}
-		else if (tokens.at(i) == "read")
+		else
 		{
-			string variableName = tokens.at(i += 1);
-			Database::insertVariable(variableName); // insert the variable into the database
+			std::throw_with_nested("error in parseProcedure");
+		}
+	}
+}
 
+int countlines = 1;
+
+void SourceProcessor::parseStatement()
+{
+	while (remainingTokens.front() != "}")
+	{
+		string statementLine;
+		stringstream ss;
+		ss << countlines;
+		ss >> statementLine;
+		Database::insertStatement(statementLine);
+
+		if (remainingTokens.front() == "while")
+		{
+			string whileLine;
+			stringstream ss;
+			ss << countlines;
+			ss >> whileLine;
+			Database::insertWhile(whileLine);
+
+			next();
+			expect("(");
+			parseFactor();
+			expect("{");
+			countlines++;
+			parseStatement();
+
+		}
+		else if (remainingTokens.front() == "if")
+		{
+			string ifLine;
+			stringstream ss;
+			ss << countlines;
+			ss >> ifLine;
+			Database::insertIf(ifLine);
+
+			next();
+			expect("(");
+			parseFactor();
+			expect("then");
+			expect("{");
+			countlines++;
+			parseStatement();
+
+			if (remainingTokens.front() == "else")
+			{
+				next();
+				expect("{");
+				parseStatement();
+			}
+		}
+		else if (remainingTokens.front() == "read")
+		{
 			string readLine;
 			stringstream ss;
 			ss << countlines;
 			ss >> readLine;
-			Database::insertRead(readLine); // insert current line into the database under reads
-			i++;
-		}
-		else if (tokens.at(i) == "=")
-		{
-			string variableName = tokens.at(i - 1);
-			Database::insertVariable(variableName); // insert the variable into the database
-
-			string assignmentLine;
-			stringstream ss;
-			ss << countlines;
-			ss >> assignmentLine;
-			// assignmentLine = to_string(countlines);
-			Database::insertAssignment(assignmentLine); // insert current line into the database under assignments
-			i++;
-		}
-		else if (tokens.at(i) == ";")
-		{
-			string statementLine;
-			stringstream ss;
-			ss << countlines;
-			ss >> statementLine;
-			Database::insertStatement(statementLine);
-
+			Database::insertRead(readLine);
 			countlines++;
-			i++;
-		}
-		else if (tokens.at(i) == "print")
-		{
-			string variableName = tokens.at(i += 1);
-			Database::insertVariable(variableName); // insert the variable into the database
 
+			next();
+			parseVariable();
+			expect(";");
+
+		}
+		else if (remainingTokens.front() == "print")
+		{
 			string printLine;
 			stringstream ss;
 			ss << countlines;
 			ss >> printLine;
-			Database::insertPrint(printLine); // insert current line into the database under prints
-			i++;
+			Database::insertPrint(printLine);
+			countlines++;
+
+			next();
+			parseVariable();
+			expect(";");
 		}
-		else if (INT_MAX > c && c > 0)
+		else // it is an assignment
 		{
-			string constantName;
+			string assignmentLine;
 			stringstream ss;
-			ss << c;
-			ss >> constantName;
-			Database::insertConstant(constantName);
-			i++;
+			ss << countlines;
+			ss >> assignmentLine;
+			Database::insertAssignment(assignmentLine);
+			countlines++;
+
+			parseVariable();
+			expect("=");
+			parseFactor(); // factor can be either a variableName, Constant, Expre
+			//expect(";");
+		}
+	}
+
+	next();
+}
+
+void SourceProcessor::parseVariable()
+{
+	if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
+	{
+		Database::insertVariable(remainingTokens.front()); // insert the procedure into the database
+		next();
+	}
+	else
+	{
+		std::throw_with_nested("error in parseVariable");
+	}
+}
+
+void SourceProcessor::parseFactor()
+{
+	if (checkName(remainingTokens.front())) // if it is a variable
+	{
+		parseVariable();
+	}
+	else if (checkInteger(remainingTokens.front())) // if it is an integer
+	{
+		parseConstant();
+	}
+
+	if (!match(";")) // this means it is an expression or real expression
+	{
+		if (match("+") || match("-") || match("*") || match("/") || match("%")) // should be an expression sign
+		{
+			next();
+			parseFactor(); // check again if it is an variable or integer or an expression
+		}
+		else if (match(">") || match("<")) // should be a real expression
+		{
+			next();
+			parseFactor();
+		}
+		else if (match(")"))
+		{
+			next();
 		}
 		else
 		{
-			i++;
+			// throw error
 		}
 	}
-	
+	else
+	{
+		next();
+	}
+}
+
+void SourceProcessor::parseConstant()
+{
+	if (checkInteger(remainingTokens.front())) // checks if it is an INTEGER grammer
+	{
+		Database::insertConstant(remainingTokens.front()); // insert the constant into the database
+		next();
+	}
+	else
+	{
+		std::throw_with_nested("error in parseConstant");
+	}
 }

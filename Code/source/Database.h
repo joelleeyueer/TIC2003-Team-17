@@ -45,6 +45,12 @@ public:
 	// method to insert a constant into the database
 	static void insertConstant(string constantName);
 
+	// method to insert a while into the database
+	static void insertWhile(string constantName);
+
+	// method to insert a if into the database
+	static void insertIf(string constantName);
+
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);
 
