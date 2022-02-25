@@ -103,9 +103,7 @@ void QueryParser::parseSelectClause(Query& currentQuery)
 
 void QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
 {
-	/*if (!validateIdent(symbol)) {
-		std::throw_with_nested("synonym syntactically invalid: '" + symbol + "'");
-	}*/
+
 
 	if (checkInDeclaration && currentDeclarationList.find(symbol) == currentDeclarationList.end()) {
 		std::throw_with_nested("synonym not in declaration list: '" + symbol + "'");
