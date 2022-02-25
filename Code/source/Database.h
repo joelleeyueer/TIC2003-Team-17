@@ -46,10 +46,19 @@ public:
 	static void insertConstant(string constantName);
 
 	// method to insert a while into the database
-	static void insertWhile(string constantName);
+	static void insertWhile(string whileName);
 
 	// method to insert a if into the database
-	static void insertIf(string constantName);
+	static void insertIf(string ifName);
+
+	// method to insert a parent into the database
+	//static void insertParent(string parentName);
+
+	// method to insert a child into the database
+	static void insertChild(string parentName, string childName);
+
+	// method to insert a grandchild into the database
+	static void insertGrandchild(string grandparentName, string childName);
 
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);

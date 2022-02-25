@@ -116,11 +116,52 @@ void SourceProcessor::parseProcedure()
 }
 
 int countlines = 1;
+int countparent = 0;
+int parentChild = 0; // it is not a child, = 1 if it is a child
 
 void SourceProcessor::parseStatement()
 {
 	while (remainingTokens.front() != "}")
 	{
+
+		if (countparent > 0 && parentChild > 0 ) // 5(sub parent) and 3(bigger parent)
+		{
+			string parentLine;
+			stringstream pp;
+			pp << countparent;
+			pp >> parentLine;
+
+			string childLine;
+			stringstream cc;
+			cc << countlines;
+			cc >> childLine;
+
+			string grandparentLine;
+			stringstream gg;
+			gg << parentChild;
+			gg >> grandparentLine;
+
+			Database::insertChild(parentLine, childLine); // parent table
+
+
+			Database::insertGrandchild(grandparentLine, childLine); // parent* table
+		}
+		else if (countparent > 0) // if no nesting of while or if
+		{
+			string parentLine;
+			stringstream pp;
+			pp << countparent;
+			pp >> parentLine;
+
+			string childLine;
+			stringstream cc;
+			cc << countlines;
+			cc >> childLine;
+
+			Database::insertChild(parentLine, childLine); // parent table
+			//Database::insertGrandchild(parentLine, childLine); // parent* table
+		}
+
 		string statementLine;
 		stringstream ss;
 		ss << countlines;
@@ -129,22 +170,28 @@ void SourceProcessor::parseStatement()
 
 		if (remainingTokens.front() == "while")
 		{
+			parentChild = countparent;
+			countparent = countlines;
 			string whileLine;
 			stringstream ss;
 			ss << countlines;
 			ss >> whileLine;
 			Database::insertWhile(whileLine);
-
+			
 			next();
 			expect("(");
 			parseFactor();
 			expect("{");
 			countlines++;
 			parseStatement();
+			countparent = 0;
+			parentChild = 0;
 
 		}
 		else if (remainingTokens.front() == "if")
 		{
+			parentChild = countparent;
+			countparent = countlines;
 			string ifLine;
 			stringstream ss;
 			ss << countlines;
@@ -165,6 +212,10 @@ void SourceProcessor::parseStatement()
 				expect("{");
 				parseStatement();
 			}
+
+			countparent = 0;
+			parentChild = 0;
+
 		}
 		else if (remainingTokens.front() == "read")
 		{

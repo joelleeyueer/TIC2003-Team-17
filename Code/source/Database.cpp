@@ -80,8 +80,24 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropIfTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create an if table
-	string createIfTableSQL = "CREATE TABLE ifs ( whileLine VARCHAR(255) PRIMARY KEY);";
+	string createIfTableSQL = "CREATE TABLE ifs ( ifLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createIfTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing parent table (if any)
+	string dropParentTableSQL = "DROP TABLE IF EXISTS parents";
+	sqlite3_exec(dbConnection, dropParentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create a parent table
+	string createParentTableSQL = "CREATE TABLE parents ( parentLine VARCHAR(255) , childLine VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createParentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing grandparent table (if any)
+	string dropGrandparentTableSQL = "DROP TABLE IF EXISTS parentst";
+	sqlite3_exec(dbConnection, dropGrandparentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create a grandparent table
+	string createGrandparentTableSQL = "CREATE TABLE parentst ( grandparentLine VARCHAR(255) , childLine VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createGrandparentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 
 
@@ -160,6 +176,24 @@ void Database::insertWhile(string whileLine) {
 void Database::insertIf(string ifLine) {
 	string insertIfSQL = "INSERT INTO ifs ('ifLine') VALUES ('" + ifLine + "');";
 	sqlite3_exec(dbConnection, insertIfSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+//// method to insert a parent into the database
+//void Database::insertParent(string parentLine) {
+//	string insertParentSQL = "INSERT INTO parents ('parentLine') VALUES ('" + parentLine + "');";
+//	sqlite3_exec(dbConnection, insertParentSQL.c_str(), NULL, 0, &errorMessage);
+//}
+
+// method to insert a child into the parents table
+void Database::insertChild(string parentLine, string childLine) {
+	string insertChildSQL = "INSERT INTO parents ('parentLine', 'childLine') VALUES (" + parentLine + ", " + childLine + "); ";
+	sqlite3_exec(dbConnection, insertChildSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert a grandchild into the parents table
+void Database::insertGrandchild(string grandparentLine, string childLine) {
+	string insertGrandchildSQL = "INSERT INTO parentst ('grandparentLine', 'childLine') VALUES (" + grandparentLine + ", " + childLine + "); ";
+	sqlite3_exec(dbConnection, insertGrandchildSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 
