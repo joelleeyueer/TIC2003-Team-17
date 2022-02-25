@@ -55,14 +55,14 @@ void QueryParser::parseDeclarationList()
 			validateDesignEntity(designEntity);
 			next();
 			string synonym = remainingTokens.front();
-			//validateSynonym(synonym, false);
+			validateSynonym(synonym, false);
 			currentDeclarationList[synonym] = designEntity;
 			next();
 			string separator = remainingTokens.front();
 			while (separator == ",") {
 				expect(",");
 				string nextSynonym = remainingTokens.front();
-				//validateSynonym(synonym, false);
+				validateSynonym(synonym, false);
 				currentDeclarationList[nextSynonym] = designEntity;
 				next();
 				separator = remainingTokens.front();
@@ -79,10 +79,22 @@ void QueryParser::parseSelectClause(Query& currentQuery)
 {
 	try {
 		expect("Select");
+
+		//first synonym
 		string synonym = remainingTokens.front();
 		validateSynonym(synonym, true);
 		next();
 		currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
+
+		//subsequent synonym
+		while (!remainingTokens.empty()) {
+			expect(",");
+			string synonym = remainingTokens.front();
+			validateSynonym(synonym, true);
+			next();
+			currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
+		}
+		
 	}
 	catch (const std::exception& ex) {
 		std::throw_with_nested("error in select clause");
@@ -91,9 +103,9 @@ void QueryParser::parseSelectClause(Query& currentQuery)
 
 void QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
 {
-	if (!validateIdent(symbol)) {
+	/*if (!validateIdent(symbol)) {
 		std::throw_with_nested("synonym syntactically invalid: '" + symbol + "'");
-	}
+	}*/
 
 	if (checkInDeclaration && currentDeclarationList.find(symbol) == currentDeclarationList.end()) {
 		std::throw_with_nested("synonym not in declaration list: '" + symbol + "'");
