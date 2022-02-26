@@ -15,10 +15,15 @@ void QueryParser::parse(list<string> tokens, Query& query)
 	try {
 		parseDeclarationList();
 		parseSelectClause(query);
+
 		if (remainingTokens.front() == "such") {
 			parseSuchThatClause(query);
 		}
-		parsePatternClause(query);
+
+		if (remainingTokens.front() == "pattern") {
+			parsePatternClause(query);
+		}
+
 	}
 	catch (const std::exception& ex) {
 		std::throw_with_nested("error in parsing query");
@@ -108,8 +113,11 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 		if (validateSynonym(firstArgument, true)) {
 			firstArgumentPair = { currentDeclarationList[firstArgument], firstArgument };
 		}
+		else if (firstArgument == "_"){
+			firstArgumentPair = { "undeclared", firstArgument };
+		}
 		else {
-			vector <string> firstArgumentPair = { "undeclared", firstArgument };
+			firstArgumentPair = { "line number", firstArgument };
 		}
 
 		next();
@@ -119,8 +127,11 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 		if (validateSynonym(secondArgument, true)) {
 			secondArgumentPair = { currentDeclarationList[secondArgument], secondArgument };
 		}
+		else if (secondArgument == "_"){
+			secondArgumentPair = { "undeclared", secondArgument };
+		}
 		else {
-			vector <string> secondArgumentPair = { "undeclared", secondArgument };
+			secondArgumentPair = { "line number", secondArgument };
 		}
 
 		next();
@@ -130,6 +141,48 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 
 void QueryParser::parsePatternClause(Query& currentQuery)
 {
+	vector<string> LHSPair;
+	vector<string> RHSPair;
+	expect("pattern");
+	string patternSynonym = remainingTokens.front();
+	next();
+	expect("(");
+	string LHSinitial = remainingTokens.front();
+	if (LHSinitial == "\"") {
+		next();
+		string IDENT = remainingTokens.front();
+		next();
+		expect("\"");
+		LHSPair = { "IDENT", IDENT };
+	}
+	else if (LHSinitial == "_") {
+		LHSPair = { "undeclared", LHSinitial };
+		next();
+	}
+	else { //synonym
+		LHSPair = { currentDeclarationList[LHSinitial], LHSinitial };
+		next();
+	}
+
+	expect(",");
+	string RHSinitial = remainingTokens.front();
+	if (RHSinitial == "_") {
+		next();
+		string RHSnext = remainingTokens.front();
+		if (RHSnext == ")") {
+			RHSPair = { "undeclared", RHSnext };
+			next();
+		}
+		else { //has to be partial match
+			expect("\"");
+			string factor = remainingTokens.front();
+			expect("\"");
+			expect("_");
+			expect(")");
+			RHSPair = { "partial match", factor };
+
+		}
+	}
 }
 
 bool QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
