@@ -19,7 +19,9 @@ public:
 
 	void parseDeclarationList();
 	void parseSelectClause(Query& currentQuery);
-	void validateSynonym(string symbol, bool checkInDeclaration);
+	void parseSuchThatClause(Query& currentQuery);
+	void parsePatternClause(Query& currentQuery);
+	bool validateSynonym(string symbol, bool checkInDeclaration);
 	void validateDesignEntity(string symbol);
 
 	bool validateIdent(string symbol);

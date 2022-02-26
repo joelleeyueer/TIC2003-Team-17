@@ -15,6 +15,10 @@ void QueryParser::parse(list<string> tokens, Query& query)
 	try {
 		parseDeclarationList();
 		parseSelectClause(query);
+		if (remainingTokens.front() == "such") {
+			parseSuchThatClause(query);
+		}
+		parsePatternClause(query);
 	}
 	catch (const std::exception& ex) {
 		std::throw_with_nested("error in parsing query");
@@ -79,35 +83,62 @@ void QueryParser::parseSelectClause(Query& currentQuery)
 {
 	try {
 		expect("Select");
-
-		//first synonym
 		string synonym = remainingTokens.front();
 		validateSynonym(synonym, true);
 		next();
 		currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
-
-		//subsequent synonym
-		while (!remainingTokens.empty()) {
-			expect(",");
-			string synonym = remainingTokens.front();
-			validateSynonym(synonym, true);
-			next();
-			currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
-		}
-		
+		next();
 	}
 	catch (const std::exception& ex) {
 		std::throw_with_nested("error in select clause");
 	}
 }
 
-void QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
+void QueryParser::parseSuchThatClause(Query& currentQuery)
 {
+		expect("such");
+		expect("that");
+		string relRef = remainingTokens.front();
+		next();
+		expect("(");
+		vector<string> firstArgumentPair;
+		vector<string> secondArgumentPair;
+		string firstArgument = remainingTokens.front();
 
+		if (validateSynonym(firstArgument, true)) {
+			firstArgumentPair = { currentDeclarationList[firstArgument], firstArgument };
+		}
+		else {
+			vector <string> firstArgumentPair = { "undeclared", firstArgument };
+		}
 
+		next();
+		expect(",");
+		string secondArgument = remainingTokens.front();
+
+		if (validateSynonym(secondArgument, true)) {
+			secondArgumentPair = { currentDeclarationList[secondArgument], secondArgument };
+		}
+		else {
+			vector <string> secondArgumentPair = { "undeclared", secondArgument };
+		}
+
+		next();
+		currentQuery.addSuchThatClause(relRef, firstArgumentPair, secondArgumentPair);
+		expect(")");
+}
+
+void QueryParser::parsePatternClause(Query& currentQuery)
+{
+}
+
+bool QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
+{
 	if (checkInDeclaration && currentDeclarationList.find(symbol) == currentDeclarationList.end()) {
 		std::throw_with_nested("synonym not in declaration list: '" + symbol + "'");
 	}
+
+	return true;
 }
 
 void QueryParser::validateDesignEntity(string symbol)
