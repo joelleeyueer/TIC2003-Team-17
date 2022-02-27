@@ -30,7 +30,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create an assignment table
-	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) PRIMARY KEY);";
+	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) , lhs VARCHAR(255) , rhs VARCHAR(255));";
 	sqlite3_exec(dbConnection, createAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing print table (if any)
@@ -132,8 +132,8 @@ void Database::insertVariable(string variableName) {
 
 
 // method to insert an assignment into the database
-void Database::insertAssignment(string assignmentLine) {
-	string insertAssignmentSQL = "INSERT INTO assignments ('assignmentLine') VALUES ('" + assignmentLine + "');";
+void Database::insertAssignment(string assignmentLine, string lhs, string rhs) {
+	string insertAssignmentSQL = "INSERT INTO assignments ('assignmentLine' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs +"'); ";
 	sqlite3_exec(dbConnection, insertAssignmentSQL.c_str(), NULL, 0, &errorMessage);
 }
 

@@ -37,7 +37,7 @@ public:
 	static void insertPrint(string printLine);
 
 	// method to insert an assignment into the database
-	static void insertAssignment(string assignmentLine);
+	static void insertAssignment(string assignmentLine, string lhs, string rhs);
 
 	// method to insert a statement into the database
 	static void insertStatement(string statementLine);

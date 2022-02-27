@@ -118,6 +118,8 @@ void SourceProcessor::parseProcedure()
 int countlines = 1;
 int countparent = 0;
 int parentChild = 0; // it is not a child, = 1 if it is a child
+string lhs;
+string rhs;
 
 void SourceProcessor::parseStatement()
 {
@@ -280,13 +282,22 @@ void SourceProcessor::parseStatement()
 			mm << countlines;
 			mm >> modifyLine;
 
-			Database::insertAssignment(assignmentLine);
 			countlines++;
 
+			lhs = remainingTokens.front();
 			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect("=");
+			list<string> expressionTokens = remainingTokens;
 			parseFactor(); // factor can be either a variableName, Constant, Expre
+
+			while (expressionTokens.front() != ";")
+			{
+				rhs += expressionTokens.front();
+				expressionTokens.pop_front();
+			}
+
+			Database::insertAssignment(assignmentLine, lhs, rhs);
 			Database::insertModifies(modifyLine, variableToken);
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
