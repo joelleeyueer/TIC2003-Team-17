@@ -57,8 +57,11 @@ public:
 	// method to insert a child into the database
 	static void insertChild(string parentName, string childName);
 
-	// method to insert a grandchild into the database
+	// method to insert a child into the database
 	static void insertGrandchild(string grandparentName, string childName);
+
+	// method to insert modifies into the database
+	static void insertModifies(string modifiesLine, string variableN);
 
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);

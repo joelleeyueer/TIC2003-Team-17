@@ -142,8 +142,6 @@ void SourceProcessor::parseStatement()
 			gg >> grandparentLine;
 
 			Database::insertChild(parentLine, childLine); // parent table
-
-
 			Database::insertGrandchild(grandparentLine, childLine); // parent* table
 		}
 		else if (countparent > 0) // if no nesting of while or if
@@ -219,16 +217,42 @@ void SourceProcessor::parseStatement()
 		}
 		else if (remainingTokens.front() == "read")
 		{
+
 			string readLine;
 			stringstream ss;
 			ss << countlines;
 			ss >> readLine;
+
+			string modifyLine;
+			stringstream mm;
+			mm << countlines;
+			mm >> modifyLine;
+
 			Database::insertRead(readLine);
 			countlines++;
 
 			next();
+			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect(";");
+			Database::insertModifies(modifyLine, variableToken);
+
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string grandparentLine;
+				stringstream gg;
+				gg << parentChild;
+				gg >> grandparentLine;
+
+				Database::insertModifies(parentLine, variableToken); // 
+				Database::insertModifies(grandparentLine, variableToken); // 
+			}
+
 
 		}
 		else if (remainingTokens.front() == "print")
@@ -250,12 +274,35 @@ void SourceProcessor::parseStatement()
 			stringstream ss;
 			ss << countlines;
 			ss >> assignmentLine;
+
+			string modifyLine;
+			stringstream mm;
+			mm << countlines;
+			mm >> modifyLine;
+
 			Database::insertAssignment(assignmentLine);
 			countlines++;
 
+			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect("=");
 			parseFactor(); // factor can be either a variableName, Constant, Expre
+			Database::insertModifies(modifyLine, variableToken);
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string grandparentLine;
+				stringstream gg;
+				gg << parentChild;
+				gg >> grandparentLine;
+
+				Database::insertModifies(parentLine, variableToken); // 
+				Database::insertModifies(grandparentLine, variableToken); // 
+			}
 			//expect(";");
 		}
 	}
@@ -267,7 +314,7 @@ void SourceProcessor::parseVariable()
 {
 	if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
 	{
-		Database::insertVariable(remainingTokens.front()); // insert the procedure into the database
+		Database::insertVariable(remainingTokens.front()); // insert the variable into the database
 		next();
 	}
 	else

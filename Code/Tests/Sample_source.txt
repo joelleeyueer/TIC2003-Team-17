@@ -2,6 +2,7 @@ procedure q {
 
 	read x;
 	read y;
+	read h;
 	print n;
 
 	while (y < 5) {

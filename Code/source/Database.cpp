@@ -99,8 +99,13 @@ void Database::initialize() {
 	string createGrandparentTableSQL = "CREATE TABLE parentst ( grandparentLine VARCHAR(255) , childLine VARCHAR(255) );";
 	sqlite3_exec(dbConnection, createGrandparentTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing modifies table (if any)
+	string dropModifiesTableSQL = "DROP TABLE IF EXISTS modifies";
+	sqlite3_exec(dbConnection, dropModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
+	// create modifies table
+	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
@@ -194,6 +199,12 @@ void Database::insertChild(string parentLine, string childLine) {
 void Database::insertGrandchild(string grandparentLine, string childLine) {
 	string insertGrandchildSQL = "INSERT INTO parentst ('grandparentLine', 'childLine') VALUES (" + grandparentLine + ", " + childLine + "); ";
 	sqlite3_exec(dbConnection, insertGrandchildSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the modifies table
+void Database::insertModifies(string modifiesLine, string variableN) {
+	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '"+ modifiesLine +"', '" + variableN + "' ); ";
+	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 
