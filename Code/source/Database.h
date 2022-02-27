@@ -60,6 +60,8 @@ public:
 
 	static void getAssignment(vector<string>& results);
 
+	static void getAssignmentPattern(vector<vector<string>>& results);
+
 	/*	Procedures
 		Constant
 		Variable

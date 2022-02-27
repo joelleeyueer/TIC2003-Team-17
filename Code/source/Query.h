@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -28,10 +29,12 @@ public:
 
     void addSelectClause(string name, string designEntity);
     void addSuchThatClause(string relRef, vector<string> firstArgument, vector<string> secondArgument);
-    void addPatternClause(string relRef, vector<string> LHS, vector<string> RHS);
+    void addPatternClause(string synonymName, vector<string> LHS, vector<string> RHS);
+    void addDeclarationList(map<string, string> declarationList);
 
     vector<SelectClause> selectClauses;
     vector<SuchThatClause> suchThatClauses;
     vector<PatternClause> patternClauses;
+    map<string, string> declarationList;
 };
 

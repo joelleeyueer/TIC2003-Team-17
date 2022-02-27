@@ -17,7 +17,7 @@ public:
 
 	void parse(list<string> tokens, Query& query);
 
-	void parseDeclarationList();
+	void parseDeclarationList(Query& currentQuery);
 	void parseSelectClause(Query& currentQuery);
 	void parseSuchThatClause(Query& currentQuery);
 	void parsePatternClause(Query& currentQuery);

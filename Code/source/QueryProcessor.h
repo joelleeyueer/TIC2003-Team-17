@@ -5,6 +5,8 @@
 #include "Database.h"
 #include "Query.h"
 
+
+
 using namespace std;
 
 class QueryProcessor {
@@ -17,6 +19,6 @@ public:
 
 	// method for evaluating a query
 	void evaluate(Query query, vector<string>& results);
-
-	void removeDupe(vector<string>& results);
+	void evaluateSelectClause(Query query, vector<string>& results);
+	void evaluatePatternClause(Query query, vector<vector<string>>& results);
 };

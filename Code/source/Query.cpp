@@ -1,4 +1,5 @@
 #include "Query.h"
+#include <map>
 
 Query::Query()
 {
@@ -20,4 +21,9 @@ void Query::addSuchThatClause(string relRef, vector<string> firstArgument, vecto
 void Query::addPatternClause(string relRef, vector<string> LHS, vector<string> RHS)
 {
 	patternClauses.push_back(PatternClause{ relRef, LHS, RHS });
+}
+
+void Query::addDeclarationList(map<string, string> declarationList)
+{
+	this->declarationList = declarationList;
 }

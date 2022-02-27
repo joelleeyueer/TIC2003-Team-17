@@ -11,9 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\PatternClauseEvaluator.cpp" />
     <ClCompile Include="..\source\Query.cpp" />
     <ClCompile Include="..\source\QueryParser.cpp" />
     <ClCompile Include="..\source\QueryProcessor.cpp" />
+    <ClCompile Include="..\source\SelectClauseEvaluator.cpp" />
     <ClCompile Include="..\source\SourceProcessor.cpp" />
     <ClCompile Include="..\source\Database.cpp" />
     <ClCompile Include="..\source\sqlite3.c" />
@@ -21,12 +23,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Database.h" />
+    <ClInclude Include="..\source\ModifiesClauseEvaluator.h" />
+    <ClInclude Include="..\source\ParentClauseEvaluator.h" />
+    <ClInclude Include="..\source\PatternClauseEvaluator.h" />
     <ClInclude Include="..\source\Query.h" />
     <ClInclude Include="..\source\QueryParser.h" />
     <ClInclude Include="..\source\QueryProcessor.h" />
+    <ClInclude Include="..\source\SelectClauseEvaluator.h" />
     <ClInclude Include="..\source\SourceProcessor.h" />
     <ClInclude Include="..\source\sqlite3.h" />
     <ClInclude Include="..\source\Tokenizer.h" />
+    <ClInclude Include="..\source\UsesClauseEvaluator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC21A1EA-D2C6-4D14-A2B4-E025B64BDE81}</ProjectGuid>

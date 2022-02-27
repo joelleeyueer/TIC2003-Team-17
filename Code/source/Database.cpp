@@ -256,7 +256,7 @@ void Database::getAssignment(vector<string>& results) {
 
 	// retrieve the procedures from the procedure table
 	// The callback method is only used when there are results to be returned.
-	string getAssignmentSQL = "SELECT * FROM assignments;";
+	string getAssignmentSQL = "SELECT assignmentLine FROM assignments;";
 	sqlite3_exec(dbConnection, getAssignmentSQL.c_str(), callback, 0, &errorMessage);
 
 	// postprocess the results from the database so that the output is just a vector of procedure names
@@ -264,6 +264,22 @@ void Database::getAssignment(vector<string>& results) {
 		string result;
 		result = dbRow.at(0);
 		results.push_back(result);
+	}
+}
+
+// method to get all the assignment statements from the database
+void Database::getAssignmentPattern(vector<vector<string>>& results) {
+	// clear the existing results
+	dbResults.clear();
+
+	// retrieve the procedures from the procedure table
+	// The callback method is only used when there are results to be returned.
+	string getAssignmentSQL = "SELECT lhs, rhs FROM assignments;";
+	sqlite3_exec(dbConnection, getAssignmentSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
 	}
 }
 

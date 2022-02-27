@@ -13,7 +13,7 @@ void QueryParser::parse(list<string> tokens, Query& query)
 	currentDeclarationList = {};
 
 	try {
-		parseDeclarationList();
+		parseDeclarationList(query);
 		parseSelectClause(query);
 
 		if (remainingTokens.front() == "such") {
@@ -56,7 +56,7 @@ void QueryParser::next()
 	}
 }
 
-void QueryParser::parseDeclarationList()
+void QueryParser::parseDeclarationList(Query& query)
 {
 	try {
 		while (remainingTokens.front() != "Select") {
@@ -77,7 +77,9 @@ void QueryParser::parseDeclarationList()
 				separator = remainingTokens.front();
 			}
 			expect(";");
+			
 		}
+		query.addDeclarationList(currentDeclarationList);
 	}
 	catch (const std::exception& ex) {
 		std::throw_with_nested("error in declaration list");

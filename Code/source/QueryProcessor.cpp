@@ -1,4 +1,6 @@
 #include "QueryProcessor.h"
+#include "SelectClauseEvaluator.h"
+#include "PatternClauseEvaluator.h"
 #include "Tokenizer.h"
 #include "Database.h"
 #include <iostream>
@@ -20,58 +22,38 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	// clear the output vector
 	output.clear();
 
-	// check what type of synonym is being declared
-	/*string synonymType = tokens.at(0);*/
+	vector<string> selectClauseResults;
+	evaluateSelectClause(queryObj, selectClauseResults);
 
-	// create a vector for storing the results from database
-	vector<string> tempDatabaseResult;
-	
-
-	// call the method in database to retrieve the results
-	// This logic is highly simplified based on iteration 1 requirements and 
-	// the assumption that the queries are valid.
-	string designEntityString = queryObj.selectClauses[0].designEntity;
-	if (designEntityString == "procedure") {
-		Database::getProcedure(tempDatabaseResult);
+	if (queryObj.suchThatClauses.size() > 0) {
+		// if rel ref == parenmt
+		// else if rel ref = modifies.. etc etc
 	}
-
-	else if (designEntityString == "constant") {
-		Database::getConstant(tempDatabaseResult);
+	else if (queryObj.patternClauses.size() > 0) {
+		// evaluate pattern clause
+		vector<vector<string>> patternClauseResults;
+		evaluatePatternClause(queryObj, patternClauseResults);
+		//filter 
+		//assign a, b; select a pattern a (a, _"b"_) ==/==
+		//assign a, b; select b pattern a (a, _"b"_) 
 	}
-
-	else if (designEntityString == "variable") {
-		Database::getVariable(tempDatabaseResult);
-	}
-
-	else if (designEntityString == "stmt") {
-		Database::getStatement(tempDatabaseResult);
-	}
-
-	else if (designEntityString == "read") {
-		Database::getRead(tempDatabaseResult);
-	}
-
-	else if (designEntityString == "print") {
-		Database::getPrint(tempDatabaseResult);
-	}
-
-	else if (designEntityString == "assign") {
-		Database::getAssignment(tempDatabaseResult);
-	}
-
-
-	//remove duplicates from vector before pushing it into databaseResult string
-	removeDupe(tempDatabaseResult);
-
-	// post process the results to fill in the output vector
-	for (string databaseResult : tempDatabaseResult) {
-		output.push_back(databaseResult);
-	}
-
 }
 
-void QueryProcessor::removeDupe(vector<string>& results)
+void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results)
 {
-	sort(results.begin(), results.end());
-	results.erase(unique(results.begin(), results.end()), results.end());
+	SelectClauseEvaluator selectClauseEvaluator;
+	selectClauseEvaluator.evaluate(results, query.selectClauses[0].designEntity); 
 }
+
+void QueryProcessor::evaluatePatternClause(Query query, vector<vector<string>>& results)
+{
+	PatternClauseEvaluator patternClauseEvaluator;
+	patternClauseEvaluator.evaluate(results, query.patternClauses[0].LHS, query.patternClauses[0].RHS, query.declarationList);
+}
+
+void QueryProcessor::evaluateParentClause(Query query, vector<vector<string>>& results)
+{
+	//
+}
+
+
