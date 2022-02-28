@@ -1,3 +1,4 @@
+#include <string>
 #include "Database.h"
 
 sqlite3* Database::dbConnection;
@@ -208,8 +209,6 @@ void Database::insertModifies(string modifiesLine, string variableN) {
 }
 
 
-
-
 // method to get all the procedures from the database
 void Database::getProcedure(vector<string>& results){
 	// clear the existing results
@@ -336,7 +335,7 @@ void Database::getAssignment(vector<string>& results) {
 	}
 }
 
-// method to get all the assignment statements from the database
+// method to get all the assignment statement patterns from the database
 void Database::getAssignmentPattern(vector<vector<string>>& results) {
 	// clear the existing results
 	dbResults.clear();
@@ -349,6 +348,140 @@ void Database::getAssignmentPattern(vector<vector<string>>& results) {
 	// postprocess the results from the database so that the output is just a vector of procedure names
 	for (vector<string> dbRow : dbResults) {
 		results.push_back(dbRow);
+	}
+}
+
+// method to get all the parents from the database
+void Database::getParent(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue) {
+	// clear the existing results
+	dbResults.clear();
+	string getParentSQL;
+
+	if (parentType == "undeclared") {
+		if (childType == "undeclared") {
+			getParentSQL = "SELECT * FROM parents;";
+		}
+		else if (childType == "line number") {
+			getParentSQL = "SELECT * from parents WHERE childLine = " +  childValue + ";";
+		}
+		else {  // child is synonym
+			getParentSQL = "SELECT * FROM parents WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+		}
+	}
+	else if (parentType == "line number") {
+		if (childType == "undeclared") {
+			getParentSQL = "SELECT * FROM parents WHERE parentLine = " + parentValue + ";";
+		}
+		else if (childType == "line number") {
+			getParentSQL = "SELECT * from parents WHERE parentLine = " + parentValue + " AND childLine = " + childValue + ";";
+		}
+		else { // child is synonym
+			getParentSQL = "SELECT * FROM parents WHERE parentLine = " + parentValue + " AND childLine IN (SELECT * FROM " + convertToDbName(childType) + "); ";
+		}
+	}
+	else { //parent is a synonym
+		if (childType == "undeclared") {
+			getParentSQL = "SELECT * FROM parents WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ");";
+		}
+		else if (childType == "line number") {
+			getParentSQL = "SELECT * from parents WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
+		}
+		else {  // child is synonym
+			getParentSQL = "SELECT * FROM parents WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT * FROM " + convertToDbName(childType) + "); ";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getParentSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+}
+
+void Database::getParentT(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue)
+{
+	// clear the existing results
+	dbResults.clear();
+	string getParentTSQL = "SELECT * FROM ( SELECT * FROM parents UNION SELECT * FROM parentst )";
+
+
+	if (parentType == "undeclared") {
+		// child is undeclared not written because it just returns the current "temporary" union table
+		if (childType == "line number") {
+			getParentTSQL += " WHERE childLine = " + childValue + "; ";
+		}
+		else { // child is synonym
+			getParentTSQL += " WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+		}
+	}
+	else if (parentType == "line number") {
+		if (childType == "undeclared") {
+			getParentTSQL += " WHERE parentLine = " + parentValue + ";";
+		}
+		else if (childType == "line number") {
+			getParentTSQL += " WHERE parentLine = " + parentValue + " AND childLine = " + childValue + ";";
+		}
+		else { // child is synonym
+			getParentTSQL += " WHERE parentLine = " + parentValue + " AND childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+		}
+	}
+	else { //parent is a synonym
+		if (childType == "undeclared") {
+			getParentTSQL += " WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ");";
+		}
+		else if (childType == "line number") {
+			getParentTSQL += " WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
+		}
+		else { // child is synonym
+			getParentTSQL += " WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getParentTSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+}
+
+void Database::getModifies(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	// clear the existing results
+	dbResults.clear();
+	string getModifiesSQL;
+
+	if (firstArgumentType == "undeclared") {
+		if (secondArgumentType == "undeclared") {
+			getModifiesSQL = "SELECT * FROM modifies;";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE variableN = " + secondArgumentValue + ";";
+		}
+		else { // secondArgumentType is a synonym
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN (SELECT * FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+	else if (firstArgumentType == "line number") {
+		if (secondArgumentType == "undeclared") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + ";";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + "AND variablenN = " + secondArgumentValue + ";";
+		}
+		else { // secondArgumentType is a synonym
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + " AND variableN IN(SELECT * FROM " + convertToDbName(secondArgumentType) + "); ";
+		}
+	}
+	else if (firstArgumentType == "synonym") {
+		if (secondArgumentType == "undeclared") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE variableN = " + secondArgumentValue + " AND modifiesLine IN(SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
+		}
+		else { // secondArgumentType is a synonym
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN(SELECT * FROM " + convertToDbName(firstArgumentType) + ") AND modifiesLine IN (SELECT * FROM " + convertToDbName(secondArgumentType) + "); ";
+		}
 	}
 }
 
@@ -369,4 +502,17 @@ int Database::callback(void* NotUsed, int argc, char** argv, char** azColName) {
 	dbResults.push_back(dbRow);
 
 	return 0;
+}
+
+string Database::convertToDbName(string designEntity)
+{
+	if (designEntity == "stmt") {
+		return "statements";
+	}
+	else if (designEntity == "assign") {
+		return "assignments";
+	} 
+	else {
+		return designEntity + "s";
+	}
 }

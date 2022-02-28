@@ -8,7 +8,7 @@
 using namespace std;
 
 
-class UsesClauseEvaluator
+class ParentTClauseEvaluator
 {
 public:
     void evaluate(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue);

@@ -1,6 +1,10 @@
 #include "QueryProcessor.h"
 #include "SelectClauseEvaluator.h"
 #include "PatternClauseEvaluator.h"
+#include "ParentClauseEvaluator.h"
+#include "ParentTClauseEvaluator.h"
+#include "ModifiesClauseEvaluator.h"
+#include "UsesClauseEvaluator.h"
 #include "Tokenizer.h"
 #include "Database.h"
 #include <iostream>
@@ -18,7 +22,7 @@ QueryProcessor::~QueryProcessor() {}
 // You should modify this method to complete the logic for handling all required queries.
 
 
-void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
+void QueryProcessor::evaluate(Query queryObj, vector<vector<string>>& output) {
 	// clear the output vector
 	output.clear();
 
@@ -28,6 +32,27 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	if (queryObj.suchThatClauses.size() > 0) {
 		// if rel ref == parenmt
 		// else if rel ref = modifies.. etc etc
+		string relRef = queryObj.suchThatClauses[0].relRef;
+		string firstArg_index0 = queryObj.suchThatClauses[0].firstArgument[0];
+		string firstArg_index1 = queryObj.suchThatClauses[0].firstArgument[1];
+		string secondArg_index0 = queryObj.suchThatClauses[0].secondArgument[0];
+		string secondArg_index1 = queryObj.suchThatClauses[0].secondArgument[1];
+
+		if (relRef == "Parent") {
+			vector<vector<string>> parentClauseResults;
+			evaluateParentClause(queryObj, parentClauseResults);
+		}
+		else if (relRef == "Parent*") {
+			vector<vector<string>> parentTClauseResults;
+			evaluateParentTClause(queryObj, parentTClauseResults);
+		}
+		else if (relRef == "Modifies") {
+			vector<vector<string>> ModifiesClauseResults;
+			evaluateModifiesClause(queryObj, ModifiesClauseResults);
+		}
+		else { //relRef == "Uses
+			//Database::getUses(output, firstArg_index0, firstArg_index1, secondArg_index0, secondArg_index1)
+		}
 	}
 	else if (queryObj.patternClauses.size() > 0) {
 		// evaluate pattern clause
@@ -53,7 +78,28 @@ void QueryProcessor::evaluatePatternClause(Query query, vector<vector<string>>& 
 
 void QueryProcessor::evaluateParentClause(Query query, vector<vector<string>>& results)
 {
-	//
+	ParentClauseEvaluator parentClauseEvaluator;
+	parentClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+}
+
+void QueryProcessor::evaluateParentTClause(Query query, vector<vector<string>>& results)
+{
+	ParentTClauseEvaluator parentTClauseEvaluator;
+	parentTClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+
+}
+
+void QueryProcessor::evaluateModifiesClause(Query query, vector<vector<string>>& results)
+{
+	ModifiesClauseEvaluator modifiesClauseEvaluator;
+	modifiesClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+}
+
+void QueryProcessor::evaluateUsesClause(Query query, vector<vector<string>>& results)
+{
+	UsesClauseEvaluator usesClauseEvaluator;
+	usesClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+
 }
 
 

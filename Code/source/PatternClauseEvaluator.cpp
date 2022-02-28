@@ -27,11 +27,6 @@ void PatternClauseEvaluator::evaluate(vector<vector<string>>& results, vector<st
 	else {//synonym
 		evaluateLHSSynonym(results, tempDatabaseResult, RHSPair, declarationList);
 	}
-
-	// post process the results to fill in the output vector
-	//for (string databaseResult : tempDatabaseResult) {
-	//	results.push_back(databaseResult);
-	//}
 }
 
 void PatternClauseEvaluator::evaluateLHSIdent(vector<vector<string>>& results, vector<vector<string>>& tempDatabaseResults, string LHSidentText, vector<string> RHSPair, map<string, string> declarationList)

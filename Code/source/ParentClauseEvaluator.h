@@ -8,12 +8,9 @@
 using namespace std;
 
 
-class SelectClauseEvaluator
+class ParentClauseEvaluator
 {
 public:
-    void evaluate(vector<string>& results, string designEntityString);
-
-private:
-    void removeDupe(vector<string>& results);
+    void evaluate(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue);
 };
 

@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\ModifiesClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\ParentClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\ParentTClauseEvaluator.cpp" />
     <ClCompile Include="..\source\PatternClauseEvaluator.cpp" />
     <ClCompile Include="..\source\Query.cpp" />
     <ClCompile Include="..\source\QueryParser.cpp" />
@@ -20,11 +23,13 @@
     <ClCompile Include="..\source\Database.cpp" />
     <ClCompile Include="..\source\sqlite3.c" />
     <ClCompile Include="..\source\Tokenizer.cpp" />
+    <ClCompile Include="..\source\UsesClauseEvaluator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\Database.h" />
     <ClInclude Include="..\source\ModifiesClauseEvaluator.h" />
     <ClInclude Include="..\source\ParentClauseEvaluator.h" />
+    <ClInclude Include="..\source\ParentTClauseEvaluator.h" />
     <ClInclude Include="..\source\PatternClauseEvaluator.h" />
     <ClInclude Include="..\source\Query.h" />
     <ClInclude Include="..\source\QueryParser.h" />

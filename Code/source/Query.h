@@ -12,7 +12,7 @@ typedef struct {
 
 typedef struct {
     string relRef; //e.g. uses, modifies, parent
-    vector<string> firstArgument; //index 0 is design entity index 1 is synonym, i.e. uses(a,v) = firstArgument[0] = a, firstArgument[1] = v
+    vector<string> firstArgument; //index 0 is design entity / undeclared / line number or index 1 is synonym, i.e. uses(a,v) = firstArgument[0] = a, firstArgument[1] = v
     vector<string> secondArgument;
 } SuchThatClause;
 

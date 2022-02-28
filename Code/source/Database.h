@@ -80,6 +80,12 @@ public:
 
 	static void getAssignmentPattern(vector<vector<string>>& results);
 
+	static void getParent(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue);
+
+	static void getParentT(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue);
+
+	static void getModifies(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue);
+
 	/*	Procedures
 		Constant
 		Variable
@@ -98,5 +104,6 @@ private:
 	// callback method to put one row of results from the database into the dbResults vector
 	// This method is called each time a row of results is returned from the database
 	static int callback(void* NotUsed, int argc, char** argv, char** azColName);
+	static string convertToDbName(string designEntity);
 };
 
