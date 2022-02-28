@@ -33,10 +33,6 @@ void QueryProcessor::evaluate(Query queryObj, vector<vector<string>>& output) {
 		// if rel ref == parenmt
 		// else if rel ref = modifies.. etc etc
 		string relRef = queryObj.suchThatClauses[0].relRef;
-		string firstArg_index0 = queryObj.suchThatClauses[0].firstArgument[0];
-		string firstArg_index1 = queryObj.suchThatClauses[0].firstArgument[1];
-		string secondArg_index0 = queryObj.suchThatClauses[0].secondArgument[0];
-		string secondArg_index1 = queryObj.suchThatClauses[0].secondArgument[1];
 
 		if (relRef == "Parent") {
 			vector<vector<string>> parentClauseResults;
