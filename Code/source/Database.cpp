@@ -25,8 +25,6 @@ void Database::initialize() {
 	string createVariableTableSQL = "CREATE TABLE variables ( variableName VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createVariableTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
-
 	// drop the existing assignment table (if any)
 	string dropAssignmentTableSQL = "DROP TABLE IF EXISTS assignments";
 	sqlite3_exec(dbConnection, dropAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -34,8 +32,6 @@ void Database::initialize() {
 	// create an assignment table
 	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
-
-
 
 	// drop the existing print table (if any)
 	string dropPrintTableSQL = "DROP TABLE IF EXISTS prints";
@@ -45,8 +41,6 @@ void Database::initialize() {
 	string createPrintTableSQL = "CREATE TABLE prints ( printLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createPrintTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
-
 	// drop the existing read table (if any)
 	string dropReadTableSQL = "DROP TABLE IF EXISTS reads";
 	sqlite3_exec(dbConnection, dropReadTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -55,8 +49,6 @@ void Database::initialize() {
 	string createReadTableSQL = "CREATE TABLE reads ( readLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createReadTableSQL.c_str(), NULL, 0, &errorMessage);
 
-
-
 	// drop the existing statement table (if any)
 	string dropStatementTableSQL = "DROP TABLE IF EXISTS statements";
 	sqlite3_exec(dbConnection, dropStatementTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -64,8 +56,6 @@ void Database::initialize() {
 	// create a statement table
 	string createStatementTableSQL = "CREATE TABLE statements ( statementLine VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createStatementTableSQL.c_str(), NULL, 0, &errorMessage);
-
-
 
 	// drop the existing constant table (if any)
 	string dropConstantTableSQL = "DROP TABLE IF EXISTS constants";
@@ -76,7 +66,46 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, createConstantTableSQL.c_str(), NULL, 0, &errorMessage);
 
 
+	// drop the existing while table (if any)
+	string dropWhileTableSQL = "DROP TABLE IF EXISTS whiles";
+	sqlite3_exec(dbConnection, dropWhileTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// create a while table
+	string createWhileTableSQL = "CREATE TABLE whiles ( whileLine VARCHAR(255) PRIMARY KEY);";
+	sqlite3_exec(dbConnection, createWhileTableSQL.c_str(), NULL, 0, &errorMessage);
+
+
+	// drop the existing if table (if any)
+	string dropIfTableSQL = "DROP TABLE IF EXISTS ifs";
+	sqlite3_exec(dbConnection, dropIfTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create an if table
+	string createIfTableSQL = "CREATE TABLE ifs ( ifLine VARCHAR(255) PRIMARY KEY);";
+	sqlite3_exec(dbConnection, createIfTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing parent table (if any)
+	string dropParentTableSQL = "DROP TABLE IF EXISTS parents";
+	sqlite3_exec(dbConnection, dropParentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create a parent table
+	string createParentTableSQL = "CREATE TABLE parents ( parentLine VARCHAR(255) , childLine VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createParentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing grandparent table (if any)
+	string dropGrandparentTableSQL = "DROP TABLE IF EXISTS parentst";
+	sqlite3_exec(dbConnection, dropGrandparentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create a grandparent table
+	string createGrandparentTableSQL = "CREATE TABLE parentst ( grandparentLine VARCHAR(255) , childLine VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createGrandparentTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing modifies table (if any)
+	string dropModifiesTableSQL = "DROP TABLE IF EXISTS modifies";
+	sqlite3_exec(dbConnection, dropModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create modifies table
+	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
@@ -139,6 +168,46 @@ void Database::insertConstant(string constantName) {
 	string insertConstantSQL = "INSERT INTO constants ('constantName') VALUES ('" + constantName + "');";
 	sqlite3_exec(dbConnection, insertConstantSQL.c_str(), NULL, 0, &errorMessage);
 }
+
+
+
+// method to insert a while into the database
+void Database::insertWhile(string whileLine) {
+	string insertWhileSQL = "INSERT INTO whiles ('whileLine') VALUES ('" + whileLine + "');";
+	sqlite3_exec(dbConnection, insertWhileSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert an if into the database
+void Database::insertIf(string ifLine) {
+	string insertIfSQL = "INSERT INTO ifs ('ifLine') VALUES ('" + ifLine + "');";
+	sqlite3_exec(dbConnection, insertIfSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+//// method to insert a parent into the database
+//void Database::insertParent(string parentLine) {
+//	string insertParentSQL = "INSERT INTO parents ('parentLine') VALUES ('" + parentLine + "');";
+//	sqlite3_exec(dbConnection, insertParentSQL.c_str(), NULL, 0, &errorMessage);
+//}
+
+// method to insert a child into the parents table
+void Database::insertChild(string parentLine, string childLine) {
+	string insertChildSQL = "INSERT INTO parents ('parentLine', 'childLine') VALUES (" + parentLine + ", " + childLine + "); ";
+	sqlite3_exec(dbConnection, insertChildSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert a grandchild into the parents table
+void Database::insertGrandchild(string grandparentLine, string childLine) {
+	string insertGrandchildSQL = "INSERT INTO parentst ('grandparentLine', 'childLine') VALUES (" + grandparentLine + ", " + childLine + "); ";
+	sqlite3_exec(dbConnection, insertGrandchildSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the modifies table
+void Database::insertModifies(string modifiesLine, string variableN) {
+	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '"+ modifiesLine +"', '" + variableN + "' ); ";
+	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+
 
 
 // method to get all the procedures from the database
