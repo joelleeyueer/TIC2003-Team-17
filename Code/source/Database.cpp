@@ -107,6 +107,14 @@ void Database::initialize() {
 	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) );";
 	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing uses table (if any)
+	string dropUsesTableSQL = "DROP TABLE IF EXISTS uses";
+	sqlite3_exec(dbConnection, dropUsesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create uses table
+	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createUsesTableSQL.c_str(), NULL, 0, &errorMessage);
+
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
 }
@@ -205,6 +213,12 @@ void Database::insertGrandchild(string grandparentLine, string childLine) {
 void Database::insertModifies(string modifiesLine, string variableN) {
 	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '"+ modifiesLine +"', '" + variableN + "' ); ";
 	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the uses table
+void Database::insertUses(string usesLine, string variableN) {
+	string insertUsesSQL = "INSERT INTO uses ('usesLine', 'variableN') VALUES ( '" + usesLine + "', '" + variableN + "' ); ";
+	sqlite3_exec(dbConnection, insertUsesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 

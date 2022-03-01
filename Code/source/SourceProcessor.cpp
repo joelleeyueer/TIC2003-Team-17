@@ -180,12 +180,23 @@ void SourceProcessor::parseStatement()
 			
 			next();
 			expect("(");
+			list<string> conditionTokens = remainingTokens;
 			parseFactor();
 			expect("{");
 			countlines++;
 			parseStatement();
 			countparent = 0;
 			parentChild = 0;
+
+			while (conditionTokens.front() != ")")
+			{
+				if (checkName(conditionTokens.front())) // if it is a variable
+				{
+					string useVariableToken = conditionTokens.front();
+					Database::insertUses(whileLine, useVariableToken);
+				}
+				conditionTokens.pop_front();
+			}
 
 		}
 		else if (remainingTokens.front() == "if")
@@ -200,6 +211,7 @@ void SourceProcessor::parseStatement()
 
 			next();
 			expect("(");
+			list<string> conditionTokens = remainingTokens;
 			parseFactor();
 			expect("then");
 			expect("{");
@@ -215,6 +227,16 @@ void SourceProcessor::parseStatement()
 
 			countparent = 0;
 			parentChild = 0;
+
+			while (conditionTokens.front() != ")")
+			{
+				if (checkName(conditionTokens.front())) // if it is a variable
+				{
+					string useVariableToken = conditionTokens.front();
+					Database::insertUses(ifLine, useVariableToken);
+				}
+				conditionTokens.pop_front();
+			}
 
 		}
 		else if (remainingTokens.front() == "read")
@@ -263,12 +285,37 @@ void SourceProcessor::parseStatement()
 			stringstream ss;
 			ss << countlines;
 			ss >> printLine;
+
+			string useLine;
+			stringstream uu;
+			uu << countlines;
+			uu >> useLine;
+
 			Database::insertPrint(printLine);
 			countlines++;
 
 			next();
+			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect(";");
+			Database::insertUses(useLine, variableToken);
+
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string grandparentLine;
+				stringstream gg;
+				gg << parentChild;
+				gg >> grandparentLine;
+
+				Database::insertUses(parentLine, variableToken); // 
+				Database::insertUses(grandparentLine, variableToken); // 
+			}
+
 		}
 		else // it is an assignment
 		{
@@ -282,6 +329,11 @@ void SourceProcessor::parseStatement()
 			mm << countlines;
 			mm >> modifyLine;
 
+			string useLine;
+			stringstream uu;
+			uu << countlines;
+			uu >> useLine;
+
 			countlines++;
 
 			lhs = remainingTokens.front();
@@ -294,6 +346,11 @@ void SourceProcessor::parseStatement()
 			while (expressionTokens.front() != ";")
 			{
 				rhs += expressionTokens.front();
+				if (checkName(expressionTokens.front())) // if it is a variable
+				{
+					string useVariableToken = expressionTokens.front();
+					Database::insertUses(useLine, useVariableToken);
+				}
 				expressionTokens.pop_front();
 			}
 
