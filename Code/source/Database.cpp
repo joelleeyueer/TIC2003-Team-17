@@ -450,37 +450,48 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 	dbResults.clear();
 	string getModifiesSQL;
 
-	if (firstArgumentType == "undeclared") {
-		if (secondArgumentType == "undeclared") {
-			getModifiesSQL = "SELECT * FROM modifies;";
+	// The first argument for Modifies and Uses cannot be ‘_’ because it is unclear whether the ‘_’ stands for a statement or a procedure.
+
+	if (firstArgumentType == "line number") {
+		if (secondArgumentType == "IDENT") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + "AND variablenN = \"" + secondArgumentValue + "\";";
 		}
-		else if (secondArgumentType == "IDENT") {
-			getModifiesSQL = "SELECT * FROM modifies WHERE variableN = " + secondArgumentValue + ";";
-		}
-		else { // secondArgumentType is a synonym
-			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN (SELECT * FROM " + convertToDbName(secondArgumentType) + ");";
-		}
-	}
-	else if (firstArgumentType == "line number") {
-		if (secondArgumentType == "undeclared") {
+		else { // secondArgumentType is a _ OR synonym i.e. variable design entity
 			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + ";";
-		}
-		else if (secondArgumentType == "IDENT") {
-			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + "AND variablenN = " + secondArgumentValue + ";";
-		}
-		else { // secondArgumentType is a synonym
-			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + " AND variableN IN(SELECT * FROM " + convertToDbName(secondArgumentType) + "); ";
 		}
 	}
 	else if (firstArgumentType == "synonym") {
-		if (secondArgumentType == "undeclared") {
+		if (secondArgumentType == "IDENT") {
+			getModifiesSQL = "SELECT * FROM modifies WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
+		}
+		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
 			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
 		}
-		else if (secondArgumentType == "IDENT") {
-			getModifiesSQL = "SELECT * FROM modifies WHERE variableN = " + secondArgumentValue + " AND modifiesLine IN(SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
+	}
+}
+
+void Database::getUses(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	// clear the existing results
+	dbResults.clear();
+	string getUsesSQL;
+
+	// The first argument for Modifies and Uses cannot be ‘_’ because it is unclear whether the ‘_’ stands for a statement or a procedure.
+
+	if (firstArgumentType == "line number") {
+		if (secondArgumentType == "IDENT") {
+			getUsesSQL = "SELECT * FROM uses WHERE usesLine = " + firstArgumentValue + "AND variablenN = \"" + secondArgumentValue + "\";";
 		}
-		else { // secondArgumentType is a synonym
-			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN(SELECT * FROM " + convertToDbName(firstArgumentType) + ") AND modifiesLine IN (SELECT * FROM " + convertToDbName(secondArgumentType) + "); ";
+		else { // secondArgumentType is a _ OR synonym i.e. variable design entity
+			getUsesSQL = "SELECT * FROM uses WHERE usesLine = " + firstArgumentValue + ";";
+		}
+	}
+	else if (firstArgumentType == "synonym") {
+		if (secondArgumentType == "IDENT") {
+			getUsesSQL = "SELECT * FROM uses WHERE variableN = \"" + secondArgumentValue + "\" AND usesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
+		}
+		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
+			getUsesSQL = "SELECT * FROM uses WHERE usesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 	}
 }
