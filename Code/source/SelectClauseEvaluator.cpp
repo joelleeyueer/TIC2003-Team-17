@@ -36,6 +36,13 @@ void SelectClauseEvaluator::evaluate(vector<string>& results, string designEntit
 		Database::getAssignment(tempDatabaseResult);
 	}
 
+	else if (designEntityString == "while") {
+		Database::getWhile(tempDatabaseResult);
+	}
+
+	else if (designEntityString == "if") {
+		Database::getIf(tempDatabaseResult);
+	}
 
 	//remove duplicates from vector before pushing it into databaseResult string
 	removeDupe(tempDatabaseResult);

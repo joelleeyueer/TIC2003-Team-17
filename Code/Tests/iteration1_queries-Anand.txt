@@ -1,0 +1,35 @@
+1001 - identify procedures
+procedure proc;
+Select proc
+initiateTesla
+5000
+1002 - identify variables
+variable v;
+Select v
+timeElapse, batteryLevel, MemoryLOC001, POWERUL100, TPressure, DataFP, MemoryLOC254, Odometer, VehicleHealth
+5000
+1003 - identify statements
+stmt Stm;
+Select Stm
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+5000
+1004 - identify assignments
+assign a;
+Select a
+1, 5, 7, 9, 11
+5000
+1005 - identify print statements
+print PrintOut;
+Select PrintOut
+3, 10, 12
+5000
+1006 - identify constants
+constant Const;
+Select Const
+0, 80
+5000
+1007 - identify read statements
+read r;
+Select r
+2, 4, 6, 8
+5000

@@ -14,24 +14,26 @@ namespace QueryParserTests
 
 		TEST_METHOD(CheckParseDeclarationList)
 		{
-			list<string> testInput = { "read", "a", ",", "b", ";", "print", "c", ",", "d", ";", "Select", "b", ",", "c"};
-			//list<string> testInput = { "read", "a", ";", "Select", "a"};
-			//list<string> testInput = { "read", "a", ",", "b", ";", "Select", "a"};
-			list<string> expectedRemaining = { };
+			//list<string> testInput = { "read", "a", ",", "b", ";", "print", "c", ",", "d", ";", "Select", "b", ",", "c"};
+			//""variable v; read r;
+			//Select r such that Modifies(r, _)
+			////list<string> testInput = { "read", "a", ";", "Select", "a"};
+			////list<string> testInput = { "read", "a", ",", "b", ";", "Select", "a"};
+			//list<string> expectedRemaining = { };
 
-			QueryParser qp;
-			qp.remainingTokens = testInput;
-			qp.parseDeclarationList();
+			//QueryParser qp;
+			//qp.remainingTokens = testInput;
+			//qp.parseDeclarationList();
 
-			auto it = qp.remainingTokens.begin();
-			for (int i = 0; i < qp.remainingTokens.size(); i++) {
-				Logger::WriteMessage((*it).c_str());
-				++it;
-			}
+			//auto it = qp.remainingTokens.begin();
+			//for (int i = 0; i < qp.remainingTokens.size(); i++) {
+			//	Logger::WriteMessage((*it).c_str());
+			//	++it;
+			//}
 
-			Assert::IsTrue(qp.currentDeclarationList.find("b") != qp.currentDeclarationList.end()); //if r is not inside the declaration list
-			Assert::IsTrue(qp.currentDeclarationList["b"] == "read");
-			Assert::IsTrue(qp.currentDeclarationList["c"] == "print");
+			//Assert::IsTrue(qp.currentDeclarationList.find("b") != qp.currentDeclarationList.end()); //if r is not inside the declaration list
+			//Assert::IsTrue(qp.currentDeclarationList["b"] == "read");
+			//Assert::IsTrue(qp.currentDeclarationList["c"] == "print");
 
 		}
 		// Some private helper functions can be added below.

@@ -69,17 +69,6 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 				output.push_back(row[1]); // you only want the second column of the results because the synonym is common on the secon argument
 			}
 		}
-		
-		/*
-		* 1. check if such that clause (i.e. pattern, etc) returns an empty vector of vectors. if yes, just return an empty vector as the output
-		* 
-		* 2. check if Select clause synonym is the same as such that first argument OR second argument in the such that clause
-		* 2. if not the same, then just return the answer of the Select clause
-		* 3. if it's the same, then check which argument (i.e. first or second) has the same synonym.
-		* 4. for e.g. assign a; variable v; Select v such that Modifies(a, v) -> v is the smilar synonym AND it si in the seconfd argument => LOOK AT THE second index of each element in the result vector
-		*    if result from Modifies clause => { { 1, "v" }, { 2, "p" } } AND THE SIMILAR SYNONYM IS the second argument. then you literally just extract the index 1 into another vector and return that
-		*	-> { "v", "p" }
-		*/	
 	}
 	else if (queryObj.patternClauses.size() > 0) {
 		vector<vector<string>> patternClauseResults;
@@ -98,6 +87,11 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 			for (vector<string> row : patternClauseResults) {
 				output.push_back(row[0]);
 			}
+		}
+	}
+	else {
+		for (string row : selectClauseResults) {
+			output.push_back(row);
 		}
 	}
 }

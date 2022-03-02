@@ -76,6 +76,10 @@ public:
 
 	static void getPrint(vector<string>& results);
 
+	static void getWhile(vector<string>& results);
+
+	static void getIf(vector<string>& results);
+
 	static void getAssignment(vector<string>& results);
 
 	static void getAssignmentPattern(vector<vector<string>>& results);

@@ -1,0 +1,18 @@
+procedure initiateTesla {
+    timeElapse = 0;
+    read batteryLevel;
+    print batteryLevel;
+
+    read MemoryLOC001;
+    POWERUL100 = MemoryLOC001;
+
+    read TPressure;
+    DataFP = TPressure;
+ 
+    read MemoryLOC254;
+    Odometer = MemoryLOC254;
+    print Odometer;
+
+    VehicleHealth = 80;
+    print VehicleHealth;
+}

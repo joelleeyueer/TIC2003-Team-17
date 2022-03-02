@@ -12,25 +12,23 @@ void QueryParser::parse(list<string> tokens, Query& query)
 	remainingTokens = tokens;
 	currentDeclarationList = {};
 
-	try {
-		parseDeclarationList(query);
-		parseSelectClause(query);
+	parseDeclarationList(query);
+	parseSelectClause(query);
 
-		if (remainingTokens.size() == 0) {
-			return;
-		}
-
-		if (remainingTokens.front() == "such") {
-			parseSuchThatClause(query);
-		}
-
-		if (remainingTokens.front() == "pattern") {
-			parsePatternClause(query);
-		}
-
+	if (remainingTokens.size() == 0) {
+		return;
 	}
-	catch (const std::exception& ex) {
-		std::throw_with_nested("error in parsing query");
+
+	if (remainingTokens.front() == "such") {
+		parseSuchThatClause(query);
+	}
+
+	if (remainingTokens.size() == 0) {
+		return;
+	}
+
+	if (remainingTokens.front() == "pattern") {
+		parsePatternClause(query);
 	}
 }
 
@@ -62,87 +60,91 @@ void QueryParser::next()
 
 void QueryParser::parseDeclarationList(Query& query)
 {
-	try {
-		while (remainingTokens.front() != "Select") {
-			string designEntity = remainingTokens.front();
-			validateDesignEntity(designEntity);
-			next();
-			string synonym = remainingTokens.front();
+	while (remainingTokens.front() != "Select") {
+		string designEntity = remainingTokens.front();
+		validateDesignEntity(designEntity);
+		next();
+		string synonym = remainingTokens.front();
+		validateSynonym(synonym, false);
+		currentDeclarationList[synonym] = designEntity;
+		next();
+		string separator = remainingTokens.front();
+		while (separator == ",") {
+			expect(",");
+			string nextSynonym = remainingTokens.front();
 			validateSynonym(synonym, false);
-			currentDeclarationList[synonym] = designEntity;
+			currentDeclarationList[nextSynonym] = designEntity;
 			next();
-			string separator = remainingTokens.front();
-			while (separator == ",") {
-				expect(",");
-				string nextSynonym = remainingTokens.front();
-				validateSynonym(synonym, false);
-				currentDeclarationList[nextSynonym] = designEntity;
-				next();
-				separator = remainingTokens.front();
-			}
-			expect(";");
-			
+			separator = remainingTokens.front();
 		}
-		query.addDeclarationList(currentDeclarationList);
+		expect(";");
+			
 	}
-	catch (const std::exception& ex) {
-		std::throw_with_nested("error in declaration list");
-	}
+	query.addDeclarationList(currentDeclarationList);
 }
 
 void QueryParser::parseSelectClause(Query& currentQuery)
 {
-	try {
-		expect("Select");
-		string synonym = remainingTokens.front();
-		validateSynonym(synonym, true);
-		next();
-		currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
-		next();
-	}
-	catch (const std::exception& ex) {
-		std::throw_with_nested("error in select clause");
-	}
+	expect("Select");
+	string synonym = remainingTokens.front();
+	validateSynonym(synonym, true);
+	next();
+	currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
 }
 
 void QueryParser::parseSuchThatClause(Query& currentQuery)
 {
-		expect("such");
-		expect("that");
-		string relRef = remainingTokens.front();
+	expect("such");
+	expect("that");
+	string relRef = remainingTokens.front();
+	next();
+
+	if (remainingTokens.front() == "*") {
 		next();
-		expect("(");
-		vector<string> firstArgumentPair;
-		vector<string> secondArgumentPair;
-		string firstArgument = remainingTokens.front();
+		relRef = relRef + "*";
+	}
 
-		if (validateSynonym(firstArgument, true)) {
-			firstArgumentPair = { currentDeclarationList[firstArgument], firstArgument };
-		}
-		else if (firstArgument == "_"){
-			firstArgumentPair = { "undeclared", firstArgument };
-		}
-		else {
-			firstArgumentPair = { "line number", firstArgument };
-		}
+	expect("(");
+	vector<string> firstArgumentPair;
+	vector<string> secondArgumentPair;
+	string firstArgument = remainingTokens.front();
 
+	if (validateSynonym(firstArgument, true)) {
+		firstArgumentPair = { currentDeclarationList[firstArgument], firstArgument };
+	}
+	else if (firstArgument == "_"){
+		firstArgumentPair = { "undeclared", firstArgument };
+	}
+	else {
+		firstArgumentPair = { "line number", firstArgument };
+	}
+
+	next();
+	expect(",");
+	string secondArgument = remainingTokens.front();
+
+	if (validateSynonym(secondArgument, true)) {
+		secondArgumentPair = { currentDeclarationList[secondArgument], secondArgument };
 		next();
-		expect(",");
-		string secondArgument = remainingTokens.front();
-
-		if (validateSynonym(secondArgument, true)) {
-			secondArgumentPair = { currentDeclarationList[secondArgument], secondArgument };
-		}
-		else if (secondArgument == "_"){
-			secondArgumentPair = { "undeclared", secondArgument };
-		}
-		else {
-			secondArgumentPair = { "line number", secondArgument };
-		}
-
+	}
+	else if (secondArgument == "_"){
+		secondArgumentPair = { "undeclared", secondArgument };
 		next();
-		currentQuery.addSuchThatClause(relRef, firstArgumentPair, secondArgumentPair);
-		expect(")");
+	}
+	else if (regex_match(secondArgument, regex(INTEGER_PATTERN))) {
+		secondArgumentPair = { "line number", secondArgument };
+		next();
+	}
+	else {
+		expect("\"");
+		secondArgument = remainingTokens.front();
+		secondArgumentPair = { "IDENT", secondArgument };
+		next();
+		expect("\"");
+	}
+
+	currentQuery.addSuchThatClause(relRef, firstArgumentPair, secondArgumentPair);
+	expect(")");
 }
 
 void QueryParser::parsePatternClause(Query& currentQuery)
@@ -182,6 +184,7 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 		else { //has to be partial match
 			expect("\"");
 			string factor = remainingTokens.front();
+			next();
 			expect("\"");
 			expect("_");
 			expect(")");
@@ -194,7 +197,7 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 bool QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
 {
 	if (checkInDeclaration && currentDeclarationList.find(symbol) == currentDeclarationList.end()) {
-		std::throw_with_nested("synonym not in declaration list: '" + symbol + "'");
+		return false;
 	}
 
 	return true;
@@ -223,8 +226,17 @@ void QueryParser::validateDesignEntity(string symbol)
 	else if (symbol == "assign") {
 		return;
 	}
+
+	else if (symbol == "while") {
+		return;
+	}
+
+	else if (symbol == "if") {
+		return;
+	}
+
 	else {
-		std::throw_with_nested("design entity not valid: '" + symbol + "'");
+		//std::throw_with_nested("design entity not valid: '" + symbol + "'");
 	}
 }
 
