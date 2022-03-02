@@ -33,7 +33,7 @@ void PatternClauseEvaluator::evaluateLHSIdent(vector<vector<string>>& results, v
 {
 	if (RHSPair[0] == "undeclared") { //a(ident,_)
 		for (vector<string> resultsRow : tempDatabaseResults) {
-			if (resultsRow[0]==LHSidentText) {
+			if (resultsRow[1]==LHSidentText) {
 				results.push_back(resultsRow);
 			}
 		}
@@ -42,8 +42,8 @@ void PatternClauseEvaluator::evaluateLHSIdent(vector<vector<string>>& results, v
 	else if (RHSPair[0] == "partial match") { //a(ident,_"_)
 		for (vector<string> resultsRow : tempDatabaseResults) {
 			string RHSText = RHSPair[1];
-			if (resultsRow[0] == LHSidentText) {
-				if (resultsRow[1].find(RHSText) != string::npos) {
+			if (resultsRow[1] == LHSidentText) {
+				if (resultsRow[2].find(RHSText) != string::npos) {
 					results.push_back(resultsRow);
 				}
 			}
@@ -64,7 +64,7 @@ void PatternClauseEvaluator::evaluateLHSSynonym(vector<vector<string>>& results,
 	else if (RHSPair[0] == "partial match") { //a(_,_"_)
 		string RHSText = RHSPair[1];
 		for (vector<string> resultsRow : tempDatabaseResults) {
-			if (resultsRow[1].find(RHSText) != string::npos) {
+			if (resultsRow[2].find(RHSText) != string::npos) {
 				results.push_back(resultsRow);
 			}
 		}
@@ -83,7 +83,7 @@ void PatternClauseEvaluator::evaluateLHSUnrestricted(vector<vector<string>>& res
 	else if (RHSPair[0] == "partial match") { //a(_,_"_)
 		string RHSText = RHSPair[1];
 		for (vector<string> resultsRow : tempDatabaseResults) {
-			if (resultsRow[1].find(RHSText) != string::npos) {
+			if (resultsRow[2].find(RHSText) != string::npos) {
 				results.push_back(resultsRow);
 			}
 		}

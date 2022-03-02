@@ -46,17 +46,28 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 			evaluateModifiesClause(queryObj, suchThatResults);
 		}
 		else { //relRef == "Uses
-			//Database::getUses(output, firstArg_index0, firstArg_index1, secondArg_index0, secondArg_index1)
+			evaluateUsesClause(queryObj, suchThatResults);
 		}
 
-		//filter (need help)
 
 		if (suchThatResults.empty()) {
 			return;
 		}
 
-		if (suchThatResults[0][0] != selectClauseResults[0] && suchThatResults[1][0] != selectClauseResults[0]) {
-			return selectClauseResults[0];
+		if ((queryObj.suchThatClauses[0].firstArgument[1] != queryObj.selectClauses[0].name) && (queryObj.suchThatClauses[0].secondArgument[1] != queryObj.selectClauses[0].name)) {
+			for (string row : selectClauseResults) {
+				output.push_back(row);
+			}
+		}
+		else if (queryObj.suchThatClauses[0].firstArgument[1] != queryObj.selectClauses[0].name) {
+			for (vector<string> row : suchThatResults) {
+				output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument
+			}
+		}
+		else if (queryObj.suchThatClauses[0].secondArgument[1] != queryObj.selectClauses[0].name) {
+			for (vector<string> row : suchThatResults) {
+				output.push_back(row[1]); // you only want the second column of the results because the synonym is common on the secon argument
+			}
 		}
 		
 		/*
@@ -71,11 +82,23 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		*/	
 	}
 	else if (queryObj.patternClauses.size() > 0) {
-		// evaluate pattern clause
 		vector<vector<string>> patternClauseResults;
 		evaluatePatternClause(queryObj, patternClauseResults);
-		
 
+		if (patternClauseResults.empty()) {
+			return;
+		}
+
+		if (queryObj.patternClauses[0].patternSynonym != queryObj.selectClauses[0].name) {
+			for (string row : selectClauseResults) {
+				output.push_back(row);
+			}
+		}	
+		else if (queryObj.patternClauses[0].patternSynonym != queryObj.selectClauses[0].name) {
+			for (vector<string> row : patternClauseResults) {
+				output.push_back(row[0]);
+			}
+		}
 	}
 }
 

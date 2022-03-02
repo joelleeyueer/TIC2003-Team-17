@@ -342,7 +342,7 @@ void Database::getAssignmentPattern(vector<vector<string>>& results) {
 
 	// retrieve the procedures from the procedure table
 	// The callback method is only used when there are results to be returned.
-	string getAssignmentSQL = "SELECT lhs, rhs FROM assignments;";
+	string getAssignmentSQL = "SELECT * FROM assignments;";
 	sqlite3_exec(dbConnection, getAssignmentSQL.c_str(), callback, 0, &errorMessage);
 
 	// postprocess the results from the database so that the output is just a vector of procedure names
@@ -460,13 +460,20 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine = " + firstArgumentValue + ";";
 		}
 	}
-	else if (firstArgumentType == "synonym") {
+	else {
+
 		if (secondArgumentType == "IDENT") {
 			getModifiesSQL = "SELECT * FROM modifies WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
 		}
 		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
 			getModifiesSQL = "SELECT * FROM modifies WHERE modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
 		}
+	}
+
+	sqlite3_exec(dbConnection, getModifiesSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
 	}
 }
 
@@ -486,13 +493,19 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 			getUsesSQL = "SELECT * FROM uses WHERE usesLine = " + firstArgumentValue + ";";
 		}
 	}
-	else if (firstArgumentType == "synonym") {
+	else {
 		if (secondArgumentType == "IDENT") {
 			getUsesSQL = "SELECT * FROM uses WHERE variableN = \"" + secondArgumentValue + "\" AND usesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
 		}
 		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
 			getUsesSQL = "SELECT * FROM uses WHERE usesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
 		}
+	}
+
+	sqlite3_exec(dbConnection, getUsesSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
 	}
 }
 

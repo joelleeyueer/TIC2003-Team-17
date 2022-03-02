@@ -86,6 +86,8 @@ public:
 
 	static void getModifies(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue);
 
+	static void getUses(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue);
+
 	/*	Procedures
 		Constant
 		Variable

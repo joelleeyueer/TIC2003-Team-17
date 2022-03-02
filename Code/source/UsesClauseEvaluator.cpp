@@ -12,5 +12,5 @@ using namespace std;
 
 void UsesClauseEvaluator::evaluate(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue)
 {
-	//Database::getUses(results, parentType, parentValue, childType, childValue);
+	Database::getUses(results, parentType, parentValue, childType, childValue);
 }
