@@ -16,6 +16,10 @@ void QueryParser::parse(list<string> tokens, Query& query)
 		parseDeclarationList(query);
 		parseSelectClause(query);
 
+		if (remainingTokens.size() == 0) {
+			return;
+		}
+
 		if (remainingTokens.front() == "such") {
 			parseSuchThatClause(query);
 		}
