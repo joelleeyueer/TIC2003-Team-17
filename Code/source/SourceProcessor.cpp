@@ -118,6 +118,7 @@ void SourceProcessor::parseProcedure()
 int countlines = 1;
 int countparent = 0;
 int parentChild = 0; // it is not a child, = 1 if it is a child
+int prevCountparent = 0;
 string lhs;
 string rhs;
 
@@ -170,7 +171,9 @@ void SourceProcessor::parseStatement()
 
 		if (remainingTokens.front() == "while")
 		{
+	
 			parentChild = countparent;
+			prevCountparent = countparent;
 			countparent = countlines;
 			string whileLine;
 			stringstream ss;
@@ -185,8 +188,16 @@ void SourceProcessor::parseStatement()
 			expect("{");
 			countlines++;
 			parseStatement();
-			countparent = 0;
-			parentChild = 0;
+
+			//if (remainingTokens.front() == "}")
+			//{
+				countparent = 0;
+				parentChild = 0;
+			//}
+			//else
+			//{
+			//	countparent = prevCountparent;
+			//}
 
 			while (conditionTokens.front() != ")")
 			{
@@ -202,6 +213,7 @@ void SourceProcessor::parseStatement()
 		else if (remainingTokens.front() == "if")
 		{
 			parentChild = countparent;
+			prevCountparent = countparent;
 			countparent = countlines;
 			string ifLine;
 			stringstream ss;
@@ -225,8 +237,15 @@ void SourceProcessor::parseStatement()
 				parseStatement();
 			}
 
-			countparent = 0;
-			parentChild = 0;
+			//if (remainingTokens.front() == "}")
+			//{
+				countparent = 0;
+				parentChild = 0;
+			//}
+			//else
+			//{
+			//	countparent = prevCountparent;
+			//}
 
 			while (conditionTokens.front() != ")")
 			{
@@ -275,6 +294,20 @@ void SourceProcessor::parseStatement()
 
 				Database::insertModifies(parentLine, variableToken); // 
 				Database::insertModifies(grandparentLine, variableToken); // 
+			}
+			else if (countparent > 0) // if no nesting of while or if
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				Database::insertModifies(parentLine, variableToken); // 
 			}
 
 
@@ -368,8 +401,22 @@ void SourceProcessor::parseStatement()
 				gg << parentChild;
 				gg >> grandparentLine;
 
-				Database::insertModifies(parentLine, variableToken); // 
-				Database::insertModifies(grandparentLine, variableToken); // 
+				Database::insertModifies(parentLine, variableToken);
+				Database::insertModifies(grandparentLine, variableToken); 
+			}
+			else if (countparent > 0)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				Database::insertModifies(parentLine, variableToken);
 			}
 			//expect(";");
 		}
