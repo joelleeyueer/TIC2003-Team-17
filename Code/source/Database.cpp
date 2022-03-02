@@ -108,6 +108,10 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing uses table (if any)
+	string dropMusesTableSQL = "DROP TABLE IF EXISTS muses";
+	sqlite3_exec(dbConnection, dropMusesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing uses table (if any)
 	string dropUsesTableSQL = "DROP TABLE IF EXISTS uses";
 	sqlite3_exec(dbConnection, dropUsesTableSQL.c_str(), NULL, 0, &errorMessage);
 
