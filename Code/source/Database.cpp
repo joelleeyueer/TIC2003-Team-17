@@ -505,7 +505,7 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 	dbResults.clear();
 	string getModifiesSQL;
 
-	// The first argument for Modifies and Uses cannot be ‘_’ because it is unclear whether the ‘_’ stands for a statement or a procedure.
+	// The first argument for Modifies and Uses cannot be ï¿½_ï¿½ because it is unclear whether the ï¿½_ï¿½ stands for a statement or a procedure.
 
 	if (firstArgumentType == "line number") {
 		if (secondArgumentType == "IDENT") {
@@ -538,7 +538,7 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 	dbResults.clear();
 	string getUsesSQL;
 
-	// The first argument for Modifies and Uses cannot be ‘_’ because it is unclear whether the ‘_’ stands for a statement or a procedure.
+	// The first argument for Modifies and Uses cannot be ï¿½_ï¿½ because it is unclear whether the ï¿½_ï¿½ stands for a statement or a procedure.
 
 	if (firstArgumentType == "line number") {
 		if (secondArgumentType == "IDENT") {

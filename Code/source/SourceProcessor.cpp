@@ -127,7 +127,7 @@ void SourceProcessor::parseStatement()
 	while (remainingTokens.front() != "}")
 	{
 
-		if (countparent > 0 && parentChild > 0 ) // 5(sub parent) and 3(bigger parent)
+		if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 		{
 			string parentLine;
 			stringstream pp;
@@ -171,7 +171,6 @@ void SourceProcessor::parseStatement()
 
 		if (remainingTokens.front() == "while")
 		{
-	
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
@@ -180,7 +179,7 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> whileLine;
 			Database::insertWhile(whileLine);
-			
+
 			next();
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
@@ -191,8 +190,8 @@ void SourceProcessor::parseStatement()
 
 			//if (remainingTokens.front() == "}")
 			//{
-				countparent = 0;
-				parentChild = 0;
+			countparent = 0;
+			parentChild = 0;
 			//}
 			//else
 			//{
@@ -239,8 +238,8 @@ void SourceProcessor::parseStatement()
 
 			//if (remainingTokens.front() == "}")
 			//{
-				countparent = 0;
-				parentChild = 0;
+			countparent = 0;
+			parentChild = 0;
 			//}
 			//else
 			//{
@@ -402,7 +401,7 @@ void SourceProcessor::parseStatement()
 				gg >> grandparentLine;
 
 				Database::insertModifies(parentLine, variableToken);
-				Database::insertModifies(grandparentLine, variableToken); 
+				Database::insertModifies(grandparentLine, variableToken);
 			}
 			else if (countparent > 0)
 			{

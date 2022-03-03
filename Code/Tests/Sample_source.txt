@@ -1,0 +1,31 @@
+procedure q {
+
+	read x;
+	read y;
+	read h;
+	print n;
+
+	while (y < q) {
+		print y;
+		if (y > 1) then { 
+			print g;
+			read f;
+		} else {
+			print k;
+		}
+	} 
+
+	read z;
+	x = r + 2;
+	print a;
+	print b;
+
+	if (x > 1) then {
+	    	read d; 
+	} else {
+		read s;
+	}	
+
+	read m;
+
+}
