@@ -1,14 +1,14 @@
 <?xml-stylesheet type="text/xsl" href="analysis.xsl"?>
 <test_results>
 <info>
-<name>AutoTester</name><parsing_time_taken>892.000000</parsing_time_taken>
+<name>AutoTester</name><parsing_time_taken>338.000000</parsing_time_taken>
 </info>
 <queries>
 <query>
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Procedure">1</id><querystr><![CDATA[procedure p; Select p]]></querystr>
 <stuans>aran</stuans>
 <correct>echo</correct>
-<time_taken>5.000000</time_taken>
+<time_taken>3.000000</time_taken>
 <failed>
 <missing>echo</missing>
 <additional>aran</additional>
@@ -24,7 +24,7 @@
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Variable">2</id><querystr><![CDATA[variable v; Select v]]></querystr>
 <stuans>a,b,c,d,g,w,x,y,z</stuans>
 <correct>num1,index</correct>
-<time_taken>5.000000</time_taken>
+<time_taken>4.000000</time_taken>
 <failed>
 <missing>index,num1</missing>
 <additional>a,b,c,d,g,w,x,y,z</additional>
@@ -40,7 +40,7 @@
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Constant">3</id><querystr><![CDATA[constant c; Select c]]></querystr>
 <stuans>1</stuans>
 <correct></correct>
-<time_taken>9.000000</time_taken>
+<time_taken>3.000000</time_taken>
 <failed>
 <missing></missing>
 <additional>1</additional>
@@ -54,44 +54,44 @@
 </query>
 <query>
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Assignment">4</id><querystr><![CDATA[assign a; Select a]]></querystr>
-<stuans>4</stuans>
+<stuans></stuans>
 <correct>2</correct>
-<time_taken>9.000000</time_taken>
+<time_taken>3.000000</time_taken>
 <failed>
 <missing>2</missing>
-<additional>4</additional>
+<additional></additional>
 <summary>
 <expected>1</expected>
 <matched>0</matched>
 <missing>1</missing>
-<additional>1</additional>
+<additional>0</additional>
 </summary>
 </failed>
 </query>
 <query>
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Print">5</id><querystr><![CDATA[print pr; Select pr]]></querystr>
-<stuans>2,5,7,9</stuans>
+<stuans>2,6,8</stuans>
 <correct>3,4</correct>
-<time_taken>5.000000</time_taken>
+<time_taken>4.000000</time_taken>
 <failed>
 <missing>3,4</missing>
-<additional>2,5,7,9</additional>
+<additional>2,6,8</additional>
 <summary>
 <expected>2</expected>
 <matched>0</matched>
 <missing>2</missing>
-<additional>4</additional>
+<additional>3</additional>
 </summary>
 </failed>
 </query>
 <query>
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Read">6</id><querystr><![CDATA[read rd; Select rd]]></querystr>
-<stuans>10,6,8</stuans>
+<stuans>5,7,9</stuans>
 <correct>1</correct>
-<time_taken>9.000000</time_taken>
+<time_taken>3.000000</time_taken>
 <failed>
 <missing>1</missing>
-<additional>10,6,8</additional>
+<additional>5,7,9</additional>
 <summary>
 <expected>1</expected>
 <matched>0</matched>
@@ -102,17 +102,17 @@
 </query>
 <query>
 <id ReturnTuple="1" CondNum="1" RelNum="0" comment="Statement">7</id><querystr><![CDATA[stmt s; Select s]]></querystr>
-<stuans>1,10,2,3,4,5,6,7,8,9</stuans>
+<stuans>1,2,3,4,5,6,7,8,9</stuans>
 <correct>1,2,3,4</correct>
-<time_taken>6.000000</time_taken>
+<time_taken>4.000000</time_taken>
 <failed>
 <missing></missing>
-<additional>10,5,6,7,8,9</additional>
+<additional>5,6,7,8,9</additional>
 <summary>
 <expected>4</expected>
 <matched>4</matched>
 <missing>0</missing>
-<additional>6</additional>
+<additional>5</additional>
 </summary>
 </failed>
 </query>

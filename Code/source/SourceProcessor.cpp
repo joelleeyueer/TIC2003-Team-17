@@ -391,6 +391,20 @@ void SourceProcessor::parseStatement()
 				Database::insertUses(parentLine, variableToken); // 
 				Database::insertUses(grandparentLine, variableToken); // 
 			}
+			else if (countparent > 0) // if no nesting of while or if
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				Database::insertUses(parentLine, variableToken); // 
+			}
 
 			countlines++;
 
@@ -417,6 +431,7 @@ void SourceProcessor::parseStatement()
 			parseVariable();
 			expect("=");
 			list<string> expressionTokens = remainingTokens;
+			list<string> nestedexpressionTokens = remainingTokens;
 			parseFactor(); // factor can be either a variableName, Constant, Expre
 
 			while (expressionTokens.front() != ";")
@@ -431,6 +446,7 @@ void SourceProcessor::parseStatement()
 			}
 
 			Database::insertAssignment(assignmentLine, lhs, rhs);
+			rhs = " ";
 			Database::insertModifies(modifyLine, variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
@@ -448,6 +464,18 @@ void SourceProcessor::parseStatement()
 				Database::insertModifies(parentLine, variableToken);
 				Database::insertModifies(grandparentLine, variableToken);
 
+				while (nestedexpressionTokens.front() != ";")
+				{
+
+					if (checkName(nestedexpressionTokens.front())) // if it is a variable
+					{
+						string useVariableToken = nestedexpressionTokens.front();
+						Database::insertUses(parentLine, useVariableToken);
+						Database::insertUses(grandparentLine, useVariableToken);
+					}
+					nestedexpressionTokens.pop_front();
+				}
+
 			}
 			else if (countparent > 0)
 			{
@@ -462,6 +490,17 @@ void SourceProcessor::parseStatement()
 				cc >> childLine;
 
 				Database::insertModifies(parentLine, variableToken);
+
+				while (nestedexpressionTokens.front() != ";")
+				{
+			
+					if (checkName(nestedexpressionTokens.front())) // if it is a variable
+					{
+						string useVariableToken = nestedexpressionTokens.front();
+						Database::insertUses(parentLine, useVariableToken);
+					}
+					nestedexpressionTokens.pop_front();
+				}
 			}
 
 			countlines++;	
