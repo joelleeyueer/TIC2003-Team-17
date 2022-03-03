@@ -1,31 +1,15 @@
-procedure q {
+procedure aran {
 
-	read x;
-	read y;
-	read h;
-	print n;
-
-	while (y < q) {
-		print y;
-		if (y > 1) then { 
-			print g;
-			read f;
-		} else {
-			print k;
+	while (x < a) {
+		print a;
+		while (a < 1) {
+			g = d + c;
+			print c;
+			read b;
 		}
-	} 
-
-	read z;
-	x = r + 2;
-	print a;
-	print b;
-
-	if (x > 1) then {
-	    	read d; 
-	} else {
-		read s;
-	}	
-
-	read m;
-
+		print z;
+		read y;
+	}
+	print x;
+	read w;
 }
