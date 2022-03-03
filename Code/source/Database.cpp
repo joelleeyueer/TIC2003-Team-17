@@ -31,7 +31,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create an assignment table
-	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) , lhs VARCHAR(255) , rhs VARCHAR(255));";
+	string createAssignmentTableSQL = "CREATE TABLE assignments ( line VARCHAR(255) , lhs VARCHAR(255) , rhs VARCHAR(255));";
 	sqlite3_exec(dbConnection, createAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing print table (if any)
@@ -39,7 +39,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropPrintTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create a print table
-	string createPrintTableSQL = "CREATE TABLE prints ( printLine VARCHAR(255) PRIMARY KEY);";
+	string createPrintTableSQL = "CREATE TABLE prints ( line VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createPrintTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing read table (if any)
@@ -47,7 +47,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropReadTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create a read table
-	string createReadTableSQL = "CREATE TABLE reads ( readLine VARCHAR(255) PRIMARY KEY);";
+	string createReadTableSQL = "CREATE TABLE reads ( line VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createReadTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing statement table (if any)
@@ -55,7 +55,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropStatementTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create a statement table
-	string createStatementTableSQL = "CREATE TABLE statements ( statementLine VARCHAR(255) PRIMARY KEY);";
+	string createStatementTableSQL = "CREATE TABLE statements ( line VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createStatementTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing constant table (if any)
@@ -72,7 +72,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropWhileTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create a while table
-	string createWhileTableSQL = "CREATE TABLE whiles ( whileLine VARCHAR(255) PRIMARY KEY);";
+	string createWhileTableSQL = "CREATE TABLE whiles ( line VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createWhileTableSQL.c_str(), NULL, 0, &errorMessage);
 
 
@@ -81,7 +81,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropIfTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create an if table
-	string createIfTableSQL = "CREATE TABLE ifs ( ifLine VARCHAR(255) PRIMARY KEY);";
+	string createIfTableSQL = "CREATE TABLE ifs ( line VARCHAR(255) PRIMARY KEY);";
 	sqlite3_exec(dbConnection, createIfTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing parent table (if any)
@@ -146,7 +146,7 @@ void Database::insertVariable(string variableName) {
 
 // method to insert an assignment into the database
 void Database::insertAssignment(string assignmentLine, string lhs, string rhs) {
-	string insertAssignmentSQL = "INSERT INTO assignments ('assignmentLine' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs +"'); ";
+	string insertAssignmentSQL = "INSERT INTO assignments ('line' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs +"'); ";
 	sqlite3_exec(dbConnection, insertAssignmentSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -154,7 +154,7 @@ void Database::insertAssignment(string assignmentLine, string lhs, string rhs) {
 
 // method to insert a print into the database
 void Database::insertPrint(string printLine) {
-	string insertPrintSQL = "INSERT INTO prints ('printLine') VALUES ('" + printLine + "');";
+	string insertPrintSQL = "INSERT INTO prints ('line') VALUES ('" + printLine + "');";
 	sqlite3_exec(dbConnection, insertPrintSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -162,7 +162,7 @@ void Database::insertPrint(string printLine) {
 
 // method to insert a read into the database
 void Database::insertRead(string readLine) {
-	string insertReadSQL = "INSERT INTO reads ('readLine') VALUES ('" + readLine + "');";
+	string insertReadSQL = "INSERT INTO reads ('line') VALUES ('" + readLine + "');";
 	sqlite3_exec(dbConnection, insertReadSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -170,7 +170,7 @@ void Database::insertRead(string readLine) {
 
 // method to insert a statement into the database
 void Database::insertStatement(string statementLine) {
-	string insertStatementSQL = "INSERT INTO statements ('statementLine') VALUES ('" + statementLine + "');";
+	string insertStatementSQL = "INSERT INTO statements ('line') VALUES ('" + statementLine + "');";
 	sqlite3_exec(dbConnection, insertStatementSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -186,13 +186,13 @@ void Database::insertConstant(string constantName) {
 
 // method to insert a while into the database
 void Database::insertWhile(string whileLine) {
-	string insertWhileSQL = "INSERT INTO whiles ('whileLine') VALUES ('" + whileLine + "');";
+	string insertWhileSQL = "INSERT INTO whiles ('line') VALUES ('" + whileLine + "');";
 	sqlite3_exec(dbConnection, insertWhileSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 // method to insert an if into the database
 void Database::insertIf(string ifLine) {
-	string insertIfSQL = "INSERT INTO ifs ('ifLine') VALUES ('" + ifLine + "');";
+	string insertIfSQL = "INSERT INTO ifs ('line') VALUES ('" + ifLine + "');";
 	sqlite3_exec(dbConnection, insertIfSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -431,18 +431,18 @@ void Database::getParent(vector<vector<string>>& results, string parentType, str
 			getParentSQL = "SELECT childLine, parentLine from parents WHERE parentLine = " + parentValue + " AND childLine = " + childValue + ";";
 		}
 		else { // child is synonym
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine = " + parentValue + " AND childLine IN (SELECT * FROM " + convertToDbName(childType) + "); ";
+			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine = " + parentValue + " AND childLine IN (SELECT line FROM " + convertToDbName(childType) + "); ";
 		}
 	}
 	else { //parent is a synonym
 		if (childType == "undeclared") {
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ");";
+			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ");";
 		}
 		else if (childType == "line number") {
-			getParentSQL = "SELECT childLine, parentLine from parents WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
+			getParentSQL = "SELECT childLine, parentLine from parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
 		}
 		else {  // child is synonym
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT * FROM " + convertToDbName(childType) + "); ";
+			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT line FROM " + convertToDbName(childType) + "); ";
 		}
 	}
 
@@ -466,7 +466,7 @@ void Database::getParentT(vector<vector<string>>& results, string parentType, st
 			getParentTSQL += " WHERE childLine = " + childValue + "; ";
 		}
 		else { // child is synonym
-			getParentTSQL += " WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+			getParentTSQL += " WHERE childLine IN (SELECT line FROM " + convertToDbName(childType) + ");";
 		}
 	}
 	else if (parentType == "line number") {
@@ -477,18 +477,18 @@ void Database::getParentT(vector<vector<string>>& results, string parentType, st
 			getParentTSQL += " WHERE parentLine = " + parentValue + " AND childLine = " + childValue + ";";
 		}
 		else { // child is synonym
-			getParentTSQL += " WHERE parentLine = " + parentValue + " AND childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+			getParentTSQL += " WHERE parentLine = " + parentValue + " AND childLine IN (SELECT line FROM " + convertToDbName(childType) + ");";
 		}
 	}
 	else { //parent is a synonym
 		if (childType == "undeclared") {
-			getParentTSQL += " WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ");";
+			getParentTSQL += " WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ");";
 		}
 		else if (childType == "line number") {
-			getParentTSQL += " WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
+			getParentTSQL += " WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
 		}
 		else { // child is synonym
-			getParentTSQL += " WHERE parentLine IN (SELECT * FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+			getParentTSQL += " WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT line FROM " + convertToDbName(childType) + ");";
 		}
 	}
 
@@ -518,10 +518,10 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 	else {
 
 		if (secondArgumentType == "IDENT") {
-			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
+			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + "); ";
 		}
 		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
-			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE modifiesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
+			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE modifiesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 	}
 
@@ -550,10 +550,10 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 	}
 	else {
 		if (secondArgumentType == "IDENT") {
-			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE variableN = \"" + secondArgumentValue + "\" AND usesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + "); ";
+			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE variableN = \"" + secondArgumentValue + "\" AND usesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + "); ";
 		}
 		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
-			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE usesLine IN (SELECT * FROM " + convertToDbName(firstArgumentType) + ");";
+			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE usesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 	}
 

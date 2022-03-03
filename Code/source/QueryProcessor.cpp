@@ -58,6 +58,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 			for (string row : selectClauseResults) {
 				output.push_back(row);
 			}
+			vector<string> check = output;
 		}
 		else if (queryObj.suchThatClauses[0].firstArgument[1] != queryObj.selectClauses[0].name) {
 			for (vector<string> row : suchThatResults) {
