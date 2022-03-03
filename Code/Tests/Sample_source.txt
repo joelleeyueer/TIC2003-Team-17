@@ -4,7 +4,6 @@ procedure aran {
 		print a;
 		while (a < 1) {
 			g = d + c;
-			print c;
 			read b;
 		}
 		print z;
