@@ -61,14 +61,44 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 			vector<string> check = output;
 		}
 		else if (queryObj.suchThatClauses[0].firstArgument[1] != queryObj.selectClauses[0].name) {
-			for (vector<string> row : suchThatResults) {
-				output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument
+			if (queryObj.selectClauses[0].designEntity == "variable") {
+				for (vector<string> row : suchThatResults) { //i want variableN
+					output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
+				}
 			}
+
+			else if (queryObj.suchThatClauses[0].relRef == "Parent" || queryObj.suchThatClauses[0].relRef == "Parent*") { //hardcode cause SQL is broken
+				for (vector<string> row : suchThatResults) { //i want variableN
+					output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
+				}
+			}
+			else {
+				
+				for (vector<string> row : suchThatResults) { //i want line number
+					output.push_back(row[1]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
+				}
+			}
+			
 		}
 		else if (queryObj.suchThatClauses[0].secondArgument[1] != queryObj.selectClauses[0].name) {
-			for (vector<string> row : suchThatResults) {
-				output.push_back(row[1]); // you only want the second column of the results because the synonym is common on the secon argument
+			if (queryObj.selectClauses[0].designEntity == "variable") {
+				for (vector<string> row : suchThatResults) {
+					output.push_back(row[0]); // you only want the second column of the results because the synonym is common on the secon argument i.e. Select a such that (_,b)
+				}
 			}
+
+			else if (queryObj.suchThatClauses[0].relRef == "Parent" || queryObj.suchThatClauses[0].relRef == "Parent*") { //hardcode cause SQL is broken
+				for (vector<string> row : suchThatResults) { //i want variableN
+					output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
+				}
+			}
+			else {
+				
+				for (vector<string> row : suchThatResults) {
+					output.push_back(row[1]); // you only want the second column of the results because the synonym is common on the secon argument i.e. Select a such that (_,b)
+				}
+			}
+			
 		}
 	}
 	else if (queryObj.patternClauses.size() > 0) {
@@ -84,7 +114,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 				output.push_back(row);
 			}
 		}	
-		else if (queryObj.patternClauses[0].patternSynonym != queryObj.selectClauses[0].name) {
+		else if (queryObj.patternClauses[0].patternSynonym == queryObj.selectClauses[0].name) {
 			for (vector<string> row : patternClauseResults) {
 				output.push_back(row[0]);
 			}

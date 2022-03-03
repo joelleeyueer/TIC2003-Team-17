@@ -189,9 +189,10 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 			expect("_");
 			expect(")");
 			RHSPair = { "partial match", factor };
-
 		}
 	}
+
+	currentQuery.addPatternClause(patternSynonym, LHSPair, RHSPair);
 }
 
 bool QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
