@@ -118,6 +118,9 @@ void SourceProcessor::parseProcedure()
 int countlines = 1;
 int countparent = 0;
 int parentChild = 0; // it is not a child, = 1 if it is a child
+int prevCountparent = 0;
+string lhs;
+string rhs;
 
 void SourceProcessor::parseStatement()
 {
@@ -168,7 +171,9 @@ void SourceProcessor::parseStatement()
 
 		if (remainingTokens.front() == "while")
 		{
+	
 			parentChild = countparent;
+			prevCountparent = countparent;
 			countparent = countlines;
 			string whileLine;
 			stringstream ss;
@@ -178,17 +183,37 @@ void SourceProcessor::parseStatement()
 			
 			next();
 			expect("(");
+			list<string> conditionTokens = remainingTokens;
 			parseFactor();
 			expect("{");
 			countlines++;
 			parseStatement();
-			countparent = 0;
-			parentChild = 0;
+
+			//if (remainingTokens.front() == "}")
+			//{
+				countparent = 0;
+				parentChild = 0;
+			//}
+			//else
+			//{
+			//	countparent = prevCountparent;
+			//}
+
+			while (conditionTokens.front() != ")")
+			{
+				if (checkName(conditionTokens.front())) // if it is a variable
+				{
+					string useVariableToken = conditionTokens.front();
+					Database::insertUses(whileLine, useVariableToken);
+				}
+				conditionTokens.pop_front();
+			}
 
 		}
 		else if (remainingTokens.front() == "if")
 		{
 			parentChild = countparent;
+			prevCountparent = countparent;
 			countparent = countlines;
 			string ifLine;
 			stringstream ss;
@@ -198,6 +223,7 @@ void SourceProcessor::parseStatement()
 
 			next();
 			expect("(");
+			list<string> conditionTokens = remainingTokens;
 			parseFactor();
 			expect("then");
 			expect("{");
@@ -211,8 +237,25 @@ void SourceProcessor::parseStatement()
 				parseStatement();
 			}
 
-			countparent = 0;
-			parentChild = 0;
+			//if (remainingTokens.front() == "}")
+			//{
+				countparent = 0;
+				parentChild = 0;
+			//}
+			//else
+			//{
+			//	countparent = prevCountparent;
+			//}
+
+			while (conditionTokens.front() != ")")
+			{
+				if (checkName(conditionTokens.front())) // if it is a variable
+				{
+					string useVariableToken = conditionTokens.front();
+					Database::insertUses(ifLine, useVariableToken);
+				}
+				conditionTokens.pop_front();
+			}
 
 		}
 		else if (remainingTokens.front() == "read")
@@ -252,6 +295,20 @@ void SourceProcessor::parseStatement()
 				Database::insertModifies(parentLine, variableToken); // 
 				Database::insertModifies(grandparentLine, variableToken); // 
 			}
+			else if (countparent > 0) // if no nesting of while or if
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				Database::insertModifies(parentLine, variableToken); // 
+			}
 
 
 		}
@@ -261,12 +318,37 @@ void SourceProcessor::parseStatement()
 			stringstream ss;
 			ss << countlines;
 			ss >> printLine;
+
+			string useLine;
+			stringstream uu;
+			uu << countlines;
+			uu >> useLine;
+
 			Database::insertPrint(printLine);
 			countlines++;
 
 			next();
+			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect(";");
+			Database::insertUses(useLine, variableToken);
+
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string grandparentLine;
+				stringstream gg;
+				gg << parentChild;
+				gg >> grandparentLine;
+
+				Database::insertUses(parentLine, variableToken); // 
+				Database::insertUses(grandparentLine, variableToken); // 
+			}
+
 		}
 		else // it is an assignment
 		{
@@ -280,13 +362,32 @@ void SourceProcessor::parseStatement()
 			mm << countlines;
 			mm >> modifyLine;
 
-			Database::insertAssignment(assignmentLine);
+			string useLine;
+			stringstream uu;
+			uu << countlines;
+			uu >> useLine;
+
 			countlines++;
 
+			lhs = remainingTokens.front();
 			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect("=");
+			list<string> expressionTokens = remainingTokens;
 			parseFactor(); // factor can be either a variableName, Constant, Expre
+
+			while (expressionTokens.front() != ";")
+			{
+				rhs += expressionTokens.front();
+				if (checkName(expressionTokens.front())) // if it is a variable
+				{
+					string useVariableToken = expressionTokens.front();
+					Database::insertUses(useLine, useVariableToken);
+				}
+				expressionTokens.pop_front();
+			}
+
+			Database::insertAssignment(assignmentLine, lhs, rhs);
 			Database::insertModifies(modifyLine, variableToken);
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
@@ -300,8 +401,22 @@ void SourceProcessor::parseStatement()
 				gg << parentChild;
 				gg >> grandparentLine;
 
-				Database::insertModifies(parentLine, variableToken); // 
-				Database::insertModifies(grandparentLine, variableToken); // 
+				Database::insertModifies(parentLine, variableToken);
+				Database::insertModifies(grandparentLine, variableToken); 
+			}
+			else if (countparent > 0)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				Database::insertModifies(parentLine, variableToken);
 			}
 			//expect(";");
 		}

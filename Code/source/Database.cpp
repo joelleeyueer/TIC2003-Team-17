@@ -31,7 +31,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create an assignment table
-	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) PRIMARY KEY);";
+	string createAssignmentTableSQL = "CREATE TABLE assignments ( assignmentLine VARCHAR(255) , lhs VARCHAR(255) , rhs VARCHAR(255));";
 	sqlite3_exec(dbConnection, createAssignmentTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing print table (if any)
@@ -108,6 +108,18 @@ void Database::initialize() {
 	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) );";
 	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing uses table (if any)
+	string dropMusesTableSQL = "DROP TABLE IF EXISTS muses";
+	sqlite3_exec(dbConnection, dropMusesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing uses table (if any)
+	string dropUsesTableSQL = "DROP TABLE IF EXISTS uses";
+	sqlite3_exec(dbConnection, dropUsesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create uses table
+	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createUsesTableSQL.c_str(), NULL, 0, &errorMessage);
+
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
 }
@@ -133,8 +145,8 @@ void Database::insertVariable(string variableName) {
 
 
 // method to insert an assignment into the database
-void Database::insertAssignment(string assignmentLine) {
-	string insertAssignmentSQL = "INSERT INTO assignments ('assignmentLine') VALUES ('" + assignmentLine + "');";
+void Database::insertAssignment(string assignmentLine, string lhs, string rhs) {
+	string insertAssignmentSQL = "INSERT INTO assignments ('assignmentLine' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs +"'); ";
 	sqlite3_exec(dbConnection, insertAssignmentSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -206,6 +218,12 @@ void Database::insertGrandchild(string grandparentLine, string childLine) {
 void Database::insertModifies(string modifiesLine, string variableN) {
 	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '"+ modifiesLine +"', '" + variableN + "' ); ";
 	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the uses table
+void Database::insertUses(string usesLine, string variableN) {
+	string insertUsesSQL = "INSERT INTO uses ('usesLine', 'variableN') VALUES ( '" + usesLine + "', '" + variableN + "' ); ";
+	sqlite3_exec(dbConnection, insertUsesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 

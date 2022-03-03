@@ -37,7 +37,7 @@ public:
 	static void insertPrint(string printLine);
 
 	// method to insert an assignment into the database
-	static void insertAssignment(string assignmentLine);
+	static void insertAssignment(string assignmentLine, string lhs, string rhs);
 
 	// method to insert a statement into the database
 	static void insertStatement(string statementLine);
@@ -62,6 +62,9 @@ public:
 
 	// method to insert modifies into the database
 	static void insertModifies(string modifiesLine, string variableN);
+
+	// method to insert modifies into the database
+	static void insertUses(string usesLine, string variableN);
 
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);
