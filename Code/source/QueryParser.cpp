@@ -15,20 +15,14 @@ void QueryParser::parse(list<string> tokens, Query& query)
 	parseDeclarationList(query);
 	parseSelectClause(query);
 
-	if (remainingTokens.size() == 0) {
-		return;
-	}
 
-	if (remainingTokens.front() == "such") {
-		parseSuchThatClause(query);
-	}
+	while (remainingTokens.size() > 0) {
+		if (remainingTokens.front() == "such") {
+			parseSuchThatClause(query);
 
-	if (remainingTokens.size() == 0) {
-		return;
-	}
-
-	if (remainingTokens.front() == "pattern") {
-		parsePatternClause(query);
+		} else if (remainingTokens.front() == "pattern") {
+			parsePatternClause(query);
+		}
 	}
 }
 
