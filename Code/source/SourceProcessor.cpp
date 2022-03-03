@@ -44,7 +44,7 @@ void SourceProcessor::parse(list<string> tokens) {
 		parseProgram();
 	}
 	catch (const std::exception& ex) {
-		std::throw_with_nested("error in parsing query");
+		//std::throw_with_nested("error in parsing query");
 	}
 }
 
@@ -55,7 +55,7 @@ void SourceProcessor::expect(string symbol)
 		return;
 	}
 
-	std::throw_with_nested("expected: '" + symbol + "', got '" + remainingTokens.front() + "' instead");
+	//std::throw_with_nested("expected: '" + symbol + "', got '" + remainingTokens.front() + "' instead");
 }
 
 bool SourceProcessor::match(string symbol)
@@ -92,7 +92,7 @@ void SourceProcessor::parseProgram()
 
 	}
 	catch (const std::exception& ex) {
-		std::throw_with_nested("error in declaration list");
+		//std::throw_with_nested("error in declaration list");
 	}
 }
 
@@ -110,7 +110,7 @@ void SourceProcessor::parseProcedure()
 		}
 		else
 		{
-			std::throw_with_nested("error in parseProcedure");
+			//std::throw_with_nested("error in parseProcedure");
 		}
 	}
 }
@@ -119,6 +119,7 @@ int countlines = 1;
 int countparent = 0;
 int parentChild = 0; // it is not a child, = 1 if it is a child
 int prevCountparent = 0;
+int isnested = 0; // it is not nested, > 1 if it is nested
 string lhs;
 string rhs;
 
@@ -147,7 +148,7 @@ void SourceProcessor::parseStatement()
 			Database::insertChild(parentLine, childLine); // parent table
 			Database::insertGrandchild(grandparentLine, childLine); // parent* table
 		}
-		else if (countparent > 0) // if no nesting of while or if
+		else if (countparent > 0 && parentChild == 0) // if no nesting of while or if
 		{
 			string parentLine;
 			stringstream pp;
@@ -171,6 +172,12 @@ void SourceProcessor::parseStatement()
 
 		if (remainingTokens.front() == "while")
 		{
+
+			if (countparent > 0) // means it is nested
+			{
+				isnested += 1;
+			}
+
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
@@ -188,14 +195,31 @@ void SourceProcessor::parseStatement()
 			countlines++;
 			parseStatement();
 
+			//countparent = 0;
+			//parentChild = 0;
+
+			if (isnested == 0)
+			{
+				countparent = 0;
+				parentChild = 0;
+			}
+			else if (isnested > 0)
+			{
+				countparent = prevCountparent;
+				parentChild = 0;
+				isnested -= 1;
+			}
+
 			//if (remainingTokens.front() == "}")
 			//{
-			countparent = 0;
-			parentChild = 0;
+			//	countparent = 0;
+			//	parentChild = 0;
 			//}
 			//else
 			//{
+			//	ifnested+=1; // there is nested function
 			//	countparent = prevCountparent;
+			//	parentChild = 0;
 			//}
 
 			while (conditionTokens.front() != ")")
@@ -211,6 +235,12 @@ void SourceProcessor::parseStatement()
 		}
 		else if (remainingTokens.front() == "if")
 		{
+
+			if (countparent > 0) // means it is nested
+			{
+				isnested += 1;
+			}
+
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
@@ -236,10 +266,25 @@ void SourceProcessor::parseStatement()
 				parseStatement();
 			}
 
+			//countparent = 0;
+			//parentChild = 0;
+
+			if (isnested == 0)
+			{
+				countparent = 0;
+				parentChild = 0;
+			}
+			else if (isnested > 0)
+			{
+				countparent = prevCountparent;
+				parentChild = 0;
+				isnested -= 1;
+			}
+
 			//if (remainingTokens.front() == "}")
 			//{
-			countparent = 0;
-			parentChild = 0;
+				//countparent = 0;
+				//parentChild = 0;
 			//}
 			//else
 			//{
@@ -271,7 +316,6 @@ void SourceProcessor::parseStatement()
 			mm >> modifyLine;
 
 			Database::insertRead(readLine);
-			countlines++;
 
 			next();
 			string variableToken = remainingTokens.front();
@@ -309,6 +353,7 @@ void SourceProcessor::parseStatement()
 				Database::insertModifies(parentLine, variableToken); // 
 			}
 
+			countlines++;
 
 		}
 		else if (remainingTokens.front() == "print")
@@ -324,7 +369,6 @@ void SourceProcessor::parseStatement()
 			uu >> useLine;
 
 			Database::insertPrint(printLine);
-			countlines++;
 
 			next();
 			string variableToken = remainingTokens.front();
@@ -348,6 +392,8 @@ void SourceProcessor::parseStatement()
 				Database::insertUses(grandparentLine, variableToken); // 
 			}
 
+			countlines++;
+
 		}
 		else // it is an assignment
 		{
@@ -365,8 +411,6 @@ void SourceProcessor::parseStatement()
 			stringstream uu;
 			uu << countlines;
 			uu >> useLine;
-
-			countlines++;
 
 			lhs = remainingTokens.front();
 			string variableToken = remainingTokens.front();
@@ -388,6 +432,7 @@ void SourceProcessor::parseStatement()
 
 			Database::insertAssignment(assignmentLine, lhs, rhs);
 			Database::insertModifies(modifyLine, variableToken);
+
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
 				string parentLine;
@@ -402,6 +447,7 @@ void SourceProcessor::parseStatement()
 
 				Database::insertModifies(parentLine, variableToken);
 				Database::insertModifies(grandparentLine, variableToken);
+
 			}
 			else if (countparent > 0)
 			{
@@ -417,8 +463,11 @@ void SourceProcessor::parseStatement()
 
 				Database::insertModifies(parentLine, variableToken);
 			}
-			//expect(";");
+
+			countlines++;	
+
 		}
+
 	}
 
 	next();
@@ -433,7 +482,7 @@ void SourceProcessor::parseVariable()
 	}
 	else
 	{
-		std::throw_with_nested("error in parseVariable");
+		//std::throw_with_nested("error in parseVariable");
 	}
 }
 
@@ -484,6 +533,6 @@ void SourceProcessor::parseConstant()
 	}
 	else
 	{
-		std::throw_with_nested("error in parseConstant");
+		//std::throw_with_nested("error in parseConstant");
 	}
 }
