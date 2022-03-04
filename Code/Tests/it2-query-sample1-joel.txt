@@ -21,7 +21,7 @@ d, c
 5 - Select variables being Used in a in all while loops
 while w; variable v;
 Select v such that Uses(w, v)
-x, a, d, c, b, y
+x, a, c, d, y, k
 5000
 6 - Select variable being Used in a specific if 
 if ifs; variable v;
