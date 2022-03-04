@@ -8,14 +8,6 @@ assign a; while w;
 Select w pattern a("t",_) such that Parent*(w,a)
 14
 5000
-3 - Select variables in an if loop
-variable v; if i; Select v such that Parent(i,v) pattern v (v,_)
-d, m
-5000
-4 - Select variables in an if loop (flipped)
-variable v; if i; Select v pattern v(v,_) such that Parent(i,v) 
-d, m
-5000
 5 - Select all assignments that modifies "a"
 assign a; Select a such that Modifies(a, _) pattern a (_,_"a"_)
 7, 10
@@ -39,4 +31,12 @@ print p, pr; assign a; while w; Select a such that Uses(w,a) pattern a(_,_"1"_)
 10 - Select assign being Used in all while loops with a specific pattern (flipped)
 print p, pr; assign a; while w; Select a pattern a(_,_"1"_) such that Uses(w,a) 
 7,8
+5000
+3 - Select variables in an if loop
+variable v; if i; Select v such that Parent(i,v) pattern v (v,_)
+d, m
+5000
+4 - Select variables in an if loop (flipped)
+variable v; if i; Select v pattern v(v,_) such that Parent(i,v) 
+d, m
 5000
