@@ -1,0 +1,23 @@
+procedure melange{
+1	if (a==10) then {
+2		read c;
+3		d = b;
+4		while (f>5) {
+5			print g;
+6			read h;
+7			i = a+1;
+8			a = 1+b;
+		}
+9		if (l>f) then {
+10			m = a+1;
+		}else{
+11			read p;
+	}
+12	while (r<s){
+13		if (s>t) {
+14			t = b+1;
+		}
+15		print y;
+	}
+}
+
