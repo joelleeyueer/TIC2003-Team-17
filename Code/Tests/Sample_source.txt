@@ -1,14 +1,25 @@
 procedure aran {
-
+	x = y;
+	a = b + 1;
+	print k;
 	while (x < a) {
 		print a;
+
 		while (a < 1) {
-			g = d + c;
+			a = d + c;
+			print c;
 			read b;
 		}
-		print z;
-		read y;
+
+		if (y > a) then {
+			read y;
+			print k;
+		} else {
+			print a;
+		}
+
 	}
-	print x;
-	read w;
+	print s;
+	s = s + y;
+	read y;
 }

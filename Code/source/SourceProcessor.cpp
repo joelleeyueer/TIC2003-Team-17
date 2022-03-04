@@ -190,6 +190,7 @@ void SourceProcessor::parseStatement()
 			next();
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
+			list<string> nestedconditionTokens = remainingTokens;
 			parseFactor();
 			expect("{");
 			countlines++;
@@ -232,6 +233,55 @@ void SourceProcessor::parseStatement()
 				conditionTokens.pop_front();
 			}
 
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string grandparentLine;
+				stringstream gg;
+				gg << parentChild;
+				gg >> grandparentLine;
+
+				while (nestedconditionTokens.front() != ")")
+				{
+					if (checkName(nestedconditionTokens.front())) // if it is a variable
+					{
+						string useVariableToken = nestedconditionTokens.front();
+						Database::insertUses(parentLine, useVariableToken);
+						Database::insertUses(grandparentLine, useVariableToken);
+					}
+					nestedconditionTokens.pop_front();
+				}
+
+			}
+			else if (countparent > 0 && parentChild == 0) // if no nesting of while or if
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				while (nestedconditionTokens.front() != ")")
+				{
+					if (checkName(nestedconditionTokens.front())) // if it is a variable
+					{
+						string useVariableToken = nestedconditionTokens.front();
+						Database::insertUses(parentLine, useVariableToken);
+					}
+					nestedconditionTokens.pop_front();
+				}
+
+			}
+
+
 		}
 		else if (remainingTokens.front() == "if")
 		{
@@ -253,6 +303,7 @@ void SourceProcessor::parseStatement()
 			next();
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
+			list<string> nestedconditionTokens = remainingTokens;
 			parseFactor();
 			expect("then");
 			expect("{");
@@ -300,6 +351,56 @@ void SourceProcessor::parseStatement()
 				}
 				conditionTokens.pop_front();
 			}
+
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string grandparentLine;
+				stringstream gg;
+				gg << parentChild;
+				gg >> grandparentLine;
+
+				while (nestedconditionTokens.front() != ")")
+				{
+					if (checkName(nestedconditionTokens.front())) // if it is a variable
+					{
+						string useVariableToken = nestedconditionTokens.front();
+						Database::insertUses(parentLine, useVariableToken);
+						Database::insertUses(grandparentLine, useVariableToken);
+					}
+					nestedconditionTokens.pop_front();
+				}
+
+			}
+			else if (countparent > 0 && parentChild == 0) // if no nesting of while or if
+			{
+				string parentLine;
+				stringstream pp;
+				pp << countparent;
+				pp >> parentLine;
+
+				string childLine;
+				stringstream cc;
+				cc << countlines;
+				cc >> childLine;
+
+				while (nestedconditionTokens.front() != ")")
+				{
+					if (checkName(nestedconditionTokens.front())) // if it is a variable
+					{
+						string useVariableToken = nestedconditionTokens.front();
+						Database::insertUses(parentLine, useVariableToken);
+					}
+					nestedconditionTokens.pop_front();
+				}
+
+			}
+
+
 
 		}
 		else if (remainingTokens.front() == "read")
