@@ -25,7 +25,7 @@ x, a, d, c, y, k
 5000
 6 - Select variable being Used in a specific if 
 if ifs; variable v;
-Select v such that Uses(6, v)
+Select v such that Uses(10, v)
 y, k, a
 5000
 7 - Select all reads if there is a assignment statement in a while
@@ -33,12 +33,12 @@ read r; while w; assign a;
 Select r such that Parent(w, a)
 9, 11, 16
 5000
-8 - Select all statements if line 7 is a descendent of line 4
+8 - Select all reads if line 7 is a descendent of line 4
 read r; while w; assign a;
 Select r such that Parent*(4, 7)
 9, 11, 16
 5000
-9 - Select all statements if line 7 is a child of line 4 (meaningless query)
+9 - Select all assignments if line 7 is a child of line 4 (meaningless query)
 read r; while w; assign a;
 Select r such that Parent(4, 7)
 

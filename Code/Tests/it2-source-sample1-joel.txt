@@ -1,22 +1,23 @@
 procedure aran {
-1	x = y;
-2	a = b + 1;
-3	print k;
-4	while (x < a) {
-5		print a;
-6		while (a < 1) {
-7			a = d + c;
-8			print c;
-9			read b;
+	x = y;
+	a = b + 1;
+	print k;
+	while (x < a) {
+		print a;
+		while (a < 1) {
+			a = d + c;
+			print c;
+			read b;
 		}
-10		if (y > a) {
-11			read y;
-12			print k;
+		if (y > a) then{
+			read y;
+			print k;
 		} else {
-13			print a;
+			print a;
 		}
-14	print s;
-15	s = s + y;
-16	read y;
+	}
+	print s;
+	s = s + y;
+	read y;
 }
 
