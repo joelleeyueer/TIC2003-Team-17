@@ -379,7 +379,7 @@ void Database::getAssignment(vector<string>& results) {
 
 	// retrieve the procedures from the procedure table
 	// The callback method is only used when there are results to be returned.
-	string getAssignmentSQL = "SELECT assignmentLine FROM assignments;";
+	string getAssignmentSQL = "SELECT line FROM assignments;";
 	sqlite3_exec(dbConnection, getAssignmentSQL.c_str(), callback, 0, &errorMessage);
 
 	// postprocess the results from the database so that the output is just a vector of procedure names
@@ -414,35 +414,35 @@ void Database::getParent(vector<vector<string>>& results, string parentType, str
 
 	if (parentType == "undeclared") {
 		if (childType == "undeclared") {
-			getParentSQL = "SELECT childLine, parentLine FROM parents;";
+			getParentSQL = "SELECT parentLine, childLine FROM parents;";
 		}
 		else if (childType == "line number") {
-			getParentSQL = "SELECT childLine, parentLine from parents WHERE childLine = " +  childValue + ";";
+			getParentSQL = "SELECT parentLine, childLine from parents WHERE childLine = " +  childValue + ";";
 		}
 		else {  // child is synonym
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
 		}
 	}
 	else if (parentType == "line number") {
 		if (childType == "undeclared") {
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine = " + parentValue + ";";
+			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE parentLine = " + parentValue + ";";
 		}
 		else if (childType == "line number") {
-			getParentSQL = "SELECT childLine, parentLine from parents WHERE parentLine = " + parentValue + " AND childLine = " + childValue + ";";
+			getParentSQL = "SELECT parentLine, childLine from parents WHERE parentLine = " + parentValue + " AND childLine = " + childValue + ";";
 		}
 		else { // child is synonym
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine = " + parentValue + " AND childLine IN (SELECT line FROM " + convertToDbName(childType) + "); ";
+			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE parentLine = " + parentValue + " AND childLine IN (SELECT line FROM " + convertToDbName(childType) + "); ";
 		}
 	}
 	else { //parent is a synonym
 		if (childType == "undeclared") {
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ");";
+			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ");";
 		}
 		else if (childType == "line number") {
-			getParentSQL = "SELECT childLine, parentLine from parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
+			getParentSQL = "SELECT parentLine, childLine from parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine = " + childValue + ";";
 		}
 		else {  // child is synonym
-			getParentSQL = "SELECT childLine, parentLine FROM parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT line FROM " + convertToDbName(childType) + "); ";
+			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE parentLine IN (SELECT line FROM " + convertToDbName(parentType) + ") AND childLine IN (SELECT line FROM " + convertToDbName(childType) + "); ";
 		}
 	}
 
@@ -457,7 +457,7 @@ void Database::getParentT(vector<vector<string>>& results, string parentType, st
 {
 	// clear the existing results
 	dbResults.clear();
-	string getParentTSQL = "SELECT childLine, parentLine FROM ( SELECT * FROM parents UNION SELECT * FROM parentst )";
+	string getParentTSQL = "SELECT parentLine, childLine FROM ( SELECT * FROM parents UNION SELECT * FROM parentst )";
 
 
 	if (parentType == "undeclared") {
@@ -509,19 +509,19 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 
 	if (firstArgumentType == "line number") {
 		if (secondArgumentType == "IDENT") {
-			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE modifiesLine = " + firstArgumentValue + "AND variableN = \"" + secondArgumentValue + "\";";
+			getModifiesSQL = "SELECT modifiesLine, variableN FROM modifies WHERE modifiesLine = " + firstArgumentValue + "AND variableN = \"" + secondArgumentValue + "\";";
 		}
 		else { // secondArgumentType is a _ OR synonym i.e. variable design entity
-			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE modifiesLine = " + firstArgumentValue + ";";
+			getModifiesSQL = "SELECT modifiesLine, variableN FROM modifies WHERE modifiesLine = " + firstArgumentValue + ";";
 		}
 	}
 	else {
 
 		if (secondArgumentType == "IDENT") {
-			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + "); ";
+			getModifiesSQL = "SELECT modifiesLine, variableN FROM modifies WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + "); ";
 		}
 		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
-			getModifiesSQL = "SELECT variableN, modifiesLine FROM modifies WHERE modifiesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
+			getModifiesSQL = "SELECT modifiesLine, variableN FROM modifies WHERE modifiesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 	}
 
@@ -542,18 +542,18 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 
 	if (firstArgumentType == "line number") {
 		if (secondArgumentType == "IDENT") {
-			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE usesLine = " + firstArgumentValue + "AND variablenN = \"" + secondArgumentValue + "\";";
+			getUsesSQL = "SELECT usesLine, variableN FROM uses WHERE usesLine = " + firstArgumentValue + "AND variablenN = \"" + secondArgumentValue + "\";";
 		}
 		else { // secondArgumentType is a _ OR synonym i.e. variable design entity
-			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE usesLine = " + firstArgumentValue + ";";
+			getUsesSQL = "SELECT usesLine, variableN FROM uses WHERE usesLine = " + firstArgumentValue + ";";
 		}
 	}
 	else {
 		if (secondArgumentType == "IDENT") {
-			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE variableN = \"" + secondArgumentValue + "\" AND usesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + "); ";
+			getUsesSQL = "SELECT usesLine, variableN FROM uses WHERE variableN = \"" + secondArgumentValue + "\" AND usesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + "); ";
 		}
 		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
-			getUsesSQL = "SELECT variableN, usesLine FROM uses WHERE usesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
+			getUsesSQL = "SELECT usesLine, variableN FROM uses WHERE usesLine IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 	}
 

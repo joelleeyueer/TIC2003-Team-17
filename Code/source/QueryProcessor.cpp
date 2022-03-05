@@ -27,14 +27,15 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	output.clear();
 
 	vector<string> selectClauseResults;
+	vector<vector<string>> suchThatResults;
+	vector<vector<string>> patternClauseResults;
 	evaluateSelectClause(queryObj, selectClauseResults);
 
-	if (queryObj.suchThatClauses.size() > 0) {
+	if (queryObj.suchThatClauses.size() >0) {
 		// if rel ref == parent
 		// else if rel ref = modifies.. etc etc
 		string relRef = queryObj.suchThatClauses[0].relRef;
 
-		vector<vector<string>> suchThatResults;
 
 		if (relRef == "Parent") {
 			evaluateParentClause(queryObj, suchThatResults);
@@ -48,81 +49,169 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		else { //relRef == "Uses
 			evaluateUsesClause(queryObj, suchThatResults);
 		}
+	}
 
+	if (queryObj.patternClauses.size() >0) {
+		evaluatePatternClause(queryObj, patternClauseResults);
+	}
 
-		if (suchThatResults.empty()) {
-			return;
+	//suchThatResults vector is empty but queryObj parser is not empty OR patternResults vector is empty but queryObj parser is not empty
+	if ((suchThatResults.empty() && !(queryObj.suchThatClauses.empty())) || (patternClauseResults.empty() && !(queryObj.patternClauses.empty()))) { //meaningless queries or pattern or such that supposed to return stuff but nothing 
+		return; // returns nothing. Takes into account meaningless queries for 1. queries with suchThat OR pattern, 2. queries with suchThat AND pattern
+	}
+
+	else if ((suchThatResults.empty() && queryObj.suchThatClauses.empty()) && (patternClauseResults.empty() && queryObj.patternClauses.empty())) { // only select clause exists
+		for (string row : selectClauseResults) { //only select clause
+			output.push_back(row);
+		}
+		return;
+	}
+	else {
+		if (queryObj.suchThatClauses.size() > 0 && queryObj.patternClauses.size() > 0) {
+			filterSuchThatPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+		}
+		else if (queryObj.patternClauses.size() > 0) {
+			filterOnlyPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+		}
+		else { //suchThat
+			filterOnlySuchThatClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+		}
+	}
+	
+}
+
+void QueryProcessor::filterSuchThatPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output){
+	//suchThat + Pattern, but Pattern is meaningless
+	//Select synonym == suchThat first Arg or second Arg and Select synonym != pattern synonym or pattern LHS
+	if ((queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].firstArgument[1] || queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].secondArgument[1]) && !(queryObj.selectClauses[0].name == queryObj.patternClauses[0].patternSynonym || queryObj.selectClauses[0].name == queryObj.patternClauses[0].LHS[1])) {
+		filterOnlySuchThatClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+	}
+	
+	//suchThat + Pattern, but Such That is meaningless
+	//Select synonym != suchThat first Arg or second Arg and Select synonym == pattern synonym or pattern LHS
+	else if ((queryObj.selectClauses[0].name == queryObj.patternClauses[0].patternSynonym || queryObj.selectClauses[0].name == queryObj.patternClauses[0].LHS[1]) && !(queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].firstArgument[1] || queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].secondArgument[1])) {
+		filterOnlyPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+	}
+
+	//Such That and Pattern are not meaningless
+	
+	else { 
+		//Scenario A: I have a Parent/Parent* relRef,
+		//hence such That second argument synonym == assignment
+		//pattern synonym == assignment ONLY
+		if ((queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].secondArgument[1] && queryObj.selectClauses[0].name == queryObj.patternClauses[0].patternSynonym) && queryObj.selectClauses[0].designEntity == "assign") {			
+			if (queryObj.suchThatClauses[0].relRef == "Modifies" || queryObj.suchThatClauses[0].relRef == "Uses") {
+				for (vector<string> STrow : suchThatResults) {
+					for (vector<string> PTrow : patternClauseResults) {
+						if (STrow[0] == PTrow[0]) {
+							output.push_back(STrow[0]);
+						}
+					}
+				}
+			}
+			else {
+				for (vector<string> STrow : suchThatResults) {
+					for (vector<string> PTrow : patternClauseResults) {
+						if (STrow[1] == PTrow[0]) {
+							output.push_back(STrow[1]);
+						}
+					}
+				}
+			}
+		}
+		
+		//Scenario B: I have a Modifies/Uses relRef
+		//hence such That second argument synonym == variable
+		//pattern first argument == variable ONLY
+		else if ((queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].secondArgument[1] && queryObj.selectClauses[0].name == queryObj.patternClauses[0].LHS[1]) && queryObj.selectClauses[0].designEntity == "variable") {
+			for (vector<string> STrow : suchThatResults) {
+				for (vector<string> PTrow : patternClauseResults) {
+					if (STrow[1] == PTrow[1]) {
+						output.push_back(STrow[1]);
+					}
+				}
+			}
 		}
 
+		else if ((queryObj.selectClauses[0].name == queryObj.suchThatClauses[0].firstArgument[1] && queryObj.selectClauses[0].name == queryObj.patternClauses[0].patternSynonym) && queryObj.selectClauses[0].designEntity == "assign") {
+			if (queryObj.suchThatClauses[0].secondArgument[1] == queryObj.patternClauses[0].LHS[1]) {
+				for (vector<string> STrow : suchThatResults) {
+					for (vector<string> PTrow : patternClauseResults) {
+						if (STrow[0] == PTrow[0] && STrow[1] == PTrow[1]) {
+							output.push_back(STrow[0]);
+						}
+					}
+				}
+			}
+			else {
+				for (vector<string> STrow : suchThatResults) {
+					for (vector<string> PTrow : patternClauseResults) {
+						if (STrow[0] == PTrow[0]) {
+							output.push_back(STrow[0]);
+						}
+					}
+				}
+			}
+		}
+
+		else {
+			return;
+		}
+	}
+}
+
+void QueryProcessor::filterOnlySuchThatClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output)
+{
+	// only such that exists
+	if (!(suchThatResults.empty()) && (patternClauseResults.empty() && queryObj.patternClauses.empty())) { // Pattern Clause is empty
+
+		//meaningless query: both first Argument synonym in suchThat != select Clause and second Argument synonym in suchThat != select Clause)
 		if ((queryObj.suchThatClauses[0].firstArgument[1] != queryObj.selectClauses[0].name) && (queryObj.suchThatClauses[0].secondArgument[1] != queryObj.selectClauses[0].name)) {
 			for (string row : selectClauseResults) {
 				output.push_back(row);
 			}
-			vector<string> check = output;
 		}
-		else if (queryObj.suchThatClauses[0].firstArgument[1] != queryObj.selectClauses[0].name) {
-			if (queryObj.selectClauses[0].designEntity == "variable") {
-				for (vector<string> row : suchThatResults) { //i want variableN
-					output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
-				}
+		//not meaningless
+		//Select a such that Modifies(_,a)
+		else if (queryObj.suchThatClauses[0].firstArgument[1] == queryObj.selectClauses[0].name) {
+			for (vector<string> row : suchThatResults) {
+				output.push_back(row[0]);
 			}
 
-			else if (queryObj.suchThatClauses[0].relRef == "Parent" || queryObj.suchThatClauses[0].relRef == "Parent*") { //hardcode cause SQL is broken
-				for (vector<string> row : suchThatResults) { //i want variableN
-					output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
+		}
+		//Select a such that Modifies(a,_)
+		else if (queryObj.suchThatClauses[0].secondArgument[1] == queryObj.selectClauses[0].name) {
+
+			// if the select wants a statement number and the rel ref is a modifies or uses, we shuld take the first column for the such that clause (bc thats where the stmt nunber is)
+			if ((queryObj.selectClauses[0].designEntity != "variable") && ((queryObj.suchThatClauses[0].relRef == "Modifies") || (queryObj.suchThatClauses[0].relRef == "Uses"))) {
+				for (vector<string> row : suchThatResults) {
+					output.push_back(row[0]);
 				}
 			}
 			else {
-				
-				for (vector<string> row : suchThatResults) { //i want line number
-					output.push_back(row[1]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
-				}
-			}
-			
-		}
-		else if (queryObj.suchThatClauses[0].secondArgument[1] != queryObj.selectClauses[0].name) {
-			if (queryObj.selectClauses[0].designEntity == "variable") {
 				for (vector<string> row : suchThatResults) {
-					output.push_back(row[0]); // you only want the second column of the results because the synonym is common on the secon argument i.e. Select a such that (_,b)
+					output.push_back(row[1]);
 				}
 			}
-
-			else if (queryObj.suchThatClauses[0].relRef == "Parent" || queryObj.suchThatClauses[0].relRef == "Parent*") { //hardcode cause SQL is broken
-				for (vector<string> row : suchThatResults) { //i want variableN
-					output.push_back(row[0]); // you only want the first column of the results because the synonym is common on the first argument i.e. Select a such that (b,_)
-				}
-			}
-			else {
-				
-				for (vector<string> row : suchThatResults) {
-					output.push_back(row[1]); // you only want the second column of the results because the synonym is common on the secon argument i.e. Select a such that (_,b)
-				}
-			}
-			
 		}
 	}
-	else if (queryObj.patternClauses.size() > 0) {
-		vector<vector<string>> patternClauseResults;
-		evaluatePatternClause(queryObj, patternClauseResults);
+}
 
-		if (patternClauseResults.empty()) {
-			return;
-		}
+void QueryProcessor::filterOnlyPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output)
+{
+	// only pattern exists
+	if ((suchThatResults.empty() && queryObj.suchThatClauses.empty()) && !(patternClauseResults.empty())) { // Such That Clause is empty
 
+		//meaningless query
 		if (queryObj.patternClauses[0].patternSynonym != queryObj.selectClauses[0].name) {
 			for (string row : selectClauseResults) {
 				output.push_back(row);
 			}
-		}	
+		}
 		else if (queryObj.patternClauses[0].patternSynonym == queryObj.selectClauses[0].name) {
 			for (vector<string> row : patternClauseResults) {
 				output.push_back(row[0]);
 			}
-		}
-	}
-	else {
-		for (string row : selectClauseResults) {
-			output.push_back(row);
 		}
 	}
 }
@@ -163,5 +252,7 @@ void QueryProcessor::evaluateUsesClause(Query query, vector<vector<string>>& res
 	UsesClauseEvaluator usesClauseEvaluator;
 	usesClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
 }
+
+
 
 

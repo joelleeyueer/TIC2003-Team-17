@@ -13,11 +13,15 @@ procedure melange {
 		} else {
 			read p;
 		}
-	}
-	while (r < s) {
-		if (s > t) {
-			t = b + 1;
+	} else {
+		while (r < s) {
+			if (s > t) then {
+				t = b + 1;
+			} else {
+				print y;
+			}
 		}
 		print y;
 	}
+	a = a;		
 }
