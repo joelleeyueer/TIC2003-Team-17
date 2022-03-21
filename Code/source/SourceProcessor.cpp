@@ -191,7 +191,7 @@ void SourceProcessor::parseStatement()
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
 			list<string> nestedconditionTokens = remainingTokens;
-			parseFactor();
+			parseFactorCondition();
 			expect("{");
 			countlines++;
 			parseStatement();
@@ -304,7 +304,7 @@ void SourceProcessor::parseStatement()
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
 			list<string> nestedconditionTokens = remainingTokens;
-			parseFactor();
+			parseFactorCondition();
 			expect("then");
 			expect("{");
 			countlines++;
@@ -626,6 +626,30 @@ void SourceProcessor::parseVariable()
 	}
 }
 
+void SourceProcessor::parseFactorCondition()
+{
+	if (checkName(remainingTokens.front())) // if it is a variable
+	{
+		parseVariable();
+	}
+	else if (checkInteger(remainingTokens.front())) // if it is an integer
+	{
+		parseConstant();
+	}
+
+
+	if (match(">") || match("<")) // should be a real expression
+	{
+		next();
+		parseFactorCondition();
+	}
+	else if (match(")"))
+	{
+		next();
+	}
+}
+
+
 void SourceProcessor::parseFactor()
 {
 	if (checkName(remainingTokens.front())) // if it is a variable
@@ -637,32 +661,18 @@ void SourceProcessor::parseFactor()
 		parseConstant();
 	}
 
-	if (!match(";")) // this means it is an expression or real expression
+
+	if (match("+") || match("-") || match("*") || match("/") || match("%") || match("(") || match(")")) // should be an expression sign
 	{
-		if (match("+") || match("-") || match("*") || match("/") || match("%")) // should be an expression sign
-		{
-			next();
-			parseFactor(); // check again if it is an variable or integer or an expression
-		}
-		else if (match(">") || match("<")) // should be a real expression
-		{
-			next();
-			parseFactor();
-		}
-		else if (match(")"))
-		{
-			next();
-		}
-		else
-		{
-			// throw error
-		}
+		next();
+		parseFactor(); // check again if it is an variable or integer or an expression
 	}
-	else
+	else if (match(";"))
 	{
 		next();
 	}
 }
+
 
 void SourceProcessor::parseConstant()
 {

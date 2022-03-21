@@ -1,49 +1,70 @@
-1 - Select all print statement that Uses something
-variable v; print r;
-Select r such that Uses(r, v)
-3, 5, 8, 12, 13, 14
+1 - Gets all statements
+stmt s;
+Select s
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
 5000
-2 - Select specific print statement that Uses something
-variable v; print r;
-Select r such that Uses(3, r)
-3
+2 - Gets all read statements
+read r;
+Select r
+1, 2, 3, 9, 11, 16, 17, 18
 5000
-3 - Select specific assignment statement that Uses an ident
-variable v1, v; assign r;
-Select r such that Uses(r, "b")
+3 - Gets all print statements
+print p;
+Select p
+4, 6, 8, 10, 13, 14
+5000
+4 - Gets all while statements
+while w;
+Select w
+5
+5000
+5 - Gets all procedures
+procedure p;
+Select p
+q
+5000
+6 - Gets all variables
+variable v;
+Select v
+x, y, h, n, g, f, k, q, z, a, b, d, s, m, r
+5000
+7 - Select all read statement that Modifies something
+variable v; read r;
+Select r such that Modifies(r, _)
+1, 2, 3, 9, 11, 16, 17, 18
+5000
+8 - Select read statements that Modifies a certain variable
+variable v1, v; read r;
+Select r such that Modifies(r, "y")
 2
 5000
-4 - Select variables being Used in a specific assignment statement
-variable v1, v; assign r;
-Select v1 such that Uses(7, v1)
-d, c
+9 - Select all while statements that Modifies something
+while w; read r; variable v;
+Select w such that Modifies(w, v)
+5
 5000
-5 - Select variables being Used in a in all while loops
-while w; variable v;
-Select v such that Uses(w, v)
-x, a, d, c, y, k
-5000
-6 - Select variable being Used in a specific if 
-if ifs; variable v;
-Select v such that Uses(6, v)
-y, k, a
-5000
-7 - Select all reads if there is a assignment statement in a while
-read r; while w; assign a;
-Select r such that Parent(w, a)
-9, 11, 16
-5000
-8 - Select all statements if line 7 is a descendent of line 4
-read r; while w; assign a;
-Select r such that Parent*(4, 7)
-9, 11, 16
-5000
-9 - Select all statements if line 7 is a child of line 4 (meaningless query)
-read r; while w; assign a;
-Select r such that Parent(4, 7)
-5000
-10 - Select all descendents of line 4
+10 - Select all children of while statements
 while w; stmt s;
-Select s such that Parent*(4, s)
-5, 6, 7, 8, 9, 10, 11, 12, 13
+Select s such that Parent(5, s)
+6, 7
+5000
+11 - Select all children and grandchildren of while statements
+while w; stmt s;
+Select s such that Parent*(5, s)
+6, 7, 8, 9, 10
+5000
+12 - Select all variables being Modified by a Read
+variable v; read r;
+Select v such that Modifies(r, v)
+x, y, h, f, z, d, s, m
+5000
+13 - Select all assignment statements that has r on RHS
+assign a;
+Select a pattern a(_, _"r"_)
+12
+5000
+14 - Select all assignment statements that has x on LHS
+assign a;
+Select a pattern a("x", _)
+12
 5000
