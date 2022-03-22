@@ -668,6 +668,13 @@ void SourceProcessor::parseStatement()
 	}
 
 	next();
+
+	if (remainingTokens.front() == "procedure")
+	{
+		parseProcedure();
+	}
+
+
 }
 
 void SourceProcessor::parseVariable()

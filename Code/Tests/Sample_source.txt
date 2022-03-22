@@ -1,4 +1,4 @@
-procedure q {
+procedure first {
 
 	read x;
 	read y;
@@ -28,4 +28,14 @@ procedure q {
 
 	read m;
 
+}
+
+procedure second {
+	read z;
+	print o;
+}
+
+procedure third {
+	read s;
+	print t;
 }

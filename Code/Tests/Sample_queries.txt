@@ -1,70 +1,35 @@
-1 - Gets all statements
-stmt s;
-Select s
-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
-5000
-2 - Gets all read statements
-read r;
-Select r
-1, 2, 3, 9, 11, 16, 17, 18
-5000
-3 - Gets all print statements
-print p;
-Select p
-4, 6, 8, 10, 13, 14
-5000
-4 - Gets all while statements
-while w;
-Select w
-5
-5000
-5 - Gets all procedures
+1 - Procedure
 procedure p;
-Select p
-q
+Select p;
+lambda
 5000
-6 - Gets all variables
+2 - Variable
 variable v;
 Select v
-x, y, h, n, g, f, k, q, z, a, b, d, s, m, r
+num1, num2, r, a1, num9, num3, p, num
 5000
-7 - Select all read statement that Modifies something
-variable v; read r;
-Select r such that Modifies(r, _)
-1, 2, 3, 9, 11, 16, 17, 18
+3 - Constant
+constant c;
+Select c
+3000, 2, 9999
 5000
-8 - Select read statements that Modifies a certain variable
-variable v1, v; read r;
-Select r such that Modifies(r, "y")
-2
-5000
-9 - Select all while statements that Modifies something
-while w; read r; variable v;
-Select w such that Modifies(w, v)
-5
-5000
-10 - Select all children of while statements
-while w; stmt s;
-Select s such that Parent(5, s)
-6, 7
-5000
-11 - Select all children and grandchildren of while statements
-while w; stmt s;
-Select s such that Parent*(5, s)
-6, 7, 8, 9, 10
-5000
-12 - Select all variables being Modified by a Read
-variable v; read r;
-Select v such that Modifies(r, v)
-x, y, h, f, z, d, s, m
-5000
-13 - Select all assignment statements that has r on RHS
+4 - Assignment
 assign a;
-Select a pattern a(_, _"r"_)
-12
+Select a
+1, 2, 6
 5000
-14 - Select all assignment statements that has x on LHS
-assign a;
-Select a pattern a("x", _)
-12
+5 - Print
+print pr;
+Select pr
+7, 8, 9
+5000
+6 - Read
+read rd;
+Select rd
+3, 4, 5
+5000
+7 - Statement
+stmt s;
+Select s
+1, 2, 3, 4, 5, 6, 7, 8, 9
 5000
