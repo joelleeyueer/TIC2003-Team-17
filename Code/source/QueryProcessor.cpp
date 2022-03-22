@@ -51,7 +51,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		}
 	}
 
-	if (queryObj.patternClauses.size() >0) {
+	if (queryObj.patternClauses.size() > 0) {
 		evaluatePatternClause(queryObj, patternClauseResults);
 	}
 
@@ -67,8 +67,15 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		return;
 	}
 	else {
+		//QP/database will return nothing when
+		//Meaningful query but no answer
+		//Meaningless query but no answer AKA false
+		filterEmptyResultsClause(queryObj, suchThatResults, patternClauseResults);
+
+		//everything else from this point on is a meaningful query or a meaningless query equating true
 		if (queryObj.suchThatClauses.size() > 0 && queryObj.patternClauses.size() > 0) {
-			filterSuchThatPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+			//filterSuchThatPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+			filterSuchThatPatternClause2(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
 		}
 		else if (queryObj.patternClauses.size() > 0) {
 			filterOnlyPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
@@ -78,6 +85,62 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		}
 	}
 	
+}
+
+void QueryProcessor::filterEmptyResultsClause(Query query, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults)
+{
+	//if there is an empty vector from suchThatResults or patternClauseResults, the query should return nothing;
+	for (auto i : suchThatResults) {
+		if (i.empty()) {
+			return;
+		}
+	}
+
+	for (auto i : patternClauseResults) {
+		if (i.empty()) {
+			return;
+		}
+	}
+}
+
+void QueryProcessor::filterSuchThatPatternClause2(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output)
+{
+	vector<vector<string>> parseResults;
+	int j = -1;
+	//loop through suchThatResults
+	for (auto i : suchThatResults) {
+		j++;
+		if (queryObj.selectClauses[0].name != queryObj.suchThatClauses[j].firstArgument[1]) { //check if meaningless i.e. Select a Modifies (b,..)
+			continue;
+		}
+		else {
+			if (queryObj.selectClauses[0].designEntity == "assign") {
+				parseResults[j].push_back(i[0]);
+			}
+			else { // designEntity == "variable"
+				parseResults[j].push_back(i[1]);
+			}
+			
+		}
+	}
+
+	j = -1;
+	//loop through suchThatResults
+	for (auto i : patternClauseResults) {
+		j++;
+		if (queryObj.selectClauses[0].name != queryObj.patternClauses[j].patternSynonym) { //check if meaningless i.e. Select a pattern b (a,..)
+			continue;
+		}
+		else {
+			parseResults[j].push_back(i[0]);
+
+		}
+	}
+
+	//find intersection between all results in parseResults
+	//WIP
+
+
 }
 
 void QueryProcessor::filterSuchThatPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output){
