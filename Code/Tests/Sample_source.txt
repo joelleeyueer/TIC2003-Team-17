@@ -16,7 +16,7 @@ procedure q {
 	} 
 
 	read z;
-	x = r + (2 + k);
+	x = r + 2;
 	print a;
 	print b;
 

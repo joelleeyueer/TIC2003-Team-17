@@ -120,6 +120,7 @@ int countparent = 0;
 int parentChild = 0; // it is not a child, = 1 if it is a child
 int prevCountparent = 0;
 int isnested = 0; // it is not nested, > 1 if it is nested
+vector<int> ancestors;
 string lhs;
 string rhs;
 
@@ -140,13 +141,24 @@ void SourceProcessor::parseStatement()
 			cc << countlines;
 			cc >> childLine;
 
-			string grandparentLine;
+			/*string grandparentLine;
 			stringstream gg;
 			gg << parentChild;
-			gg >> grandparentLine;
+			gg >> grandparentLine;*/
 
 			Database::insertChild(parentLine, childLine); // parent table
-			Database::insertGrandchild(grandparentLine, childLine); // parent* table
+			//Database::insertGrandchild(grandparentLine, childLine); // parent* table
+
+			for (int i = 0; i < ancestors.size(); i++)
+			{
+				string grandparentLine;
+				stringstream gg;
+				gg << ancestors.at(i);
+				gg >> grandparentLine;
+
+				Database::insertGrandchild(grandparentLine, childLine); // parent* table
+
+			}
 		}
 		else if (countparent > 0 && parentChild == 0) // if no nesting of while or if
 		{
@@ -162,6 +174,17 @@ void SourceProcessor::parseStatement()
 
 			Database::insertChild(parentLine, childLine); // parent table
 			//Database::insertGrandchild(parentLine, childLine); // parent* table
+
+			for (int i = 0; i < ancestors.size(); i++)
+			{
+				string grandparentLine;
+				stringstream gg;
+				gg << ancestors.at(i);
+				gg >> grandparentLine;
+
+				Database::insertGrandchild(grandparentLine, childLine); // parent* table
+
+			}
 		}
 
 		string statementLine;
@@ -181,6 +204,7 @@ void SourceProcessor::parseStatement()
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
+			ancestors.push_back(countparent);
 			string whileLine;
 			stringstream ss;
 			ss << countlines;
@@ -195,9 +219,7 @@ void SourceProcessor::parseStatement()
 			expect("{");
 			countlines++;
 			parseStatement();
-
-			//countparent = 0;
-			//parentChild = 0;
+			ancestors.pop_back();
 
 			if (isnested == 0)
 			{
@@ -211,19 +233,7 @@ void SourceProcessor::parseStatement()
 				isnested -= 1;
 			}
 
-			//if (remainingTokens.front() == "}")
-			//{
-			//	countparent = 0;
-			//	parentChild = 0;
-			//}
-			//else
-			//{
-			//	ifnested+=1; // there is nested function
-			//	countparent = prevCountparent;
-			//	parentChild = 0;
-			//}
-
-			while (conditionTokens.front() != ")")
+			while (conditionTokens.front() != ")") // insert uses as it appears in the condition of while statement
 			{
 				if (checkName(conditionTokens.front())) // if it is a variable
 				{
@@ -233,25 +243,34 @@ void SourceProcessor::parseStatement()
 				conditionTokens.pop_front();
 			}
 
-			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent), if there is nesting
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
 				while (nestedconditionTokens.front() != ")")
 				{
 					if (checkName(nestedconditionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedconditionTokens.front();
-						Database::insertUses(parentLine, useVariableToken);
-						Database::insertUses(grandparentLine, useVariableToken);
+						//Database::insertUses(parentLine, useVariableToken);
+						//Database::insertUses(grandparentLine, useVariableToken);
+						for (int i = 0; i < ancestors.size(); i++)
+						{
+							string ancestorsLine;
+							stringstream gg;
+							gg << ancestors.at(i);
+							gg >> ancestorsLine;
+
+							Database::insertUses(ancestorsLine, useVariableToken);
+						}
 					}
 					nestedconditionTokens.pop_front();
 				}
@@ -294,6 +313,7 @@ void SourceProcessor::parseStatement()
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
+			ancestors.push_back(countparent);
 			string ifLine;
 			stringstream ss;
 			ss << countlines;
@@ -317,8 +337,7 @@ void SourceProcessor::parseStatement()
 				parseStatement();
 			}
 
-			//countparent = 0;
-			//parentChild = 0;
+			ancestors.pop_back();
 
 			if (isnested == 0)
 			{
@@ -332,16 +351,6 @@ void SourceProcessor::parseStatement()
 				isnested -= 1;
 			}
 
-			//if (remainingTokens.front() == "}")
-			//{
-				//countparent = 0;
-				//parentChild = 0;
-			//}
-			//else
-			//{
-			//	countparent = prevCountparent;
-			//}
-
 			while (conditionTokens.front() != ")")
 			{
 				if (checkName(conditionTokens.front())) // if it is a variable
@@ -354,23 +363,32 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
 				while (nestedconditionTokens.front() != ")")
 				{
 					if (checkName(nestedconditionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedconditionTokens.front();
-						Database::insertUses(parentLine, useVariableToken);
-						Database::insertUses(grandparentLine, useVariableToken);
+						//Database::insertUses(parentLine, useVariableToken);
+						//Database::insertUses(grandparentLine, useVariableToken);
+						for (int i = 0; i < ancestors.size(); i++)
+						{
+							string ancestorsLine;
+							stringstream gg;
+							gg << ancestors.at(i);
+							gg >> ancestorsLine;
+
+							Database::insertUses(ancestorsLine, useVariableToken);
+						}
 					}
 					nestedconditionTokens.pop_front();
 				}
@@ -426,18 +444,27 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
-				Database::insertModifies(parentLine, variableToken); // 
-				Database::insertModifies(grandparentLine, variableToken); // 
+				//Database::insertModifies(parentLine, variableToken); // 
+				//Database::insertModifies(grandparentLine, variableToken); // 
+				for (int i = 0; i < ancestors.size(); i++)
+				{
+					string ancestorsLine;
+					stringstream gg;
+					gg << ancestors.at(i);
+					gg >> ancestorsLine;
+
+					Database::insertModifies(ancestorsLine, variableToken);
+				}
 			}
 			else if (countparent > 0) // if no nesting of while or if
 			{
@@ -479,18 +506,29 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
-				Database::insertUses(parentLine, variableToken); // 
-				Database::insertUses(grandparentLine, variableToken); // 
+				//Database::insertUses(parentLine, variableToken); // 
+				//Database::insertUses(grandparentLine, variableToken); // 
+
+				for (int i = 0; i < ancestors.size(); i++)
+				{
+					string ancestorsLine;
+					stringstream gg;
+					gg << ancestors.at(i);
+					gg >> ancestorsLine;
+
+					Database::insertUses(ancestorsLine, variableToken);
+				}
+
 			}
 			else if (countparent > 0) // if no nesting of while or if
 			{
@@ -552,18 +590,28 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
-				Database::insertModifies(parentLine, variableToken);
-				Database::insertModifies(grandparentLine, variableToken);
+				//Database::insertModifies(parentLine, variableToken);
+				//Database::insertModifies(grandparentLine, variableToken);
+				for (int i = 0; i < ancestors.size(); i++)
+				{
+					string ancestorsLine;
+					stringstream gg;
+					gg << ancestors.at(i);
+					gg >> ancestorsLine;
+
+					Database::insertModifies(ancestorsLine, variableToken);
+				}
+
 
 				while (nestedexpressionTokens.front() != ";")
 				{
@@ -571,8 +619,17 @@ void SourceProcessor::parseStatement()
 					if (checkName(nestedexpressionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedexpressionTokens.front();
-						Database::insertUses(parentLine, useVariableToken);
-						Database::insertUses(grandparentLine, useVariableToken);
+						//Database::insertUses(parentLine, useVariableToken);
+						//Database::insertUses(grandparentLine, useVariableToken);
+						for (int i = 0; i < ancestors.size(); i++)
+						{
+							string ancestorsLine;
+							stringstream gg;
+							gg << ancestors.at(i);
+							gg >> ancestorsLine;
+
+							Database::insertUses(ancestorsLine, useVariableToken);
+						}
 					}
 					nestedexpressionTokens.pop_front();
 				}
