@@ -80,10 +80,27 @@ void QueryParser::parseDeclarationList(Query& query)
 void QueryParser::parseSelectClause(Query& currentQuery)
 {
 	expect("Select");
-	string synonym = remainingTokens.front();
-	validateSynonym(synonym, true);
-	next();
-	currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
+	if (remainingTokens.front() == "<") { //isMultiSelect
+		expect("<");
+		while (remainingTokens.front() != ">") {
+			string synonym = remainingTokens.front();
+			validateSynonym(synonym, true);
+			next();
+			currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
+
+			if (remainingTokens.front() == ",") {
+				expect(",");
+			}
+		}
+		expect(">");
+	}
+
+	else { //isSingleSelect
+		string synonym = remainingTokens.front();
+		validateSynonym(synonym, true);
+		next();
+		currentQuery.addSelectClause(synonym, currentDeclarationList[synonym]);
+	}
 }
 
 void QueryParser::parseSuchThatClause(Query& currentQuery)
