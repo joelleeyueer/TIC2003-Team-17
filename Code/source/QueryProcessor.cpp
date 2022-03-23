@@ -29,6 +29,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	vector<string> selectClauseResults;
 	vector<vector<string>> suchThatResults;
 	vector<vector<string>> patternClauseResults;
+	vector<vector<vector<string>>> test;
 	evaluateSelectClause(queryObj, selectClauseResults);
 
 	if (queryObj.suchThatClauses.size() >0) {
@@ -105,20 +106,21 @@ void QueryProcessor::filterEmptyResultsClause(Query query, vector<vector<string>
 
 void QueryProcessor::filterSuchThatPatternClause2(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output)
 {
-	vector<vector<string>> parseResults;
+	//WIP resume after implementing vector 3x
+	vector<vector<vector<string>>> parseResults;
 	int j = -1;
 	//loop through suchThatResults
-	for (auto i : suchThatResults) {
+	for (vector<string> i : suchThatResults) {
 		j++;
 		if (queryObj.selectClauses[0].name != queryObj.suchThatClauses[j].firstArgument[1]) { //check if meaningless i.e. Select a Modifies (b,..)
 			continue;
 		}
-		else {
+		else { //not meaningless
 			if (queryObj.selectClauses[0].designEntity == "assign") {
-				parseResults[j].push_back(i[0]);
+				//parseResults[j].push_back(i[0]);
 			}
 			else { // designEntity == "variable"
-				parseResults[j].push_back(i[1]);
+				//parseResults[j].push_back(i[1]);
 			}
 			
 		}
@@ -137,6 +139,8 @@ void QueryProcessor::filterSuchThatPatternClause2(Query queryObj, vector<string>
 		}
 	}
 
+
+	return;
 	//find intersection between all results in parseResults
 	//WIP
 
