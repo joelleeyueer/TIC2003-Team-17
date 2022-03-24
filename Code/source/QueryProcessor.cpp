@@ -29,31 +29,64 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	vector<string> selectClauseResults;
 	vector<vector<string>> suchThatResults;
 	vector<vector<string>> patternClauseResults;
-	vector<vector<vector<string>>> test;
-	evaluateSelectClause(queryObj, selectClauseResults);
+	vector<vector<vector<string>>> suchThatMaster;
+	vector<vector<vector<string>>> patternClauseMaster;
 
-	if (queryObj.suchThatClauses.size() >0) {
+	evaluateSelectClause(queryObj, selectClauseResults, 0);
+
+	/// <summary>
+	/// Iterate through suchThatResults and parse results into suchThatMaster
+	/// </summary>
+
+	int suchThatCount = queryObj.suchThatClauses.size();
+	int iterator = -1;
+
+	while (queryObj.suchThatClauses.size() > 0 && suchThatCount > 0) {
+		iterator++;
 		// if rel ref == parent
 		// else if rel ref = modifies.. etc etc
-		string relRef = queryObj.suchThatClauses[0].relRef;
+		string relRef = queryObj.suchThatClauses[iterator].relRef;
 
 
 		if (relRef == "Parent") {
-			evaluateParentClause(queryObj, suchThatResults);
+			evaluateParentClause(queryObj, suchThatResults, iterator);
 		}
 		else if (relRef == "Parent*") {
-			evaluateParentTClause(queryObj, suchThatResults);
+			evaluateParentTClause(queryObj, suchThatResults, iterator);
 		}
 		else if (relRef == "Modifies") {
-			evaluateModifiesClause(queryObj, suchThatResults);
+			evaluateModifiesClause(queryObj, suchThatResults, iterator);
 		}
-		else { //relRef == "Uses
-			evaluateUsesClause(queryObj, suchThatResults);
+		else if (relRef == "Uses") { //relRef == "Uses
+			evaluateUsesClause(queryObj, suchThatResults, iterator);
 		}
+		else {
+			return;
+		}
+
+		suchThatMaster.push_back(suchThatResults[0]);
+
+		suchThatResults.clear();
+		suchThatCount--;
 	}
 
-	if (queryObj.patternClauses.size() > 0) {
-		evaluatePatternClause(queryObj, patternClauseResults);
+	/// <summary>
+	/// Iterate through patternClauseResults and parse results into patternClauseMaster
+	/// </summary>
+
+	int patternCount = queryObj.patternClauses.size();
+	iterator = -1;
+
+	while (queryObj.patternClauses.size() > 0 && patternCount > 0) {
+		iterator++;
+		evaluatePatternClause(queryObj, patternClauseResults, iterator);
+
+		for (auto i : patternClauseResults) {
+			patternClauseMaster[iterator].push_back(i);
+		}
+
+		patternClauseResults.clear();
+		patternCount--;
 	}
 
 	//suchThatResults vector is empty but queryObj parser is not empty OR patternResults vector is empty but queryObj parser is not empty
@@ -107,7 +140,7 @@ void QueryProcessor::filterEmptyResultsClause(Query query, vector<vector<string>
 void QueryProcessor::filterSuchThatPatternClause2(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output)
 {
 	//WIP resume after implementing vector 3x
-	vector<vector<vector<string>>> parseResults;
+	vector<vector<string>> parseResults;
 	int j = -1;
 	//loop through suchThatResults
 	for (vector<string> i : suchThatResults) {
@@ -134,7 +167,7 @@ void QueryProcessor::filterSuchThatPatternClause2(Query queryObj, vector<string>
 			continue;
 		}
 		else {
-			parseResults[j].push_back(i[0]);
+			//parseResults[j].push_back(i[0]);
 
 		}
 	}
@@ -283,41 +316,41 @@ void QueryProcessor::filterOnlyPatternClause(Query queryObj, vector<string>& sel
 	}
 }
 
-void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results)
+void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results, int iterator)
 {
 	SelectClauseEvaluator selectClauseEvaluator;
 	selectClauseEvaluator.evaluate(results, query.selectClauses[0].designEntity); 
 }
 
-void QueryProcessor::evaluatePatternClause(Query query, vector<vector<string>>& results)
+void QueryProcessor::evaluatePatternClause(Query query, vector<vector<string>>& results, int iterator)
 {
 	PatternClauseEvaluator patternClauseEvaluator;
-	patternClauseEvaluator.evaluate(results, query.patternClauses[0].LHS, query.patternClauses[0].RHS, query.declarationList);
+	patternClauseEvaluator.evaluate(results, query.patternClauses[iterator].LHS, query.patternClauses[iterator].RHS, query.declarationList);
 }
 
-void QueryProcessor::evaluateParentClause(Query query, vector<vector<string>>& results)
+void QueryProcessor::evaluateParentClause(Query query, vector<vector<string>>& results, int iterator)
 {
 	ParentClauseEvaluator parentClauseEvaluator;
-	parentClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+	parentClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
 }
 
-void QueryProcessor::evaluateParentTClause(Query query, vector<vector<string>>& results)
+void QueryProcessor::evaluateParentTClause(Query query, vector<vector<string>>& results, int iterator)
 {
 	ParentTClauseEvaluator parentTClauseEvaluator;
-	parentTClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+	parentTClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
 
 }
 
-void QueryProcessor::evaluateModifiesClause(Query query, vector<vector<string>>& results)
+void QueryProcessor::evaluateModifiesClause(Query query, vector<vector<string>>& results, int iterator)
 {
 	ModifiesClauseEvaluator modifiesClauseEvaluator;
-	modifiesClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+	modifiesClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
 }
 
-void QueryProcessor::evaluateUsesClause(Query query, vector<vector<string>>& results)
+void QueryProcessor::evaluateUsesClause(Query query, vector<vector<string>>& results, int iterator)
 {
 	UsesClauseEvaluator usesClauseEvaluator;
-	usesClauseEvaluator.evaluate(results, query.suchThatClauses[0].firstArgument[0], query.suchThatClauses[0].firstArgument[1], query.suchThatClauses[0].secondArgument[0], query.suchThatClauses[0].secondArgument[1]);
+	usesClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
 }
 
 

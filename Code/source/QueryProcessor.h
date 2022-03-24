@@ -24,10 +24,10 @@ public:
 	void filterSuchThatPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output);
 	void filterOnlySuchThatClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output);
 	void filterOnlyPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output);
-	void evaluateSelectClause(Query query, vector<string>& results);
-	void evaluatePatternClause(Query query, vector<vector<string>>& results);
-	void evaluateParentClause(Query query, vector<vector<string>>& results);
-	void evaluateParentTClause(Query query, vector<vector<string>>& results);
-	void evaluateModifiesClause(Query query, vector<vector<string>>& results);
-	void evaluateUsesClause(Query query, vector<vector<string>>& results);
+	void evaluateSelectClause(Query query, vector<string>& results, int iterator);
+	void evaluatePatternClause(Query query, vector<vector<string>>& results, int iterator);
+	void evaluateParentClause(Query query, vector<vector<string>>& results, int iterator);
+	void evaluateParentTClause(Query query, vector<vector<string>>& results, int iterator);
+	void evaluateModifiesClause(Query query, vector<vector<string>>& results, int iterator);
+	void evaluateUsesClause(Query query, vector<vector<string>>& results, int iterator);
 };
