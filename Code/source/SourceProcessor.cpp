@@ -32,7 +32,7 @@ void SourceProcessor::process(string program) {
 		i++;
 	}
 
-	
+
 	parse(ltokens);
 
 }
@@ -96,6 +96,18 @@ void SourceProcessor::parseProgram()
 	}
 }
 
+int countlines = 1;
+int countparent = 0;
+int parentChild = 0; // it is not a child, = 1 if it is a child
+int prevCountparent = 0;
+int isnested = 0; // it is not nested, > 1 if it is nested
+vector<int> ancestors; // vector of parents to track previous parents
+string lhs;
+string rhs;
+vector<string> procedureList; // vector of procedures stored
+vector<vector<string>> procedureCalls; // vector of vector of procedures to accomodate callst
+vector<string> procedureTemp; // temporary vector to store current procedure calls, transferred to procedureCalls vector
+
 void SourceProcessor::parseProcedure()
 {
 	if (remainingTokens.front() == "procedure")
@@ -104,6 +116,8 @@ void SourceProcessor::parseProcedure()
 		if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
 		{
 			Database::insertProcedure(remainingTokens.front()); // insert the procedure into the database
+			procedureList.push_back(remainingTokens.front()); // store the procedure into vector
+			procedureTemp.push_back(remainingTokens.front()); // store the procedure into temp vector
 			next();
 			expect("{");
 			parseStatement();
@@ -114,15 +128,6 @@ void SourceProcessor::parseProcedure()
 		}
 	}
 }
-
-int countlines = 1;
-int countparent = 0;
-int parentChild = 0; // it is not a child, = 1 if it is a child
-int prevCountparent = 0;
-int isnested = 0; // it is not nested, > 1 if it is nested
-vector<int> ancestors;
-string lhs;
-string rhs;
 
 void SourceProcessor::parseStatement()
 {
@@ -141,14 +146,13 @@ void SourceProcessor::parseStatement()
 			cc << countlines;
 			cc >> childLine;
 
-			/*string grandparentLine;
-			stringstream gg;
-			gg << parentChild;
-			gg >> grandparentLine;*/
+			//string grandparentLine;
+			//stringstream gg;
+			//gg << parentChild;
+			//gg >> grandparentLine;
 
 			Database::insertChild(parentLine, childLine); // parent table
 			//Database::insertGrandchild(grandparentLine, childLine); // parent* table
-
 			for (int i = 0; i < ancestors.size(); i++)
 			{
 				string grandparentLine;
@@ -174,7 +178,6 @@ void SourceProcessor::parseStatement()
 
 			Database::insertChild(parentLine, childLine); // parent table
 			//Database::insertGrandchild(parentLine, childLine); // parent* table
-
 			for (int i = 0; i < ancestors.size(); i++)
 			{
 				string grandparentLine;
@@ -233,7 +236,7 @@ void SourceProcessor::parseStatement()
 				isnested -= 1;
 			}
 
-			while (conditionTokens.front() != ")") // insert uses as it appears in the condition of while statement
+			while (conditionTokens.front() != ")")
 			{
 				if (checkName(conditionTokens.front())) // if it is a variable
 				{
@@ -243,7 +246,7 @@ void SourceProcessor::parseStatement()
 				conditionTokens.pop_front();
 			}
 
-			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent), if there is nesting
+			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
 				//string parentLine;
 				//stringstream pp;
@@ -421,6 +424,18 @@ void SourceProcessor::parseStatement()
 
 
 		}
+		else if (remainingTokens.front() == "call")
+		{
+			next();
+			if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
+			{
+				Database::insertCalls(procedureList.back(), remainingTokens.front()); // insert direct calls into database
+				procedureTemp.push_back(remainingTokens.front()); // store its procedure call in the same temp vector
+				next();
+				expect(";");
+				countlines++;
+			}
+		}
 		else if (remainingTokens.front() == "read")
 		{
 
@@ -518,7 +533,6 @@ void SourceProcessor::parseStatement()
 
 				//Database::insertUses(parentLine, variableToken); // 
 				//Database::insertUses(grandparentLine, variableToken); // 
-
 				for (int i = 0; i < ancestors.size(); i++)
 				{
 					string ancestorsLine;
@@ -528,7 +542,6 @@ void SourceProcessor::parseStatement()
 
 					Database::insertUses(ancestorsLine, variableToken);
 				}
-
 			}
 			else if (countparent > 0) // if no nesting of while or if
 			{
@@ -612,7 +625,6 @@ void SourceProcessor::parseStatement()
 					Database::insertModifies(ancestorsLine, variableToken);
 				}
 
-
 				while (nestedexpressionTokens.front() != ";")
 				{
 
@@ -651,7 +663,7 @@ void SourceProcessor::parseStatement()
 
 				while (nestedexpressionTokens.front() != ";")
 				{
-			
+
 					if (checkName(nestedexpressionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedexpressionTokens.front();
@@ -661,7 +673,7 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			countlines++;	
+			countlines++;
 
 		}
 
@@ -669,11 +681,43 @@ void SourceProcessor::parseStatement()
 
 	next();
 
-	if (remainingTokens.front() == "procedure")
+	if (remainingTokens.empty()) // at the end of the source, extract from procedureCalls vector to determine callst 2d vector
 	{
-		parseProcedure();
+		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+		procedureTemp.clear(); // clear away temp vector
+		for (int i = 0; i < procedureCalls.size(); i++)
+		{
+			string caller = procedureCalls[i].at(0);
+			for (int j = 1; j < procedureCalls[i].size(); j++)
+			{
+				Database::insertCallst(caller, procedureCalls[i].at(j)); // insert indirect calls into database
+				//Database::insertCallst("test3", "test4");
+				//Database::insertCallst(procedureCalls[2].at(0), procedureCalls[2].at(0));
+			}
+		}
 	}
 
+	if (!remainingTokens.empty() && remainingTokens.front() == "procedure")
+	{
+
+		for (int i = 0; i < procedureCalls.size(); i++)
+		{
+			// check if the current procedure is in the previous vector
+			if (find(procedureCalls[i].begin(), procedureCalls[i].end(), procedureList.back()) != procedureCalls[i].end())
+			{
+				for (int j = 1; j < procedureTemp.size(); j++)
+				{
+					procedureCalls[i].push_back(procedureTemp.at(j)); // if it is, include its callee into previous vector
+				}
+			}
+		}
+
+		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+		procedureTemp.clear(); // clear away temp vector
+		//Database::insertCallst(procedureCalls[0].at(0), procedureCalls[0].at(1)); // insert indirect calls into database
+		//Database::insertCallst("test1", "test2");
+		parseProcedure();
+	}
 
 }
 
@@ -713,7 +757,6 @@ void SourceProcessor::parseFactorCondition()
 	}
 }
 
-
 void SourceProcessor::parseFactor()
 {
 	if (checkName(remainingTokens.front())) // if it is a variable
@@ -725,18 +768,32 @@ void SourceProcessor::parseFactor()
 		parseConstant();
 	}
 
-
-	if (match("+") || match("-") || match("*") || match("/") || match("%") || match("(") || match(")")) // should be an expression sign
+	if (!match(";")) // this means it is an expression or real expression
 	{
-		next();
-		parseFactor(); // check again if it is an variable or integer or an expression
+		if (match("+") || match("-") || match("*") || match("/") || match("%")) // should be an expression sign
+		{
+			next();
+			parseFactor(); // check again if it is an variable or integer or an expression
+		}
+		else if (match(">") || match("<")) // should be a real expression
+		{
+			next();
+			parseFactor();
+		}
+		else if (match(")"))
+		{
+			next();
+		}
+		else
+		{
+			// throw error
+		}
 	}
-	else if (match(";"))
+	else
 	{
 		next();
 	}
 }
-
 
 void SourceProcessor::parseConstant()
 {

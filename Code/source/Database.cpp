@@ -120,6 +120,22 @@ void Database::initialize() {
 	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) );";
 	sqlite3_exec(dbConnection, createUsesTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing calls table (if any)
+	string dropCallsTableSQL = "DROP TABLE IF EXISTS calls";
+	sqlite3_exec(dbConnection, dropCallsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create calls table
+	string createCallsTableSQL = "CREATE TABLE calls ( proc1 VARCHAR(255) , proc2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createCallsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing callst table (if any)
+	string dropCallstTableSQL = "DROP TABLE IF EXISTS callst";
+	sqlite3_exec(dbConnection, dropCallstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create callst table
+	string createCallstTableSQL = "CREATE TABLE callst ( proc1 VARCHAR(255) , proc2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createCallstTableSQL.c_str(), NULL, 0, &errorMessage);
+
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
 }
@@ -146,7 +162,7 @@ void Database::insertVariable(string variableName) {
 
 // method to insert an assignment into the database
 void Database::insertAssignment(string assignmentLine, string lhs, string rhs) {
-	string insertAssignmentSQL = "INSERT INTO assignments ('line' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs +"'); ";
+	string insertAssignmentSQL = "INSERT INTO assignments ('line' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs + "'); ";
 	sqlite3_exec(dbConnection, insertAssignmentSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -216,7 +232,7 @@ void Database::insertGrandchild(string grandparentLine, string childLine) {
 
 // method to insert into the modifies table
 void Database::insertModifies(string modifiesLine, string variableN) {
-	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '"+ modifiesLine +"', '" + variableN + "' ); ";
+	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '" + modifiesLine + "', '" + variableN + "' ); ";
 	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -226,9 +242,20 @@ void Database::insertUses(string usesLine, string variableN) {
 	sqlite3_exec(dbConnection, insertUsesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
+// method to insert into the calls table
+void Database::insertCalls(string proc1, string proc2) {
+	string insertCallsSQL = "INSERT INTO calls ('proc1', 'proc2') VALUES ( '" + proc1 + "', '" + proc2 + "' ); ";
+	sqlite3_exec(dbConnection, insertCallsSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the callst table
+void Database::insertCallst(string proc1, string proc2) {
+	string insertCallstSQL = "INSERT INTO callst ('proc1', 'proc2') VALUES ( '" + proc1 + "', '" + proc2 + "' ); ";
+	sqlite3_exec(dbConnection, insertCallstSQL.c_str(), NULL, 0, &errorMessage);
+}
 
 // method to get all the procedures from the database
-void Database::getProcedure(vector<string>& results){
+void Database::getProcedure(vector<string>& results) {
 	// clear the existing results
 	dbResults.clear();
 
@@ -417,7 +444,7 @@ void Database::getParent(vector<vector<string>>& results, string parentType, str
 			getParentSQL = "SELECT parentLine, childLine FROM parents;";
 		}
 		else if (childType == "line number") {
-			getParentSQL = "SELECT parentLine, childLine from parents WHERE childLine = " +  childValue + ";";
+			getParentSQL = "SELECT parentLine, childLine from parents WHERE childLine = " + childValue + ";";
 		}
 		else {  // child is synonym
 			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
@@ -590,7 +617,7 @@ string Database::convertToDbName(string designEntity)
 	}
 	else if (designEntity == "assign") {
 		return "assignments";
-	} 
+	}
 	else {
 		return designEntity + "s";
 	}
