@@ -21,12 +21,15 @@ public:
 	void parseSelectClause(Query& currentQuery);
 	void parseSuchThatClause(Query& currentQuery);
 	void parsePatternClause(Query& currentQuery);
+	void parseExpression(Query& currentQuery);
 	bool validateSynonym(string symbol, bool checkInDeclaration);
-	void validateDesignEntity(string symbol);
 
+	void validateDesignEntity(string symbol);
 	bool validateIdent(string symbol);
+	bool validateNumber(string symbol);
 
 private:
+	int precedence(string symbol);
 	void expect(string symbol);
 	bool match(string symbol);
 	void next();

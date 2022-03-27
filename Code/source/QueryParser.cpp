@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <regex>
+#include <stack>
 
 #define INTEGER_PATTERN "[0-9]+"
 #define NAME_PATTERN "[a-zA-Z][a-zA-Z0-9]*"
@@ -206,6 +207,52 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 	currentQuery.addPatternClause(patternSynonym, LHSPair, RHSPair);
 }
 
+void QueryParser::parseExpression(Query& currentQuery)
+{
+	stack<string> operands;
+	vector<string> expression;
+
+	while ((remainingTokens.front() != "\"") || remainingTokens.front() != "_") {
+		string exprToken = remainingTokens.front();
+
+		if (exprToken == "(") {
+			operands.push(exprToken);
+		}
+		else if (exprToken == ")") {
+			while (operands.top() != "(") {
+				expression.push_back(operands.top());
+				operands.pop();
+			}
+			operands.pop(); // to pop the last "("
+		}
+		else if (validateNumber(exprToken)) {
+			expression.push_back(exprToken);
+		}
+		else {
+			if (operands.empty() || precedence(operands.top()) < precedence(exprToken)) {
+				operands.push(exprToken);
+			}
+			else if (precedence(operands.top()) > precedence(exprToken)) {
+				expression.push_back(operands.top());
+				operands.pop();
+				operands.push(exprToken);
+			}
+		}
+	}
+}
+
+int precedence(string symbol) {
+	if (symbol == "+" || symbol == "-") {
+		return 0;
+	}
+	else if (symbol == "%" || symbol == "*" || symbol == "/") {
+		return 1;
+	}
+	else {
+		return -1;
+	}
+}
+
 bool QueryParser::validateSynonym(string symbol, bool checkInDeclaration)
 {
 	if (checkInDeclaration && currentDeclarationList.find(symbol) == currentDeclarationList.end()) {
@@ -255,4 +302,9 @@ void QueryParser::validateDesignEntity(string symbol)
 bool QueryParser::validateIdent(string symbol)
 {
 	return regex_match(symbol, regex(IDENT_PATTERN));
+}
+
+bool QueryParser::validateNumber(string symbol)
+{
+	return regex_match(symbol, regex(INTEGER_PATTERN));
 }
