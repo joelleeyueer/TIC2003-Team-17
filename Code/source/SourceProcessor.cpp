@@ -242,6 +242,7 @@ void SourceProcessor::parseStatement()
 				{
 					string useVariableToken = conditionTokens.front();
 					Database::insertUses(whileLine, useVariableToken);
+					Database::insertUses(procedureList.back(), useVariableToken);
 				}
 				conditionTokens.pop_front();
 			}
@@ -360,6 +361,7 @@ void SourceProcessor::parseStatement()
 				{
 					string useVariableToken = conditionTokens.front();
 					Database::insertUses(ifLine, useVariableToken);
+					Database::insertUses(procedureList.back(), useVariableToken);
 				}
 				conditionTokens.pop_front();
 			}
@@ -456,6 +458,7 @@ void SourceProcessor::parseStatement()
 			parseVariable();
 			expect(";");
 			Database::insertModifies(modifyLine, variableToken);
+			Database::insertModifies(procedureList.back(), variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
@@ -518,6 +521,7 @@ void SourceProcessor::parseStatement()
 			parseVariable();
 			expect(";");
 			Database::insertUses(useLine, variableToken);
+			Database::insertUses(procedureList.back(), variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
@@ -593,6 +597,7 @@ void SourceProcessor::parseStatement()
 				{
 					string useVariableToken = expressionTokens.front();
 					Database::insertUses(useLine, useVariableToken);
+					Database::insertUses(procedureList.back(), useVariableToken);
 				}
 				expressionTokens.pop_front();
 			}
@@ -600,6 +605,7 @@ void SourceProcessor::parseStatement()
 			Database::insertAssignment(assignmentLine, lhs, rhs);
 			rhs = " ";
 			Database::insertModifies(modifyLine, variableToken);
+			Database::insertModifies(procedureList.back(), variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
@@ -681,9 +687,74 @@ void SourceProcessor::parseStatement()
 
 	next();
 
+	if (!remainingTokens.empty() && remainingTokens.front() == "procedure")
+	{
+		for (int i = 0; i < procedureCalls.size(); i++) // iterating through the rows of the 2D vector
+		{
+			// check if the current procedure / first element in temp vector is in the previous vectors
+			if (find(procedureCalls[i].begin(), procedureCalls[i].end(), procedureList.back()) != procedureCalls[i].end())
+			{
+				for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector
+				{
+					procedureCalls[i].push_back(procedureTemp.at(j)); // if it is, include its callee into previous vector
+
+					for (int k = 0; k < procedureCalls.size(); k++)
+					{
+						if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+						{
+							for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+							{
+								procedureCalls[i].push_back(procedureCalls[k].at(col));
+								//procedureTemp.push_back(procedureCalls[k].at(col));
+							}
+						}
+					}
+				}
+			}
+		}
+
+		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+		// check if the 2nd element in temp vector onwards is in the previous vector
+		for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
+		{
+			for (int k = 0; k < procedureCalls.size(); k++) // iterate through the first column of 2D vector
+			{
+				if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+				{
+					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+					{
+						procedureCalls[procedureList.size()-1].push_back(procedureCalls[k].at(col));
+						//procedureTemp.push_back(procedureCalls[k].at(col));
+					}
+				}
+			}
+		}
+
+		
+		procedureTemp.clear(); // clear away temp vector
+		//Database::insertCallst(procedureCalls[0].at(0), procedureCalls[0].at(1)); // insert indirect calls into database
+		//Database::insertCallst("test1", "test2");
+		parseProcedure();
+	}
+
 	if (remainingTokens.empty()) // at the end of the source, extract from procedureCalls vector to determine callst 2d vector
 	{
 		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+		// check if the 2nd element in temp vector onwards is in the previous vector
+		for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
+		{
+			for (int k = 0; k < procedureCalls.size(); k++) // iterate through the first column of 2D vector
+			{
+				if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+				{
+					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+					{
+						procedureCalls[procedureList.size() - 1].push_back(procedureCalls[k].at(col));
+						//procedureTemp.push_back(procedureCalls[k].at(col));
+					}
+				}
+			}
+		}
 		procedureTemp.clear(); // clear away temp vector
 		for (int i = 0; i < procedureCalls.size(); i++)
 		{
@@ -695,31 +766,33 @@ void SourceProcessor::parseStatement()
 				//Database::insertCallst(procedureCalls[2].at(0), procedureCalls[2].at(0));
 			}
 		}
+
+		//for (int i = 0; i < procedureCalls.size(); i++) // iterate through the rows of the 2D vector
+		//{	
+		//	string caller = procedureCalls[i].at(0); // to capture the first item in each row of vector as caller
+		//	for (int j = 1; j < procedureCalls[i].size(); j++) // iterate through the columns of the 2D vector, starting from 2nd column
+		//	{
+		//		string callee = procedureCalls[i].at(j);
+		//		for (int k = 1; k < procedureCalls.size(); k++)
+		//		{
+		//			if (callee == procedureCalls[k].at(0))
+		//			{
+		//				for (int col = 1; col < procedureCalls[k].size(); col++)
+		//				{
+		//					Database::insertCallst(caller, procedureCalls[k].at(col));
+		//				}
+
+
+		//				
+		//			}
+		//		}
+		//	}
+		//}
+
 	}
-
-	if (!remainingTokens.empty() && remainingTokens.front() == "procedure")
-	{
-
-		for (int i = 0; i < procedureCalls.size(); i++)
-		{
-			// check if the current procedure is in the previous vector
-			if (find(procedureCalls[i].begin(), procedureCalls[i].end(), procedureList.back()) != procedureCalls[i].end())
-			{
-				for (int j = 1; j < procedureTemp.size(); j++)
-				{
-					procedureCalls[i].push_back(procedureTemp.at(j)); // if it is, include its callee into previous vector
-				}
-			}
-		}
-
-		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
-		procedureTemp.clear(); // clear away temp vector
-		//Database::insertCallst(procedureCalls[0].at(0), procedureCalls[0].at(1)); // insert indirect calls into database
-		//Database::insertCallst("test1", "test2");
-		parseProcedure();
-	}
-
 }
+
+
 
 void SourceProcessor::parseVariable()
 {

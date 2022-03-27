@@ -39,13 +39,14 @@ procedure second {
 		w = v + 9;
 	}
 
-	call fourth;
+	call third;
 }
 
 procedure third {
 	read s;
 	print t;
 	read c;
+	call fourth;
 	
 }
 
@@ -53,4 +54,13 @@ procedure fourth {
 	read s;
 	print t;
 	read c;
+	call fifth;
+
 }
+
+procedure fifth {
+	u = e + 7;
+	
+}
+
+

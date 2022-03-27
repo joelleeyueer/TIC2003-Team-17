@@ -133,7 +133,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropCallstTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create callst table
-	string createCallstTableSQL = "CREATE TABLE callst ( proc1 VARCHAR(255) , proc2 VARCHAR(255) );";
+	string createCallstTableSQL = "CREATE TABLE callst ( proc1 VARCHAR(255) , proc2 VARCHAR(255) , UNIQUE(proc1,proc2) );";
 	sqlite3_exec(dbConnection, createCallstTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// initialize the result vector
