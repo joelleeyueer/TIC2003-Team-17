@@ -105,7 +105,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create modifies table
-	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(modifiesLine,variableN) );";
 	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing uses table (if any)
@@ -117,7 +117,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropUsesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create uses table
-	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(usesLine,variableN) );";
 	sqlite3_exec(dbConnection, createUsesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing calls table (if any)
@@ -559,6 +559,22 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 	}
 }
 
+// method to get variableN from the database modifies for specific modifiesLine
+void Database::getCallsTmodifies(vector<string>& results, string callee) {
+	// clear the existing results
+	dbResults.clear();
+
+	string getCallsTmodifiesSQL = "SELECT variableN FROM modifies WHERE modifiesLine = '" + callee + "';";
+	sqlite3_exec(dbConnection, getCallsTmodifiesSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
+	}
+}
+
 void Database::getUses(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
 {
 	// clear the existing results
@@ -588,6 +604,22 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 
 	for (vector<string> dbRow : dbResults) {
 		results.push_back(dbRow);
+	}
+}
+
+// method to get variableN from the database modifies for specific usesLine
+void Database::getCallsTuses(vector<string>& results, string callee) {
+	// clear the existing results
+	dbResults.clear();
+
+	string getCallsTusesSQL = "SELECT variableN FROM uses WHERE usesLine = '" + callee + "';";
+	sqlite3_exec(dbConnection, getCallsTusesSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
 	}
 }
 

@@ -1,4 +1,5 @@
 #include "SourceProcessor.h"
+#include "database.h"
 
 #include <regex>
 #include <iostream>
@@ -764,8 +765,28 @@ void SourceProcessor::parseStatement()
 				Database::insertCallst(caller, procedureCalls[i].at(j)); // insert indirect calls into database
 				//Database::insertCallst("test3", "test4");
 				//Database::insertCallst(procedureCalls[2].at(0), procedureCalls[2].at(0));
+	
+				string callee = procedureCalls[i].at(j);
+				vector<string> results;
+
+				Database::getCallsTmodifies(results,callee);
+				for (int k = 0; k < results.size(); k++)
+				{
+					Database::insertModifies(caller, results.at(k));
+				}
+
+				results.clear();
+
+				Database::getCallsTuses(results, callee);
+				for (int k = 0; k < results.size(); k++)
+				{
+					Database::insertUses(caller, results.at(k));
+				}
+
 			}
 		}
+
+
 
 		//for (int i = 0; i < procedureCalls.size(); i++) // iterate through the rows of the 2D vector
 		//{	

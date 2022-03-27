@@ -1,66 +1,21 @@
 procedure first {
 
-	read x;
-	read y;
-	read h;
-	print n;
-
-	while (y < q) {
-		print y;
-		if (y > 1) then { 
-			print g;
-			read f;
-		} else {
-			print k;
-		}
-	} 
-
-	read z;
-	x = r + 2;
-	print a;
-	print b;
-
-	if (x > 1) then {
-	    	read d; 
-	} else {
-		read s;
-	}	
-
-	read m;
+	read a;
+	print x;
 	call second;
+
 }
 
 procedure second {
-	read z;
-	print o;
-	
-	while (g < 8) {
-		print k;
-		w = v + 9;
-	}
-
+	read b;
+	print y;
 	call third;
+
 }
 
 procedure third {
-	read s;
-	print t;
 	read c;
-	call fourth;
-	
-}
-
-procedure fourth {
-	read s;
-	print t;
-	read c;
-	call fifth;
-
-}
-
-procedure fifth {
-	u = e + 7;
-	
+	print z;
 }
 
 
