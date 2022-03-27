@@ -11,7 +11,9 @@
 #include <algorithm> 
 
 // constructor
-QueryProcessor::QueryProcessor() {}
+QueryProcessor::QueryProcessor() {
+	clausesList = vector<ClauseMaster>{};
+}
 
 // destructor
 QueryProcessor::~QueryProcessor() {}
@@ -22,6 +24,7 @@ QueryProcessor::~QueryProcessor() {}
 // You should modify this method to complete the logic for handling all required queries.
 
 
+
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	// clear the output vector
 	output.clear();
@@ -29,11 +32,46 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	vector<string> selectClauseResults;
 	vector<vector<string>> suchThatResults;
 	vector<vector<string>> patternClauseResults;
-	vector<vector<vector<string>>> suchThatMaster;
-	vector<vector<vector<string>>> patternClauseMaster;
 
 	evaluateSelectClause(queryObj, selectClauseResults, 0);
+	evaluateSuchThatClause(queryObj, suchThatResults, clausesList);
+	evaluatePatternClause(queryObj, suchThatResults, clausesList);
 
+
+	//suchThatResults vector is empty but queryObj parser is not empty OR patternResults vector is empty but queryObj parser is not empty
+	if ((clausesList.empty() && !(queryObj.suchThatClauses.empty())) || (clausesList.empty() && !(queryObj.patternClauses.empty()))) { //meaningless queries or pattern or such that supposed to return stuff but nothing 
+		return; // returns nothing. Takes into account meaningless queries for 1. queries with suchThat OR pattern, 2. queries with suchThat AND pattern
+	}
+
+	else if ((clausesList.empty() && queryObj.suchThatClauses.empty()) && (clausesList.empty() && queryObj.patternClauses.empty())) { // only select clause exists
+		for (string row : selectClauseResults) { //only select clause
+			output.push_back(row);
+		}
+		return;
+	}
+	else {
+		//QP/database will return nothing when
+		//Meaningful query but no answer
+		//Meaningless query but no answer AKA false
+		filterEmptyResultsClause(queryObj, suchThatResults, patternClauseResults);
+
+		//everything else from this point on is a meaningful query or a meaningless query equating true
+		if (queryObj.suchThatClauses.size() > 0 && queryObj.patternClauses.size() > 0) {
+			//filterSuchThatPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+			filterSuchThatPatternClause2(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+		}
+		else if (queryObj.patternClauses.size() > 0) {
+			filterOnlyPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+		}
+		else { //suchThat
+			filterOnlySuchThatClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
+		}
+	}
+	
+}
+
+void QueryProcessor::evaluateSuchThatClause(Query queryObj, vector<vector<string>>& suchThatResults, vector<ClauseMaster>& clausesList)
+{
 	/// <summary>
 	/// Iterate through suchThatResults and parse results into suchThatMaster
 	/// </summary>
@@ -64,61 +102,76 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 			return;
 		}
 
-		suchThatMaster.push_back(suchThatResults[0]);
+
+		if (suchThatResults.size() > 0) { //meaningless or not, there are results pulled from the Database class
+			for (vector<string> i : suchThatResults) {
+				//check if its meaningless. if yes, dont addClausesList
+				string firstArgumentType = queryObj.suchThatClauses[iterator].firstArgument[0]; //design entity, line number, _, IDENT)
+				string firstArgumentSynonym = queryObj.suchThatClauses[iterator].firstArgument[1];
+				if (firstArgumentType == "undeclared" || firstArgumentType == "line number" || firstArgumentType == "IDENT") {
+					vector<string> col1 = { i[0] };
+					vector<string> col2 = { i[1] };
+					vector<string> col3 = {};
+
+					addClausesList(col1, col2, col3);
+				}
+				else { //it's a design entity. check if Select synonym == Such That synonym
+					bool Meaningful = 0;
+					for (SelectClause i : queryObj.selectClauses) {
+						if (firstArgumentSynonym == i.name) {
+							Meaningful = 1;
+						}
+					}
+
+					if (Meaningful == 1) {
+						vector<string> col1 = { i[0] };
+						vector<string> col2 = { i[1] };
+						vector<string> col3 = {};
+
+						addClausesList(col1, col2, col3);
+					}
+					else {
+						continue;
+					}
+				}
+				
+			}
+		}
+		else {
+			//meaningful or meaningless queries that return nothing, 
+			return;
+		}
+
 
 		suchThatResults.clear();
 		suchThatCount--;
 	}
+}
 
+void QueryProcessor::evaluatePatternClause(Query queryObj, vector<vector<string>>& patternClauseResults, vector<ClauseMaster>& clausesList)
+{
 	/// <summary>
 	/// Iterate through patternClauseResults and parse results into patternClauseMaster
 	/// </summary>
 
 	int patternCount = queryObj.patternClauses.size();
-	iterator = -1;
+	int iterator = -1;
 
 	while (queryObj.patternClauses.size() > 0 && patternCount > 0) {
 		iterator++;
 		evaluatePatternClause(queryObj, patternClauseResults, iterator);
 
-		for (auto i : patternClauseResults) {
-			patternClauseMaster[iterator].push_back(i);
+		for (vector<string> i : patternClauseResults) {
+
+			vector<string> col1 = { i[0] };
+			vector<string> col2 = { i[1] };
+			vector<string> col3 = { i[2] };
+			addClausesList(col1, col2, col3);
 		}
 
 		patternClauseResults.clear();
 		patternCount--;
 	}
-
-	//suchThatResults vector is empty but queryObj parser is not empty OR patternResults vector is empty but queryObj parser is not empty
-	if ((suchThatResults.empty() && !(queryObj.suchThatClauses.empty())) || (patternClauseResults.empty() && !(queryObj.patternClauses.empty()))) { //meaningless queries or pattern or such that supposed to return stuff but nothing 
-		return; // returns nothing. Takes into account meaningless queries for 1. queries with suchThat OR pattern, 2. queries with suchThat AND pattern
-	}
-
-	else if ((suchThatResults.empty() && queryObj.suchThatClauses.empty()) && (patternClauseResults.empty() && queryObj.patternClauses.empty())) { // only select clause exists
-		for (string row : selectClauseResults) { //only select clause
-			output.push_back(row);
-		}
-		return;
-	}
-	else {
-		//QP/database will return nothing when
-		//Meaningful query but no answer
-		//Meaningless query but no answer AKA false
-		filterEmptyResultsClause(queryObj, suchThatResults, patternClauseResults);
-
-		//everything else from this point on is a meaningful query or a meaningless query equating true
-		if (queryObj.suchThatClauses.size() > 0 && queryObj.patternClauses.size() > 0) {
-			//filterSuchThatPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-			filterSuchThatPatternClause2(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-		}
-		else if (queryObj.patternClauses.size() > 0) {
-			filterOnlyPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-		}
-		else { //suchThat
-			filterOnlySuchThatClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-		}
-	}
-	
 }
 
 void QueryProcessor::filterEmptyResultsClause(Query query, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults)
@@ -351,6 +404,11 @@ void QueryProcessor::evaluateUsesClause(Query query, vector<vector<string>>& res
 {
 	UsesClauseEvaluator usesClauseEvaluator;
 	usesClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
+}
+
+void QueryProcessor::addClausesList(vector<string> Col1, vector<string> Col2, vector<string> Col3)
+{
+	clausesList.push_back(ClauseMaster{ Col1, Col2, Col3});
 }
 
 
