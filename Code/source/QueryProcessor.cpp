@@ -102,49 +102,6 @@ void QueryProcessor::evaluateSuchThatClause(Query queryObj, vector<vector<string
 			return;
 		}
 
-
-		if (suchThatResults.size() > 0) { //meaningless or not, there are results pulled from the Database class
-			for (vector<string> i : suchThatResults) {
-				//check if its meaningless. if yes, dont addClausesList
-				string firstArgumentType = queryObj.suchThatClauses[iterator].firstArgument[0]; //design entity, line number, _, IDENT)
-				string firstArgumentSynonym = queryObj.suchThatClauses[iterator].firstArgument[1];
-				if (firstArgumentType == "undeclared" || firstArgumentType == "line number" || firstArgumentType == "IDENT") {
-					vector<string> col1 = { i[0] };
-					vector<string> col2 = { i[1] };
-					vector<string> col3 = {};
-
-					addClausesList(col1, col2, col3);
-				}
-				else { //it's a design entity. check if Select synonym == Such That synonym
-					bool Meaningful = 0;
-					for (SelectClause i : queryObj.selectClauses) {
-						if (firstArgumentSynonym == i.name) {
-							Meaningful = 1;
-						}
-					}
-
-					if (Meaningful == 1) {
-						vector<string> col1 = { i[0] };
-						vector<string> col2 = { i[1] };
-						vector<string> col3 = {};
-
-						addClausesList(col1, col2, col3);
-					}
-					else {
-						continue;
-					}
-				}
-				
-			}
-		}
-		else {
-			//meaningful or meaningless queries that return nothing, 
-			return;
-		}
-
-
-		suchThatResults.clear();
-		suchThatCount--;
 	}
 }
 
