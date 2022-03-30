@@ -54,7 +54,7 @@
     <ClCompile Include="..\source\UsesClauseEvaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QueryTable.cpp">
+    <ClCompile Include="..\source\QueryTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,7 +98,7 @@
     <ClInclude Include="..\source\ParentTClauseEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="QueryTable.h">
+    <ClInclude Include="..\source\QueryTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
