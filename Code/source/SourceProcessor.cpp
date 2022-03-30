@@ -98,6 +98,8 @@ void SourceProcessor::parseProgram()
 }
 
 int countlines = 1;
+int currentlines = 1;
+int prevlines = 0;
 int countparent = 0;
 int parentChild = 0; // it is not a child, = 1 if it is a child
 int prevCountparent = 0;
@@ -108,6 +110,11 @@ string rhs;
 vector<string> procedureList; // vector of procedures stored
 vector<vector<string>> procedureCalls; // vector of vector of procedures to accomodate callst
 vector<string> procedureTemp; // temporary vector to store current procedure calls, transferred to procedureCalls vector
+vector<string> currentproc;
+vector<string> prevproc;
+vector<string> whilesvector;
+vector<string> thenvector;
+vector<string> elsevector;
 
 void SourceProcessor::parseProcedure()
 {
@@ -128,6 +135,7 @@ void SourceProcessor::parseProcedure()
 			//std::throw_with_nested("error in parseProcedure");
 		}
 	}
+
 }
 
 void SourceProcessor::parseStatement()
@@ -196,6 +204,7 @@ void SourceProcessor::parseStatement()
 		ss << countlines;
 		ss >> statementLine;
 		Database::insertStatement(statementLine);
+		Database::insertProcstmt(procedureList.back() , statementLine);
 
 		if (remainingTokens.front() == "while")
 		{
@@ -214,6 +223,41 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> whileLine;
 			Database::insertWhile(whileLine);
+			
+
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty())
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!whilesvector.empty())
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::insertNexts(whilesvector.back(), currentLine);
+				whilesvector.pop_back();
+			}
+
+			if (!thenvector.empty())
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
 
 			next();
 			expect("(");
@@ -222,7 +266,9 @@ void SourceProcessor::parseStatement()
 			parseFactorCondition();
 			expect("{");
 			countlines++;
+			currentlines++;
 			parseStatement();
+			whilesvector.push_back(whileLine);
 			ancestors.pop_back();
 
 			if (isnested == 0)
@@ -325,6 +371,40 @@ void SourceProcessor::parseStatement()
 			ss >> ifLine;
 			Database::insertIf(ifLine);
 
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty())
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!whilesvector.empty())
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::insertNexts(whilesvector.back(), currentLine);
+				whilesvector.pop_back();
+			}
+
+			if (!thenvector.empty())
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
 			next();
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
@@ -333,13 +413,17 @@ void SourceProcessor::parseStatement()
 			expect("then");
 			expect("{");
 			countlines++;
+			currentlines++;
 			parseStatement();
+			thenvector.push_back(ifLine);
+
 
 			if (remainingTokens.front() == "else")
 			{
 				next();
 				expect("{");
 				parseStatement();
+				elsevector.push_back(ifLine);
 			}
 
 			ancestors.pop_back();
@@ -436,7 +520,45 @@ void SourceProcessor::parseStatement()
 				procedureTemp.push_back(remainingTokens.front()); // store its procedure call in the same temp vector
 				next();
 				expect(";");
+
+				string prevLine;
+				string currentLine;
+				stringstream pp;
+				stringstream cc;
+				prevlines = currentlines - 1;
+				pp << prevlines;
+				pp >> prevLine;
+				cc << currentlines;
+				cc >> currentLine;
+				Database::getProcstmt(currentproc, currentLine);
+				Database::getProcstmt(prevproc, prevLine);
+				//cout << prevproc.back() << currentproc.back() << endl;
+
+				if (whilesvector.empty() && thenvector.empty())
+				{
+					if (prevlines != 0 && prevproc.back() == currentproc.back())
+					{
+						Database::insertNexts(prevLine, currentLine);
+					}
+				}
+
+				if (!whilesvector.empty())
+				{
+					Database::insertNexts(prevLine, whilesvector.back());
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+
+				if (!thenvector.empty())
+				{
+					Database::insertNexts(thenvector.back(), currentLine);
+					thenvector.pop_back();
+				}
+				
+
 				countlines++;
+				currentlines++;
+
 			}
 		}
 		else if (remainingTokens.front() == "read")
@@ -447,12 +569,46 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> readLine;
 
+			Database::insertRead(readLine);
+
 			string modifyLine;
 			stringstream mm;
 			mm << countlines;
 			mm >> modifyLine;
 
-			Database::insertRead(readLine);
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty())
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!whilesvector.empty())
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::insertNexts(whilesvector.back(), currentLine);
+				whilesvector.pop_back();
+			}
+
+			if (!thenvector.empty())
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
 
 			next();
 			string variableToken = remainingTokens.front();
@@ -501,6 +657,7 @@ void SourceProcessor::parseStatement()
 			}
 
 			countlines++;
+			currentlines++;
 
 		}
 		else if (remainingTokens.front() == "print")
@@ -510,12 +667,46 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> printLine;
 
+			Database::insertPrint(printLine);
+
 			string useLine;
 			stringstream uu;
 			uu << countlines;
 			uu >> useLine;
 
-			Database::insertPrint(printLine);
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty())
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!whilesvector.empty())
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::insertNexts(whilesvector.back(), currentLine);
+				whilesvector.pop_back();
+			}
+
+			if (!thenvector.empty())
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
 
 			next();
 			string variableToken = remainingTokens.front();
@@ -564,6 +755,7 @@ void SourceProcessor::parseStatement()
 			}
 
 			countlines++;
+			currentlines++;
 
 		}
 		else // it is an assignment
@@ -582,6 +774,41 @@ void SourceProcessor::parseStatement()
 			stringstream uu;
 			uu << countlines;
 			uu >> useLine;
+
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty())
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!whilesvector.empty())
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::insertNexts(whilesvector.back(), currentLine);
+				whilesvector.pop_back();
+			}
+
+			if (!thenvector.empty())
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
 
 			lhs = remainingTokens.front();
 			string variableToken = remainingTokens.front();
@@ -681,12 +908,15 @@ void SourceProcessor::parseStatement()
 			}
 
 			countlines++;
+			currentlines++;
 
 		}
 
 	}
 
 	next();
+
+	//currentlines++;
 
 	if (!remainingTokens.empty() && remainingTokens.front() == "procedure")
 	{

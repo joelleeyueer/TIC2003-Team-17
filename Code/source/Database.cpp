@@ -136,6 +136,30 @@ void Database::initialize() {
 	string createCallstTableSQL = "CREATE TABLE callst ( proc1 VARCHAR(255) , proc2 VARCHAR(255) , UNIQUE(proc1,proc2) );";
 	sqlite3_exec(dbConnection, createCallstTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing nexts table (if any)
+	string dropNextsTableSQL = "DROP TABLE IF EXISTS nexts";
+	sqlite3_exec(dbConnection, dropNextsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create nexts table
+	string createNextsTableSQL = "CREATE TABLE nexts ( stmt1 VARCHAR(255) , stmt2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createNextsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing nextst table (if any)
+	string dropNextstTableSQL = "DROP TABLE IF EXISTS nextst";
+	sqlite3_exec(dbConnection, dropNextstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create callst table
+	string createNextstTableSQL = "CREATE TABLE nextst ( stmt1 VARCHAR(255) , stmt2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createNextstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing procstmt table (if any)
+	string dropProcstmtTableSQL = "DROP TABLE IF EXISTS procstmt";
+	sqlite3_exec(dbConnection, dropProcstmtTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create procstmt table
+	string createProcstmtTableSQL = "CREATE TABLE procstmt ( proc VARCHAR(255) , stmt VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createProcstmtTableSQL.c_str(), NULL, 0, &errorMessage);
+
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
 }
@@ -252,6 +276,25 @@ void Database::insertCalls(string proc1, string proc2) {
 void Database::insertCallst(string proc1, string proc2) {
 	string insertCallstSQL = "INSERT INTO callst ('proc1', 'proc2') VALUES ( '" + proc1 + "', '" + proc2 + "' ); ";
 	sqlite3_exec(dbConnection, insertCallstSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the nexts table
+void Database::insertNexts(string stmt1, string stmt2) {
+	string insertNextsSQL = "INSERT INTO nexts ('stmt1', 'stmt2') VALUES ( '" + stmt1 + "', '" + stmt2 + "' ); ";
+	sqlite3_exec(dbConnection, insertNextsSQL.c_str(), NULL, 0, &errorMessage);
+
+}
+
+// method to insert into the nextst table
+void Database::insertNextst(string stmt1, string stmt2) {
+	string insertNextstSQL = "INSERT INTO nextst ('stmt1', 'stmt2') VALUES ( '" + stmt1 + "', '" + stmt2 + "' ); ";
+	sqlite3_exec(dbConnection, insertNextstSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the procstmt table
+void Database::insertProcstmt(string proc, string stmt) {
+	string insertProcstmtSQL = "INSERT INTO procstmt ('proc', 'stmt') VALUES ( '" + proc + "', '" + stmt + "' ); ";
+	sqlite3_exec(dbConnection, insertProcstmtSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 // method to get all the procedures from the database
@@ -621,6 +664,23 @@ void Database::getCallsTuses(vector<string>& results, string callee) {
 		result = dbRow.at(0);
 		results.push_back(result);
 	}
+}
+
+// method to get procedure from the database procstmt for specific statement line
+void Database::getProcstmt(vector<string>& results, string stmt) {
+	// clear the existing results
+	dbResults.clear();
+
+	string getProcstmtSQL = "SELECT proc FROM procstmt WHERE stmt = '" + stmt + "';";
+	sqlite3_exec(dbConnection, getProcstmtSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
+	}
+	
 }
 
 // callback method to put one row of results from the database into the dbResults vector

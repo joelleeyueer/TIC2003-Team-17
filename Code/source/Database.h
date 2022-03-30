@@ -72,6 +72,15 @@ public:
 	// method to insert callst into the database
 	static void insertCallst(string proc1, string proc2);
 
+	// method to insert nexts into the database
+	static void insertNexts(string stmt1, string stmt2);
+
+	// method to insert nextst into the database
+	static void insertNextst(string stmt1, string stmt2);
+
+	// method to insert procstmt into the database
+	static void insertProcstmt(string proc, string stmt);
+
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);
 
@@ -104,6 +113,8 @@ public:
 	static void getCallsTmodifies(vector<string>& results, string callee);
 
 	static void getCallsTuses(vector<string>& results, string callee);
+
+	static void getProcstmt(vector<string>& results, string stmt);
 
 	/*	Procedures
 		Constant
