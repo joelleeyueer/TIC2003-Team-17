@@ -5,15 +5,14 @@ procedure first {
 	while (g < 8) {
 		print k;
 		read j;
+		if (x > 1) then {
+	    		read d; 
+			read t;
+		} else {
+			read s;
+			print y;
+		}	
 	}
-
-	if (x > 1) then {
-	    	read d; 
-		read t;
-	} else {
-		read s;
-		print y;
-	}	
 	call second;
 
 }
@@ -22,6 +21,7 @@ procedure second {
 	read b;
 	print y;
 	call third;
+
 	while (g < 8) {
 	print k;
 	read j;
@@ -31,7 +31,7 @@ procedure second {
 
 
 procedure third {
-	read s;
+	call fourth;
 	print t;
 	read c;
 	

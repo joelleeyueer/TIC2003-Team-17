@@ -112,9 +112,12 @@ vector<vector<string>> procedureCalls; // vector of vector of procedures to acco
 vector<string> procedureTemp; // temporary vector to store current procedure calls, transferred to procedureCalls vector
 vector<string> currentproc;
 vector<string> prevproc;
+vector<string> whilesproc;
 vector<string> whilesvector;
 vector<string> thenvector;
 vector<string> elsevector;
+vector<vector<string>> nextst;
+vector<string> nextstTemp;
 
 void SourceProcessor::parseProcedure()
 {
@@ -236,9 +239,10 @@ void SourceProcessor::parseStatement()
 			cc >> currentLine;
 			Database::getProcstmt(currentproc, currentLine);
 			Database::getProcstmt(prevproc, prevLine);
+
 			//cout << prevproc.back() << currentproc.back() << endl;
 
-			if (whilesvector.empty() && thenvector.empty())
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
 			{
 				if (prevlines != 0 && prevproc.back() == currentproc.back())
 				{
@@ -246,18 +250,42 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			if (!whilesvector.empty())
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
 			{
-				Database::insertNexts(prevLine, whilesvector.back());
-				Database::insertNexts(whilesvector.back(), currentLine);
-				whilesvector.pop_back();
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
 			}
 
-			if (!thenvector.empty())
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
 			{
 				Database::insertNexts(thenvector.back(), currentLine);
 				thenvector.pop_back();
 			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			expect("(");
@@ -382,9 +410,10 @@ void SourceProcessor::parseStatement()
 			cc >> currentLine;
 			Database::getProcstmt(currentproc, currentLine);
 			Database::getProcstmt(prevproc, prevLine);
+
 			//cout << prevproc.back() << currentproc.back() << endl;
 
-			if (whilesvector.empty() && thenvector.empty())
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
 			{
 				if (prevlines != 0 && prevproc.back() == currentproc.back())
 				{
@@ -392,18 +421,42 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			if (!whilesvector.empty())
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
 			{
-				Database::insertNexts(prevLine, whilesvector.back());
-				Database::insertNexts(whilesvector.back(), currentLine);
-				whilesvector.pop_back();
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
 			}
 
-			if (!thenvector.empty())
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
 			{
 				Database::insertNexts(thenvector.back(), currentLine);
 				thenvector.pop_back();
 			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			expect("(");
@@ -415,6 +468,10 @@ void SourceProcessor::parseStatement()
 			countlines++;
 			currentlines++;
 			parseStatement();
+			string lastthenline;
+			stringstream ll;
+			ll << currentlines - 1;
+			ll >> lastthenline;
 			thenvector.push_back(ifLine);
 
 
@@ -423,7 +480,7 @@ void SourceProcessor::parseStatement()
 				next();
 				expect("{");
 				parseStatement();
-				elsevector.push_back(ifLine);
+				elsevector.push_back(lastthenline);
 			}
 
 			ancestors.pop_back();
@@ -532,9 +589,10 @@ void SourceProcessor::parseStatement()
 				cc >> currentLine;
 				Database::getProcstmt(currentproc, currentLine);
 				Database::getProcstmt(prevproc, prevLine);
+				
 				//cout << prevproc.back() << currentproc.back() << endl;
 
-				if (whilesvector.empty() && thenvector.empty())
+				if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
 				{
 					if (prevlines != 0 && prevproc.back() == currentproc.back())
 					{
@@ -542,18 +600,42 @@ void SourceProcessor::parseStatement()
 					}
 				}
 
-				if (!whilesvector.empty())
+				if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
 				{
-					Database::insertNexts(prevLine, whilesvector.back());
-					Database::insertNexts(whilesvector.back(), currentLine);
-					whilesvector.pop_back();
+					if (prevproc.back() == currentproc.back())
+					{
+						Database::insertNexts(elsevector.back(), currentLine);
+						Database::insertNexts(prevLine, currentLine);
+						elsevector.pop_back();
+					}
 				}
 
-				if (!thenvector.empty())
+				if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+				{
+						Database::insertNexts(elsevector.back(), whilesvector.back());
+						elsevector.pop_back();
+				}
+
+				if (!whilesvector.empty()) // while statement
+				{
+					Database::insertNexts(prevLine, whilesvector.back());
+					Database::getProcstmt(whilesproc, whilesvector.back());
+					if (whilesproc.back() == currentproc.back())
+					{
+						Database::insertNexts(whilesvector.back(), currentLine);
+						whilesvector.pop_back();
+					}
+				}
+
+				if (!thenvector.empty()) // if-then statment
 				{
 					Database::insertNexts(thenvector.back(), currentLine);
 					thenvector.pop_back();
 				}
+
+				elsevector.clear();
+				whilesvector.clear();
+				thenvector.clear();
 				
 
 				countlines++;
@@ -587,9 +669,10 @@ void SourceProcessor::parseStatement()
 			cc >> currentLine;
 			Database::getProcstmt(currentproc, currentLine);
 			Database::getProcstmt(prevproc, prevLine);
+
 			//cout << prevproc.back() << currentproc.back() << endl;
 
-			if (whilesvector.empty() && thenvector.empty())
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
 			{
 				if (prevlines != 0 && prevproc.back() == currentproc.back())
 				{
@@ -597,18 +680,42 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			if (!whilesvector.empty())
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
 			{
-				Database::insertNexts(prevLine, whilesvector.back());
-				Database::insertNexts(whilesvector.back(), currentLine);
-				whilesvector.pop_back();
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
 			}
 
-			if (!thenvector.empty())
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
 			{
 				Database::insertNexts(thenvector.back(), currentLine);
 				thenvector.pop_back();
 			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			string variableToken = remainingTokens.front();
@@ -685,9 +792,10 @@ void SourceProcessor::parseStatement()
 			cc >> currentLine;
 			Database::getProcstmt(currentproc, currentLine);
 			Database::getProcstmt(prevproc, prevLine);
+
 			//cout << prevproc.back() << currentproc.back() << endl;
 
-			if (whilesvector.empty() && thenvector.empty())
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
 			{
 				if (prevlines != 0 && prevproc.back() == currentproc.back())
 				{
@@ -695,18 +803,42 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			if (!whilesvector.empty())
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
 			{
-				Database::insertNexts(prevLine, whilesvector.back());
-				Database::insertNexts(whilesvector.back(), currentLine);
-				whilesvector.pop_back();
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
 			}
 
-			if (!thenvector.empty())
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
 			{
 				Database::insertNexts(thenvector.back(), currentLine);
 				thenvector.pop_back();
 			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			string variableToken = remainingTokens.front();
@@ -786,9 +918,10 @@ void SourceProcessor::parseStatement()
 			cc >> currentLine;
 			Database::getProcstmt(currentproc, currentLine);
 			Database::getProcstmt(prevproc, prevLine);
+
 			//cout << prevproc.back() << currentproc.back() << endl;
 
-			if (whilesvector.empty() && thenvector.empty())
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
 			{
 				if (prevlines != 0 && prevproc.back() == currentproc.back())
 				{
@@ -796,18 +929,42 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			if (!whilesvector.empty())
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
 			{
-				Database::insertNexts(prevLine, whilesvector.back());
-				Database::insertNexts(whilesvector.back(), currentLine);
-				whilesvector.pop_back();
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
 			}
 
-			if (!thenvector.empty())
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
 			{
 				Database::insertNexts(thenvector.back(), currentLine);
 				thenvector.pop_back();
 			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 
 			lhs = remainingTokens.front();
@@ -911,6 +1068,8 @@ void SourceProcessor::parseStatement()
 			currentlines++;
 
 		}
+
+
 
 	}
 
