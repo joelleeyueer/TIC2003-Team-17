@@ -14,6 +14,7 @@ class QueryParser
 public:
 	list<string> remainingTokens;
 	map<string, string> currentDeclarationList;
+	vector<string> expression;
 
 	void parse(list<string> tokens, Query& query);
 

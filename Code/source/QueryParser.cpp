@@ -162,7 +162,7 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 void QueryParser::parsePatternClause(Query& currentQuery)
 {
 	vector<string> LHSPair;
-	vector<string> RHSPair;
+	vector<vector<string>> RHSPair;
 	expect("pattern");
 	string patternSynonym = remainingTokens.front();
 	next();
@@ -190,18 +190,25 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 		next();
 		string RHSnext = remainingTokens.front();
 		if (RHSnext == ")") {
-			RHSPair = { "undeclared", RHSnext };
+			RHSPair = { {"undeclared"}, {RHSnext} };
 			next();
 		}
 		else { //has to be partial match
 			expect("\"");
-			string factor = remainingTokens.front();
-			next();
+			parseExpression(currentQuery);
 			expect("\"");
 			expect("_");
 			expect(")");
-			RHSPair = { "partial match", factor };
+			RHSPair = { {"partial match"}, expression };
 		}
+	}
+	else if (RHSinitial == "\"") { //(sth,"abc")
+		expect("\"");
+		parseExpression(currentQuery);
+		expect("\"");
+		expect(")");
+		RHSPair = { {"exact match"}, expression };
+
 	}
 
 	currentQuery.addPatternClause(patternSynonym, LHSPair, RHSPair);
@@ -210,32 +217,38 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 void QueryParser::parseExpression(Query& currentQuery)
 {
 	stack<string> operands;
-	vector<string> expression;
+	expression.clear();
 
 	while ((remainingTokens.front() != "\"") || remainingTokens.front() != "_") {
 		string exprToken = remainingTokens.front();
 
 		if (exprToken == "(") {
 			operands.push(exprToken);
+			next();
 		}
 		else if (exprToken == ")") {
 			while (operands.top() != "(") {
 				expression.push_back(operands.top());
 				operands.pop();
+				next();
 			}
 			operands.pop(); // to pop the last "("
+			next();
 		}
 		else if (validateNumber(exprToken)) {
 			expression.push_back(exprToken);
+			next();
 		}
-		else {
+		else { //PEMDAS
 			if (operands.empty() || precedence(operands.top()) < precedence(exprToken)) {
 				operands.push(exprToken);
+				next();
 			}
 			else if (precedence(operands.top()) > precedence(exprToken)) {
 				expression.push_back(operands.top());
 				operands.pop();
 				operands.push(exprToken);
+				next();
 			}
 		}
 	}
