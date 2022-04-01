@@ -26,6 +26,9 @@ QueryProcessor::~QueryProcessor() {}
 
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	// clear the output vector
+
+	// query sorter here
+
 	output.clear();
 
 	QueryTable qt;
