@@ -1,4 +1,5 @@
 #include "SourceProcessor.h"
+#include "database.h"
 
 #include <regex>
 #include <iostream>
@@ -32,7 +33,7 @@ void SourceProcessor::process(string program) {
 		i++;
 	}
 
-	
+
 	parse(ltokens);
 
 }
@@ -96,6 +97,28 @@ void SourceProcessor::parseProgram()
 	}
 }
 
+int countlines = 1;
+int currentlines = 1;
+int prevlines = 0;
+int countparent = 0;
+int parentChild = 0; // it is not a child, = 1 if it is a child
+int prevCountparent = 0;
+int isnested = 0; // it is not nested, > 1 if it is nested
+vector<int> ancestors; // vector of parents to track previous parents
+string lhs;
+string rhs;
+vector<string> procedureList; // vector of procedures stored
+vector<vector<string>> procedureCalls; // vector of vector of procedures to accomodate callst
+vector<string> procedureTemp; // temporary vector to store current procedure calls, transferred to procedureCalls vector
+vector<string> currentproc;
+vector<string> prevproc;
+vector<string> whilesproc;
+vector<string> whilesvector;
+vector<string> thenvector;
+vector<string> elsevector;
+vector<vector<string>> nextst;
+vector<string> nextstTemp;
+
 void SourceProcessor::parseProcedure()
 {
 	if (remainingTokens.front() == "procedure")
@@ -104,6 +127,8 @@ void SourceProcessor::parseProcedure()
 		if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
 		{
 			Database::insertProcedure(remainingTokens.front()); // insert the procedure into the database
+			procedureList.push_back(remainingTokens.front()); // store the procedure into vector
+			procedureTemp.push_back(remainingTokens.front()); // store the procedure into temp vector
 			next();
 			expect("{");
 			parseStatement();
@@ -113,15 +138,8 @@ void SourceProcessor::parseProcedure()
 			//std::throw_with_nested("error in parseProcedure");
 		}
 	}
-}
 
-int countlines = 1;
-int countparent = 0;
-int parentChild = 0; // it is not a child, = 1 if it is a child
-int prevCountparent = 0;
-int isnested = 0; // it is not nested, > 1 if it is nested
-string lhs;
-string rhs;
+}
 
 void SourceProcessor::parseStatement()
 {
@@ -140,13 +158,23 @@ void SourceProcessor::parseStatement()
 			cc << countlines;
 			cc >> childLine;
 
-			string grandparentLine;
-			stringstream gg;
-			gg << parentChild;
-			gg >> grandparentLine;
+			//string grandparentLine;
+			//stringstream gg;
+			//gg << parentChild;
+			//gg >> grandparentLine;
 
 			Database::insertChild(parentLine, childLine); // parent table
-			Database::insertGrandchild(grandparentLine, childLine); // parent* table
+			//Database::insertGrandchild(grandparentLine, childLine); // parent* table
+			for (int i = 0; i < ancestors.size(); i++)
+			{
+				string grandparentLine;
+				stringstream gg;
+				gg << ancestors.at(i);
+				gg >> grandparentLine;
+
+				Database::insertGrandchild(grandparentLine, childLine); // parent* table
+
+			}
 		}
 		else if (countparent > 0 && parentChild == 0) // if no nesting of while or if
 		{
@@ -162,6 +190,16 @@ void SourceProcessor::parseStatement()
 
 			Database::insertChild(parentLine, childLine); // parent table
 			//Database::insertGrandchild(parentLine, childLine); // parent* table
+			for (int i = 0; i < ancestors.size(); i++)
+			{
+				string grandparentLine;
+				stringstream gg;
+				gg << ancestors.at(i);
+				gg >> grandparentLine;
+
+				Database::insertGrandchild(grandparentLine, childLine); // parent* table
+
+			}
 		}
 
 		string statementLine;
@@ -169,6 +207,7 @@ void SourceProcessor::parseStatement()
 		ss << countlines;
 		ss >> statementLine;
 		Database::insertStatement(statementLine);
+		Database::insertProcstmt(procedureList.back() , statementLine);
 
 		if (remainingTokens.front() == "while")
 		{
@@ -181,23 +220,84 @@ void SourceProcessor::parseStatement()
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
+			ancestors.push_back(countparent);
 			string whileLine;
 			stringstream ss;
 			ss << countlines;
 			ss >> whileLine;
 			Database::insertWhile(whileLine);
+			
+
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
+			{
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
+			}
+
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
 			list<string> nestedconditionTokens = remainingTokens;
-			parseFactor();
+			parseFactorCondition();
 			expect("{");
 			countlines++;
+			currentlines++;
 			parseStatement();
-
-			//countparent = 0;
-			//parentChild = 0;
+			whilesvector.push_back(whileLine);
+			ancestors.pop_back();
 
 			if (isnested == 0)
 			{
@@ -211,47 +311,45 @@ void SourceProcessor::parseStatement()
 				isnested -= 1;
 			}
 
-			//if (remainingTokens.front() == "}")
-			//{
-			//	countparent = 0;
-			//	parentChild = 0;
-			//}
-			//else
-			//{
-			//	ifnested+=1; // there is nested function
-			//	countparent = prevCountparent;
-			//	parentChild = 0;
-			//}
-
 			while (conditionTokens.front() != ")")
 			{
 				if (checkName(conditionTokens.front())) // if it is a variable
 				{
 					string useVariableToken = conditionTokens.front();
 					Database::insertUses(whileLine, useVariableToken);
+					Database::insertUses(procedureList.back(), useVariableToken);
 				}
 				conditionTokens.pop_front();
 			}
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
 				while (nestedconditionTokens.front() != ")")
 				{
 					if (checkName(nestedconditionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedconditionTokens.front();
-						Database::insertUses(parentLine, useVariableToken);
-						Database::insertUses(grandparentLine, useVariableToken);
+						//Database::insertUses(parentLine, useVariableToken);
+						//Database::insertUses(grandparentLine, useVariableToken);
+						for (int i = 0; i < ancestors.size(); i++)
+						{
+							string ancestorsLine;
+							stringstream gg;
+							gg << ancestors.at(i);
+							gg >> ancestorsLine;
+
+							Database::insertUses(ancestorsLine, useVariableToken);
+						}
 					}
 					nestedconditionTokens.pop_front();
 				}
@@ -294,31 +392,98 @@ void SourceProcessor::parseStatement()
 			parentChild = countparent;
 			prevCountparent = countparent;
 			countparent = countlines;
+			ancestors.push_back(countparent);
 			string ifLine;
 			stringstream ss;
 			ss << countlines;
 			ss >> ifLine;
 			Database::insertIf(ifLine);
 
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
+			{
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
+			}
+
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
+
 			next();
 			expect("(");
 			list<string> conditionTokens = remainingTokens;
 			list<string> nestedconditionTokens = remainingTokens;
-			parseFactor();
+			parseFactorCondition();
 			expect("then");
 			expect("{");
 			countlines++;
+			currentlines++;
 			parseStatement();
+			string lastthenline;
+			stringstream ll;
+			ll << currentlines - 1;
+			ll >> lastthenline;
+			thenvector.push_back(ifLine);
+
 
 			if (remainingTokens.front() == "else")
 			{
 				next();
 				expect("{");
 				parseStatement();
+				elsevector.push_back(lastthenline);
 			}
 
-			//countparent = 0;
-			//parentChild = 0;
+			ancestors.pop_back();
 
 			if (isnested == 0)
 			{
@@ -332,45 +497,45 @@ void SourceProcessor::parseStatement()
 				isnested -= 1;
 			}
 
-			//if (remainingTokens.front() == "}")
-			//{
-				//countparent = 0;
-				//parentChild = 0;
-			//}
-			//else
-			//{
-			//	countparent = prevCountparent;
-			//}
-
 			while (conditionTokens.front() != ")")
 			{
 				if (checkName(conditionTokens.front())) // if it is a variable
 				{
 					string useVariableToken = conditionTokens.front();
 					Database::insertUses(ifLine, useVariableToken);
+					Database::insertUses(procedureList.back(), useVariableToken);
 				}
 				conditionTokens.pop_front();
 			}
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
 				while (nestedconditionTokens.front() != ")")
 				{
 					if (checkName(nestedconditionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedconditionTokens.front();
-						Database::insertUses(parentLine, useVariableToken);
-						Database::insertUses(grandparentLine, useVariableToken);
+						//Database::insertUses(parentLine, useVariableToken);
+						//Database::insertUses(grandparentLine, useVariableToken);
+						for (int i = 0; i < ancestors.size(); i++)
+						{
+							string ancestorsLine;
+							stringstream gg;
+							gg << ancestors.at(i);
+							gg >> ancestorsLine;
+
+							Database::insertUses(ancestorsLine, useVariableToken);
+						}
 					}
 					nestedconditionTokens.pop_front();
 				}
@@ -403,6 +568,81 @@ void SourceProcessor::parseStatement()
 
 
 		}
+		else if (remainingTokens.front() == "call")
+		{
+			next();
+			if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
+			{
+				Database::insertCalls(procedureList.back(), remainingTokens.front()); // insert direct calls into database
+				procedureTemp.push_back(remainingTokens.front()); // store its procedure call in the same temp vector
+				next();
+				expect(";");
+
+				string prevLine;
+				string currentLine;
+				stringstream pp;
+				stringstream cc;
+				prevlines = currentlines - 1;
+				pp << prevlines;
+				pp >> prevLine;
+				cc << currentlines;
+				cc >> currentLine;
+				Database::getProcstmt(currentproc, currentLine);
+				Database::getProcstmt(prevproc, prevLine);
+				
+				//cout << prevproc.back() << currentproc.back() << endl;
+
+				if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
+				{
+					if (prevlines != 0 && prevproc.back() == currentproc.back())
+					{
+						Database::insertNexts(prevLine, currentLine);
+					}
+				}
+
+				if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
+				{
+					if (prevproc.back() == currentproc.back())
+					{
+						Database::insertNexts(elsevector.back(), currentLine);
+						Database::insertNexts(prevLine, currentLine);
+						elsevector.pop_back();
+					}
+				}
+
+				if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+				{
+						Database::insertNexts(elsevector.back(), whilesvector.back());
+						elsevector.pop_back();
+				}
+
+				if (!whilesvector.empty()) // while statement
+				{
+					Database::insertNexts(prevLine, whilesvector.back());
+					Database::getProcstmt(whilesproc, whilesvector.back());
+					if (whilesproc.back() == currentproc.back())
+					{
+						Database::insertNexts(whilesvector.back(), currentLine);
+						whilesvector.pop_back();
+					}
+				}
+
+				if (!thenvector.empty()) // if-then statment
+				{
+					Database::insertNexts(thenvector.back(), currentLine);
+					thenvector.pop_back();
+				}
+
+				elsevector.clear();
+				whilesvector.clear();
+				thenvector.clear();
+				
+
+				countlines++;
+				currentlines++;
+
+			}
+		}
 		else if (remainingTokens.front() == "read")
 		{
 
@@ -411,33 +651,102 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> readLine;
 
+			Database::insertRead(readLine);
+
 			string modifyLine;
 			stringstream mm;
 			mm << countlines;
 			mm >> modifyLine;
 
-			Database::insertRead(readLine);
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
+			{
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
+			}
+
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect(";");
 			Database::insertModifies(modifyLine, variableToken);
+			Database::insertModifies(procedureList.back(), variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
-				Database::insertModifies(parentLine, variableToken); // 
-				Database::insertModifies(grandparentLine, variableToken); // 
+				//Database::insertModifies(parentLine, variableToken); // 
+				//Database::insertModifies(grandparentLine, variableToken); // 
+				for (int i = 0; i < ancestors.size(); i++)
+				{
+					string ancestorsLine;
+					stringstream gg;
+					gg << ancestors.at(i);
+					gg >> ancestorsLine;
+
+					Database::insertModifies(ancestorsLine, variableToken);
+				}
 			}
 			else if (countparent > 0) // if no nesting of while or if
 			{
@@ -455,6 +764,7 @@ void SourceProcessor::parseStatement()
 			}
 
 			countlines++;
+			currentlines++;
 
 		}
 		else if (remainingTokens.front() == "print")
@@ -464,33 +774,102 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> printLine;
 
+			Database::insertPrint(printLine);
+
 			string useLine;
 			stringstream uu;
 			uu << countlines;
 			uu >> useLine;
 
-			Database::insertPrint(printLine);
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
+			{
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
+			}
+
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
 
 			next();
 			string variableToken = remainingTokens.front();
 			parseVariable();
 			expect(";");
 			Database::insertUses(useLine, variableToken);
+			Database::insertUses(procedureList.back(), variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
-				Database::insertUses(parentLine, variableToken); // 
-				Database::insertUses(grandparentLine, variableToken); // 
+				//Database::insertUses(parentLine, variableToken); // 
+				//Database::insertUses(grandparentLine, variableToken); // 
+				for (int i = 0; i < ancestors.size(); i++)
+				{
+					string ancestorsLine;
+					stringstream gg;
+					gg << ancestors.at(i);
+					gg >> ancestorsLine;
+
+					Database::insertUses(ancestorsLine, variableToken);
+				}
 			}
 			else if (countparent > 0) // if no nesting of while or if
 			{
@@ -508,6 +887,7 @@ void SourceProcessor::parseStatement()
 			}
 
 			countlines++;
+			currentlines++;
 
 		}
 		else // it is an assignment
@@ -527,6 +907,66 @@ void SourceProcessor::parseStatement()
 			uu << countlines;
 			uu >> useLine;
 
+			string prevLine;
+			string currentLine;
+			stringstream pp;
+			stringstream cc;
+			prevlines = currentlines - 1;
+			pp << prevlines;
+			pp >> prevLine;
+			cc << currentlines;
+			cc >> currentLine;
+			Database::getProcstmt(currentproc, currentLine);
+			Database::getProcstmt(prevproc, prevLine);
+
+			//cout << prevproc.back() << currentproc.back() << endl;
+
+			if (whilesvector.empty() && thenvector.empty() && elsevector.empty()) // normal next with no if or while
+			{
+				if (prevlines != 0 && prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(prevLine, currentLine);
+				}
+			}
+
+			if (!elsevector.empty() && whilesvector.empty()) // if-else statement not nested in while
+			{
+				if (prevproc.back() == currentproc.back())
+				{
+					Database::insertNexts(elsevector.back(), currentLine);
+					Database::insertNexts(prevLine, currentLine);
+					elsevector.pop_back();
+				}
+			}
+
+			if (!elsevector.empty() && !whilesvector.empty()) // if-else statement nested in while
+			{
+				Database::insertNexts(elsevector.back(), whilesvector.back());
+				elsevector.pop_back();
+			}
+
+			if (!whilesvector.empty()) // while statement
+			{
+				Database::insertNexts(prevLine, whilesvector.back());
+				Database::getProcstmt(whilesproc, whilesvector.back());
+				if (whilesproc.back() == currentproc.back())
+				{
+					Database::insertNexts(whilesvector.back(), currentLine);
+					whilesvector.pop_back();
+				}
+			}
+
+			if (!thenvector.empty()) // if-then statment
+			{
+				Database::insertNexts(thenvector.back(), currentLine);
+				thenvector.pop_back();
+			}
+
+			elsevector.clear();
+			whilesvector.clear();
+			thenvector.clear();
+
+
 			lhs = remainingTokens.front();
 			string variableToken = remainingTokens.front();
 			parseVariable();
@@ -542,6 +982,7 @@ void SourceProcessor::parseStatement()
 				{
 					string useVariableToken = expressionTokens.front();
 					Database::insertUses(useLine, useVariableToken);
+					Database::insertUses(procedureList.back(), useVariableToken);
 				}
 				expressionTokens.pop_front();
 			}
@@ -549,21 +990,31 @@ void SourceProcessor::parseStatement()
 			Database::insertAssignment(assignmentLine, lhs, rhs);
 			rhs = " ";
 			Database::insertModifies(modifyLine, variableToken);
+			Database::insertModifies(procedureList.back(), variableToken);
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				string parentLine;
-				stringstream pp;
-				pp << countparent;
-				pp >> parentLine;
+				//string parentLine;
+				//stringstream pp;
+				//pp << countparent;
+				//pp >> parentLine;
 
-				string grandparentLine;
-				stringstream gg;
-				gg << parentChild;
-				gg >> grandparentLine;
+				//string grandparentLine;
+				//stringstream gg;
+				//gg << parentChild;
+				//gg >> grandparentLine;
 
-				Database::insertModifies(parentLine, variableToken);
-				Database::insertModifies(grandparentLine, variableToken);
+				//Database::insertModifies(parentLine, variableToken);
+				//Database::insertModifies(grandparentLine, variableToken);
+				for (int i = 0; i < ancestors.size(); i++)
+				{
+					string ancestorsLine;
+					stringstream gg;
+					gg << ancestors.at(i);
+					gg >> ancestorsLine;
+
+					Database::insertModifies(ancestorsLine, variableToken);
+				}
 
 				while (nestedexpressionTokens.front() != ";")
 				{
@@ -571,8 +1022,17 @@ void SourceProcessor::parseStatement()
 					if (checkName(nestedexpressionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedexpressionTokens.front();
-						Database::insertUses(parentLine, useVariableToken);
-						Database::insertUses(grandparentLine, useVariableToken);
+						//Database::insertUses(parentLine, useVariableToken);
+						//Database::insertUses(grandparentLine, useVariableToken);
+						for (int i = 0; i < ancestors.size(); i++)
+						{
+							string ancestorsLine;
+							stringstream gg;
+							gg << ancestors.at(i);
+							gg >> ancestorsLine;
+
+							Database::insertUses(ancestorsLine, useVariableToken);
+						}
 					}
 					nestedexpressionTokens.pop_front();
 				}
@@ -594,7 +1054,7 @@ void SourceProcessor::parseStatement()
 
 				while (nestedexpressionTokens.front() != ";")
 				{
-			
+
 					if (checkName(nestedexpressionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedexpressionTokens.front();
@@ -604,14 +1064,145 @@ void SourceProcessor::parseStatement()
 				}
 			}
 
-			countlines++;	
+			countlines++;
+			currentlines++;
 
 		}
+
+
 
 	}
 
 	next();
+
+	//currentlines++;
+
+	if (!remainingTokens.empty() && remainingTokens.front() == "procedure")
+	{
+		for (int i = 0; i < procedureCalls.size(); i++) // iterating through the rows of the 2D vector
+		{
+			// check if the current procedure / first element in temp vector is in the previous vectors
+			if (find(procedureCalls[i].begin(), procedureCalls[i].end(), procedureList.back()) != procedureCalls[i].end())
+			{
+				for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector
+				{
+					procedureCalls[i].push_back(procedureTemp.at(j)); // if it is, include its callee into previous vector
+
+					for (int k = 0; k < procedureCalls.size(); k++)
+					{
+						if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+						{
+							for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+							{
+								procedureCalls[i].push_back(procedureCalls[k].at(col));
+								//procedureTemp.push_back(procedureCalls[k].at(col));
+							}
+						}
+					}
+				}
+			}
+		}
+
+		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+		// check if the 2nd element in temp vector onwards is in the previous vector
+		for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
+		{
+			for (int k = 0; k < procedureCalls.size(); k++) // iterate through the first column of 2D vector
+			{
+				if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+				{
+					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+					{
+						procedureCalls[procedureList.size()-1].push_back(procedureCalls[k].at(col));
+						//procedureTemp.push_back(procedureCalls[k].at(col));
+					}
+				}
+			}
+		}
+
+		
+		procedureTemp.clear(); // clear away temp vector
+		//Database::insertCallst(procedureCalls[0].at(0), procedureCalls[0].at(1)); // insert indirect calls into database
+		//Database::insertCallst("test1", "test2");
+		parseProcedure();
+	}
+
+	if (remainingTokens.empty()) // at the end of the source, extract from procedureCalls vector to determine callst 2d vector
+	{
+		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+		// check if the 2nd element in temp vector onwards is in the previous vector
+		for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
+		{
+			for (int k = 0; k < procedureCalls.size(); k++) // iterate through the first column of 2D vector
+			{
+				if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+				{
+					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+					{
+						procedureCalls[procedureList.size() - 1].push_back(procedureCalls[k].at(col));
+						//procedureTemp.push_back(procedureCalls[k].at(col));
+					}
+				}
+			}
+		}
+		procedureTemp.clear(); // clear away temp vector
+		for (int i = 0; i < procedureCalls.size(); i++)
+		{
+			string caller = procedureCalls[i].at(0);
+			for (int j = 1; j < procedureCalls[i].size(); j++)
+			{
+				Database::insertCallst(caller, procedureCalls[i].at(j)); // insert indirect calls into database
+				//Database::insertCallst("test3", "test4");
+				//Database::insertCallst(procedureCalls[2].at(0), procedureCalls[2].at(0));
+	
+				string callee = procedureCalls[i].at(j);
+				vector<string> results;
+
+				Database::getCallsTmodifies(results,callee);
+				for (int k = 0; k < results.size(); k++)
+				{
+					Database::insertModifies(caller, results.at(k));
+				}
+
+				results.clear();
+
+				Database::getCallsTuses(results, callee);
+				for (int k = 0; k < results.size(); k++)
+				{
+					Database::insertUses(caller, results.at(k));
+				}
+
+			}
+		}
+
+
+
+		//for (int i = 0; i < procedureCalls.size(); i++) // iterate through the rows of the 2D vector
+		//{	
+		//	string caller = procedureCalls[i].at(0); // to capture the first item in each row of vector as caller
+		//	for (int j = 1; j < procedureCalls[i].size(); j++) // iterate through the columns of the 2D vector, starting from 2nd column
+		//	{
+		//		string callee = procedureCalls[i].at(j);
+		//		for (int k = 1; k < procedureCalls.size(); k++)
+		//		{
+		//			if (callee == procedureCalls[k].at(0))
+		//			{
+		//				for (int col = 1; col < procedureCalls[k].size(); col++)
+		//				{
+		//					Database::insertCallst(caller, procedureCalls[k].at(col));
+		//				}
+
+
+		//				
+		//			}
+		//		}
+		//	}
+		//}
+
+	}
 }
+
+
 
 void SourceProcessor::parseVariable()
 {
@@ -623,6 +1214,29 @@ void SourceProcessor::parseVariable()
 	else
 	{
 		//std::throw_with_nested("error in parseVariable");
+	}
+}
+
+void SourceProcessor::parseFactorCondition()
+{
+	if (checkName(remainingTokens.front())) // if it is a variable
+	{
+		parseVariable();
+	}
+	else if (checkInteger(remainingTokens.front())) // if it is an integer
+	{
+		parseConstant();
+	}
+
+
+	if (match(">") || match("<")) // should be a real expression
+	{
+		next();
+		parseFactorCondition();
+	}
+	else if (match(")"))
+	{
+		next();
 	}
 }
 
