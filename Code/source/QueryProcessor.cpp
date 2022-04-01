@@ -27,18 +27,19 @@ QueryProcessor::~QueryProcessor() {}
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	// clear the output vector
 	output.clear();
-	
 
+	QueryTable qt;
 	vector<string> selectClauseResults;
 	vector<vector<string>> suchThatResults;
 	vector<vector<string>> patternClauseResults;
 
-	evaluateSelectClause(queryObj, selectClauseResults, 0);
-
+	evaluateSelectClause(queryObj, selectClauseResults);
 	evaluateSuchThatClause(queryObj, suchThatResults);
-	
+	//evaluatePatternClause(queryObj, patternClauseResults);
 
-	
+	//TBA drop columns operation
+	qt.dropColumns(queryObj);
+	qt.queryToOutput(output);
 	
 }
 
@@ -51,10 +52,10 @@ void QueryProcessor::evaluateSuchThatClause(Query queryObj, vector<vector<string
 	QueryTable qt;
 
 	int suchThatCount = queryObj.suchThatClauses.size();
-	int iterator = -1;
+	int iterator = 0;
 
-	while (queryObj.suchThatClauses.size() > 0 && suchThatCount > 0) {
-		iterator++;
+	while (suchThatCount > 0 && iterator > suchThatCount) {
+		
 		// if rel ref == parent
 		// else if rel ref = modifies.. etc etc
 		string relRef = queryObj.suchThatClauses[iterator].relRef;
@@ -78,6 +79,7 @@ void QueryProcessor::evaluateSuchThatClause(Query queryObj, vector<vector<string
 
 		qt.evaluateIncomingSuchThat(queryObj, suchThatResults, iterator);
 		suchThatResults.clear();
+		iterator++;
 
 	}
 }
@@ -231,10 +233,16 @@ void QueryProcessor::filterOnlyPatternClause(Query queryObj, vector<string>& sel
 	}
 }
 
-void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results, int iterator)
+void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results)
 {
 	SelectClauseEvaluator selectClauseEvaluator;
-	selectClauseEvaluator.evaluate(results, query.selectClauses[0].designEntity); 
+	int selectCount = query.selectClauses.size();
+	int iterator = 0;
+
+	while (selectCount > 0 && iterator > selectCount) {
+		selectClauseEvaluator.evaluate(results, query.selectClauses[iterator].designEntity);
+		iterator++;
+	}
 }
 
 void QueryProcessor::evaluatePatternClause(Query query, vector<vector<string>>& results, int iterator)

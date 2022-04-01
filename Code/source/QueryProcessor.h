@@ -25,7 +25,7 @@ public:
 	void filterSuchThatPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output);
 	void filterOnlySuchThatClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output);
 	void filterOnlyPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output);
-	void evaluateSelectClause(Query query, vector<string>& results, int iterator);
+	void evaluateSelectClause(Query query, vector<string>& results);
 	void evaluatePatternClause(Query query, vector<vector<string>>& results, int iterator);
 	void evaluateParentClause(Query query, vector<vector<string>>& results, int iterator);
 	void evaluateParentTClause(Query query, vector<vector<string>>& results, int iterator);

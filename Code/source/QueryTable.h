@@ -17,9 +17,11 @@ public:
 	void evaluateIncomingSuchThat(Query queryObj, vector<vector<string>> incomingData, int iterator);
 	void compareSuchThatSynonym(Query queryObj, int iterator, bool &oneColSimilar, bool &allColSimilar);
 	void comparePatternSynonym(Query queryObj, int iterator, bool& oneColSimilar, bool& allColSimilar);
-	void join(vector<vector<string>> incomingData);
-	void insert(vector<vector<string>> incomingData);
-	void crossProduct(vector<vector<string>> incomingData);
+	void join(vector<vector<string>> incomingData, vector<string> incomingSynonyms);
+	void insert(vector<vector<string>> incomingData, vector<string> incomingSynonyms);
+	void crossProduct(vector<vector<string>> incomingData, vector<string> incomingSynonyms);
+	void dropColumns(Query queryObj);
+	void queryToOutput(vector<string>& output);
 
 
 
