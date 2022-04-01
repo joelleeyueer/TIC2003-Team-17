@@ -4,6 +4,7 @@
 #include <vector>
 #include "Database.h"
 #include "Query.h"
+#include "QueryTable.h"
 
 using namespace std;
 

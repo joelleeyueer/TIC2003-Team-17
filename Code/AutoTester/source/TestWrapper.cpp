@@ -4,6 +4,7 @@
 #include "../../source/QueryProcessor.h"
 #include "../../source/QueryParser.h"
 #include "../../source/Query.h"
+#include "QueryTable.h"
 
 // implementation code of WrapperFactory - do NOT modify the next 5 lines
 AbstractWrapper* WrapperFactory::wrapper = 0;
@@ -36,6 +37,7 @@ void TestWrapper::parse(std::string filename) {
 // method to evaluating a query
 void TestWrapper::evaluate(std::string query, std::list<std::string>& results){
 	vector<string> output;
+	
 
 	// tokenize the query
 	Tokenizer tk;

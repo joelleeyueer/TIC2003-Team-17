@@ -48,14 +48,14 @@ void QueryTable::compareSuchThatSynonym(Query queryObj, int iterator, bool &oneC
 		}
 	}
 
-	if (count == 0) {
-		return;
+	int selectClausesQty = queryObj.selectClauses.size();
+	if (count >= selectClausesQty) {
+		oneColSimilar = true;
+		allColSimilar = true;
 	}
+
 	else if (count > 0) {
 		oneColSimilar = true;
-		if (count == 2) {
-			allColSimilar = true;
-		}
 	}
 }
 
@@ -84,12 +84,17 @@ void QueryTable::comparePatternSynonym(Query queryObj, int iterator, bool& oneCo
 
 void QueryTable::join(vector<vector<string>> incomingData)
 {
+	vector<vector<string>> temp = {};
 	//oneColSimilar == true && allColSimilar == true
 	for (vector<string> incomingRow: incomingData){
 		for (vector<string> queryTableRow : queryTable) {
-
+			if (incomingRow[0] == queryTableRow[0] && incomingRow[1] == queryTableRow[1]) {
+				temp.push_back({ incomingRow[0],incomingRow[1] });
+			}
 		}
 	}
+	queryTable.clear();
+	queryTable = temp;
 }
 
 void QueryTable::insert(vector<vector<string>> incomingData)
