@@ -24,6 +24,9 @@ QueryProcessor::~QueryProcessor() {}
 
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	// clear the output vector
+
+	// query sorter here
+
 	output.clear();
 
 	vector<string> selectClauseResults;
@@ -63,8 +66,6 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		else {
 			return;
 		}
-
-		suchThatMaster.push_back(suchThatResults[0]);
 
 		suchThatResults.clear();
 		suchThatCount--;
