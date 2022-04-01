@@ -108,6 +108,14 @@ void Database::initialize() {
 	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(modifiesLine,variableN) );";
 	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing modifiesproc table (if any)
+	string dropModifiesprocTableSQL = "DROP TABLE IF EXISTS modifiesproc";
+	sqlite3_exec(dbConnection, dropModifiesprocTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create modifiesproc table
+	string createModifiesprocTableSQL = "CREATE TABLE modifiesproc ( modifiesProc VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(modifiesProc,variableN) );";
+	sqlite3_exec(dbConnection, createModifiesprocTableSQL.c_str(), NULL, 0, &errorMessage);
+
 	// drop the existing uses table (if any)
 	string dropMusesTableSQL = "DROP TABLE IF EXISTS muses";
 	sqlite3_exec(dbConnection, dropMusesTableSQL.c_str(), NULL, 0, &errorMessage);
@@ -119,6 +127,14 @@ void Database::initialize() {
 	// create uses table
 	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(usesLine,variableN) );";
 	sqlite3_exec(dbConnection, createUsesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing usesproc table (if any)
+	string dropUsesprocTableSQL = "DROP TABLE IF EXISTS usesproc";
+	sqlite3_exec(dbConnection, dropUsesprocTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create usesproc table
+	string createUsesprocTableSQL = "CREATE TABLE usesproc ( usesProc VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(usesProc,variableN) );";
+	sqlite3_exec(dbConnection, createUsesprocTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing calls table (if any)
 	string dropCallsTableSQL = "DROP TABLE IF EXISTS calls";
@@ -149,7 +165,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropNextstTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create callst table
-	string createNextstTableSQL = "CREATE TABLE nextst ( stmt1 VARCHAR(255) , stmt2 VARCHAR(255) );";
+	string createNextstTableSQL = "CREATE TABLE nextst ( stmt1 VARCHAR(255) , stmt2 VARCHAR(255) , UNIQUE(stmt1,stmt2));";
 	sqlite3_exec(dbConnection, createNextstTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing procstmt table (if any)
@@ -260,10 +276,22 @@ void Database::insertModifies(string modifiesLine, string variableN) {
 	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
+// method to insert into the modifiesproc table
+void Database::insertModifiesproc(string modifiesProc, string variableN) {
+	string insertModifiesprocSQL = "INSERT INTO modifiesproc ('modifiesProc', 'variableN') VALUES ( '" + modifiesProc + "', '" + variableN + "' ); ";
+	sqlite3_exec(dbConnection, insertModifiesprocSQL.c_str(), NULL, 0, &errorMessage);
+}
+
 // method to insert into the uses table
 void Database::insertUses(string usesLine, string variableN) {
 	string insertUsesSQL = "INSERT INTO uses ('usesLine', 'variableN') VALUES ( '" + usesLine + "', '" + variableN + "' ); ";
 	sqlite3_exec(dbConnection, insertUsesSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the usesproc table
+void Database::insertUsesproc(string usesProc, string variableN) {
+	string insertUsesprocSQL = "INSERT INTO usesproc ('usesProc', 'variableN') VALUES ( '" + usesProc + "', '" + variableN + "' ); ";
+	sqlite3_exec(dbConnection, insertUsesprocSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 // method to insert into the calls table
@@ -607,7 +635,7 @@ void Database::getCallsTmodifies(vector<string>& results, string callee) {
 	// clear the existing results
 	dbResults.clear();
 
-	string getCallsTmodifiesSQL = "SELECT variableN FROM modifies WHERE modifiesLine = '" + callee + "';";
+	string getCallsTmodifiesSQL = "SELECT variableN FROM modifiesproc WHERE modifiesProc = '" + callee + "';";
 	sqlite3_exec(dbConnection, getCallsTmodifiesSQL.c_str(), callback, 0, &errorMessage);
 
 	// postprocess the results from the database so that the output is just a vector of procedure names
@@ -655,7 +683,7 @@ void Database::getCallsTuses(vector<string>& results, string callee) {
 	// clear the existing results
 	dbResults.clear();
 
-	string getCallsTusesSQL = "SELECT variableN FROM uses WHERE usesLine = '" + callee + "';";
+	string getCallsTusesSQL = "SELECT variableN FROM usesproc WHERE usesProc = '" + callee + "';";
 	sqlite3_exec(dbConnection, getCallsTusesSQL.c_str(), callback, 0, &errorMessage);
 
 	// postprocess the results from the database so that the output is just a vector of procedure names
@@ -682,6 +710,7 @@ void Database::getProcstmt(vector<string>& results, string stmt) {
 	}
 	
 }
+
 
 // callback method to put one row of results from the database into the dbResults vector
 // This method is called each time a row of results is returned from the database

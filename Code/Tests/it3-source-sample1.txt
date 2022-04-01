@@ -31,7 +31,6 @@ procedure second {
 
 
 procedure third {
-	call fourth;
 	print t;
 	read c;
 	

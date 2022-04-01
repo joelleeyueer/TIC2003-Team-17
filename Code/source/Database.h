@@ -63,8 +63,14 @@ public:
 	// method to insert modifies into the database
 	static void insertModifies(string modifiesLine, string variableN);
 
-	// method to insert modifies into the database
+	// method to insert modifiesproc into the database
+	static void insertModifiesproc(string modifiesProc, string variableN);
+
+	// method to insert uses into the database
 	static void insertUses(string usesLine, string variableN);
+
+	// method to insert usesproc into the database
+	static void insertUsesproc(string usesProc, string variableN);
 
 	// method to insert calls into the database
 	static void insertCalls(string proc1, string proc2);
