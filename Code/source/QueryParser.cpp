@@ -241,7 +241,7 @@ void QueryParser::parseExpression(Query& currentQuery)
 	}
 }
 
-int precedence(string symbol) {
+int QueryParser::precedence(string symbol) {
 	if (symbol == "+" || symbol == "-") {
 		return 0;
 	}
@@ -291,6 +291,10 @@ void QueryParser::validateDesignEntity(string symbol)
 	}
 
 	else if (symbol == "if") {
+		return;
+	}
+
+	else if (symbol == "call") {
 		return;
 	}
 
