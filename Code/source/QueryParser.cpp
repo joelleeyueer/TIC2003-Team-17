@@ -241,7 +241,7 @@ void QueryParser::parseExpression(Query& currentQuery)
 	}
 }
 
-int precedence(string symbol) {
+int QueryParser::precedence(string symbol) {
 	if (symbol == "+" || symbol == "-") {
 		return 0;
 	}

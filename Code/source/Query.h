@@ -13,6 +13,9 @@ struct SelectClause {
 };
 
 struct SuchThatClause : Clause {
+    SuchThatClause() = default;
+    SuchThatClause(string relRef , vector<string> firstArgument, vector<string> secondArgument)
+        : relRef{ relRef }, firstArgument{ firstArgument }, secondArgument{ secondArgument } {}
     string relRef; //e.g. uses, modifies, parent
     vector<string> firstArgument; //index 0 is design entity / undeclared / line number or index 1 is synonym, i.e. uses(a,v) = firstArgument[0] = a, firstArgument[1] = v
     vector<string> secondArgument;
@@ -20,6 +23,9 @@ struct SuchThatClause : Clause {
 };
 
 struct PatternClause : Clause {
+    PatternClause() = default;
+    PatternClause(string patternSynonym, vector<string> LHS, vector<string> RHS)
+        : patternSynonym{ patternSynonym }, LHS{ LHS }, RHS{ RHS } {}
     string patternSynonym;
     vector<string> LHS; //index 0 is design entity/undeclared/IDENT, index 1 is entity Reference (synonym, _ or "IDENT")
     vector<string> RHS; //index 0 is partial match/exact match/undeclared, index 1 is the expression

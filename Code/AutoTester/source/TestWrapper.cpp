@@ -37,7 +37,6 @@ void TestWrapper::parse(std::string filename) {
 // method to evaluating a query
 void TestWrapper::evaluate(std::string query, std::list<std::string>& results){
 	vector<string> output;
-	
 
 	// tokenize the query
 	Tokenizer tk;
