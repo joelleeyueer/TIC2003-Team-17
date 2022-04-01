@@ -3,8 +3,6 @@
 #include <vector>
 #include <map>
 
-#include "Clause.h"
-
 using namespace std;
 
 struct SelectClause {
@@ -12,24 +10,16 @@ struct SelectClause {
     string designEntity;
 };
 
-struct SuchThatClause : Clause {
-    SuchThatClause() = default;
-    SuchThatClause(string relRef , vector<string> firstArgument, vector<string> secondArgument)
-        : relRef{ relRef }, firstArgument{ firstArgument }, secondArgument{ secondArgument } {}
+struct SuchThatClause {
     string relRef; //e.g. uses, modifies, parent
     vector<string> firstArgument; //index 0 is design entity / undeclared / line number or index 1 is synonym, i.e. uses(a,v) = firstArgument[0] = a, firstArgument[1] = v
     vector<string> secondArgument;
-    ClauseType getType() override { return CLAUSE_SUCH_THAT; }
 };
 
-struct PatternClause : Clause {
-    PatternClause() = default;
-    PatternClause(string patternSynonym, vector<string> LHS, vector<string> RHS)
-        : patternSynonym{ patternSynonym }, LHS{ LHS }, RHS{ RHS } {}
+struct PatternClause  {
     string patternSynonym;
     vector<string> LHS; //index 0 is design entity/undeclared/IDENT, index 1 is entity Reference (synonym, _ or "IDENT")
     vector<string> RHS; //index 0 is partial match/exact match/undeclared, index 1 is the expression
-    ClauseType getType() override { return CLAUSE_PATTERN; }
 };
 
 class Query

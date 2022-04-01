@@ -9,23 +9,24 @@ using namespace std;
 class QueryTable
 {
 public:
-	QueryTable();
+	QueryTable() = default;
+
+	QueryTable(vector<string> selectSynonyms);
 
 	vector<string> queryTableName;
 	vector<vector<string>> queryTable;
 	
-	void evaluateIncomingSuchThat(Query queryObj, vector<vector<string>> incomingData, int iterator);
-	void compareSuchThatSynonym(Query queryObj, int iterator, bool &oneColSimilar, bool &allColSimilar);
-	void comparePatternSynonym(Query queryObj, int iterator, bool& oneColSimilar, bool& allColSimilar);
+	void evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<string>> incomingData);
+	void evaluateIncomingPattern(PatternClause clause, vector<vector<string>> incomingData);
+
+	void compareSuchThatSynonym(SuchThatClause clause, bool &oneColSimilar, bool &allColSimilar);
+	void comparePatternSynonym(PatternClause clause, bool& oneColSimilar, bool& allColSimilar);
+
 	void join(vector<vector<string>> incomingData, vector<string> incomingSynonyms);
 	void insert(vector<vector<string>> incomingData, vector<string> incomingSynonyms);
 	void crossProduct(vector<vector<string>> incomingData, vector<string> incomingSynonyms);
+
 	void dropColumns(Query queryObj);
 	void queryToOutput(vector<string>& output);
-
-
-
-
-
 };
 

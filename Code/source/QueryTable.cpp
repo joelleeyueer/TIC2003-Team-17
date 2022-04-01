@@ -4,52 +4,53 @@
 #include <vector>
 #include <unordered_set>
 
-QueryTable::QueryTable() {
-	vector<string> queryTableName = {};
+QueryTable::QueryTable(vector<string> selectSynonyms)
+{
 	vector<vector<string>> queryTable = {};
+	queryTableName = selectSynonyms;
 }
 
-void QueryTable::evaluateIncomingSuchThat(Query queryObj, vector<vector<string>> incomingData, int iterator)
+void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<string>> incomingData)
 {
 	//note: all incoming queries will have at least ONE matching Select synonym
 	//if it doesnt match, program auto terminate
 	bool oneColSimilar = false;
 	bool allColSimilar = false;
 
-	compareSuchThatSynonym(queryObj, iterator, oneColSimilar, allColSimilar);
+	compareSuchThatSynonym(clause, oneColSimilar, allColSimilar);
 
 	if (queryTable.empty()) {
 		queryTable = incomingData;
-		queryTableName.push_back(queryObj.suchThatClauses[iterator].firstArgument[1]);
-		queryTableName.push_back(queryObj.suchThatClauses[iterator].secondArgument[1]);
+		queryTableName.push_back(clause.firstArgument[1]);
+		queryTableName.push_back(clause.secondArgument[1]);
 	}
 
 	else {
 		if (oneColSimilar == true && allColSimilar == true) {
-			join(incomingData, { queryObj.suchThatClauses[iterator].firstArgument[1], queryObj.suchThatClauses[iterator].secondArgument[1] });
+			join(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
 		}
 		else if (oneColSimilar == true && allColSimilar == false) {
-			insert(incomingData, { queryObj.suchThatClauses[iterator].firstArgument[1], queryObj.suchThatClauses[iterator].secondArgument[1] });
+			insert(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
 		}
 		else if (oneColSimilar == false && allColSimilar == false) {
-			crossProduct(incomingData, { queryObj.suchThatClauses[iterator].firstArgument[1], queryObj.suchThatClauses[iterator].secondArgument[1] });
+			crossProduct(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
 		}
 	}
 }
 
-void QueryTable::compareSuchThatSynonym(Query queryObj, int iterator, bool &oneColSimilar, bool &allColSimilar)
+void QueryTable::compareSuchThatSynonym(SuchThatClause clause, bool &oneColSimilar, bool &allColSimilar)
 {
 	int count = 0;
 	for (string synonym: queryTableName) {
-		if (queryObj.suchThatClauses[iterator].firstArgument[1] == synonym) {
+		if (clause.firstArgument[1] == synonym) {
 			count++;
 		}
-		if (queryObj.suchThatClauses[iterator].secondArgument[1] == synonym) {
+		if (clause.secondArgument[1] == synonym) {
 			count++;
 		}
 	}
 
-	int selectClausesQty = queryObj.selectClauses.size();
+	int selectClausesQty = queryTableName.size();
 	if (count >= selectClausesQty) {
 		oneColSimilar = true;
 		allColSimilar = true;
@@ -60,14 +61,42 @@ void QueryTable::compareSuchThatSynonym(Query queryObj, int iterator, bool &oneC
 	}
 }
 
-void QueryTable::comparePatternSynonym(Query queryObj, int iterator, bool& oneColSimilar, bool& allColSimilar)
+void QueryTable::evaluateIncomingPattern(PatternClause clause, vector<vector<string>> incomingData)
+{
+	//note: all incoming queries will have at least ONE matching Select synonym
+	//if it doesnt match, program auto terminate
+	bool oneColSimilar = false;
+	bool allColSimilar = false;
+
+	comparePatternSynonym(clause, oneColSimilar, allColSimilar);
+
+	if (queryTable.empty()) {
+		queryTable = incomingData;
+		queryTableName.push_back(clause.patternSynonym);
+		queryTableName.push_back(clause.LHS[1]);
+	}
+
+	else {
+		if (oneColSimilar == true && allColSimilar == true) {
+			join(incomingData, { clause.patternSynonym, clause.LHS[1] });
+		}
+		else if (oneColSimilar == true && allColSimilar == false) {
+			insert(incomingData, { clause.patternSynonym, clause.LHS[1] });
+		}
+		else if (oneColSimilar == false && allColSimilar == false) {
+			crossProduct(incomingData, { clause.patternSynonym, clause.LHS[1] });
+		}
+	}
+}
+
+void QueryTable::comparePatternSynonym(PatternClause clause, bool& oneColSimilar, bool& allColSimilar)
 {
 	int count = 0;
-	for (SelectClause i : queryObj.selectClauses) {
-		if (queryObj.patternClauses[iterator].patternSynonym == i.name) {
+	for (string synonym : queryTableName) {
+		if (clause.patternSynonym == synonym) {
 			count++;
 		}
-		if (queryObj.patternClauses[iterator].LHS[1] == i.name) {
+		if (clause.LHS[1] == synonym) {
 			count++;
 		}
 	}
@@ -77,7 +106,7 @@ void QueryTable::comparePatternSynonym(Query queryObj, int iterator, bool& oneCo
 	}
 	else if (count > 0) {
 		oneColSimilar = true;
-		if (queryObj.selectClauses.size() == count) {
+		if (queryTableName.size() == count) {
 			allColSimilar = true;
 		}
 	}
