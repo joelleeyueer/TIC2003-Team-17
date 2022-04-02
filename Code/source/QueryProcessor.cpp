@@ -5,6 +5,12 @@
 #include "ParentTClauseEvaluator.h"
 #include "ModifiesClauseEvaluator.h"
 #include "UsesClauseEvaluator.h"
+#include "ModifiesPClauseEvaluator.h"
+#include "NextClauseEvaluator.h"
+#include "NextTClauseEvaluator.h"
+#include "CallsClauseEvaluator.h"
+#include "UsesPClauseEvaluator.h"
+#include "CallsTClauseEvaluator.h"
 #include "Tokenizer.h"
 #include "Database.h"
 #include "QueryTable.cpp"
@@ -298,6 +304,8 @@ void QueryProcessor::evaluateModifiesClause(SuchThatClause clause, vector<vector
 
 void QueryProcessor::evaluateModifiesPClause(SuchThatClause clause, vector<vector<string>>& results)
 {
+	ModifiesPClauseEvaluator modifiesPClauseEvaluator;
+	modifiesPClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
 void QueryProcessor::evaluateUsesClause(SuchThatClause clause, vector<vector<string>>& results)
@@ -310,22 +318,32 @@ void QueryProcessor::evaluateUsesClause(SuchThatClause clause, vector<vector<str
 
 void QueryProcessor::evaluateUsesPClause(SuchThatClause clause, vector<vector<string>>& results)
 {
+	UsesPClauseEvaluator usesPClauseEvaluator;
+	usesPClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
 void QueryProcessor::evaluateNextClause(SuchThatClause clause, vector<vector<string>>& results)
 {
+	NextClauseEvaluator nextClauseEvaluator;
+	nextClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
 void QueryProcessor::evaluateNextTClause(SuchThatClause clause, vector<vector<string>>& results)
 {
+	NextTClauseEvaluator nextTClauseEvaluator;
+	nextTClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
 void QueryProcessor::evaluateCallsClause(SuchThatClause clause, vector<vector<string>>& results)
 {
+	CallsClauseEvaluator callsClauseEvaluator;
+	callsClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
 void QueryProcessor::evaluateCallsTClause(SuchThatClause clause, vector<vector<string>>& results)
 {
+	CallsTClauseEvaluator callsTClauseEvaluator;
+	callsTClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
 
