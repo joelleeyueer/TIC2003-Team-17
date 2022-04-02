@@ -18,7 +18,7 @@ public:
 		Read
 		Print
 		Assignment*/
-	// method to connect to the database and initialize tables in the database
+		// method to connect to the database and initialize tables in the database
 	static void initialize();
 
 	// method to close the database connection
@@ -66,6 +66,21 @@ public:
 	// method to insert modifies into the database
 	static void insertUses(string usesLine, string variableN);
 
+	// method to insert calls into the database
+	static void insertCalls(string proc1, string proc2);
+
+	// method to insert callst into the database
+	static void insertCallst(string proc1, string proc2);
+
+	// method to insert nexts into the database
+	static void insertNexts(string stmt1, string stmt2);
+
+	// method to insert nextst into the database
+	static void insertNextst(string stmt1, string stmt2);
+
+	// method to insert procstmt into the database
+	static void insertProcstmt(string proc, string stmt);
+
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);
 
@@ -95,6 +110,12 @@ public:
 
 	static void getUses(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue);
 
+	static void getCallsTmodifies(vector<string>& results, string callee);
+
+	static void getCallsTuses(vector<string>& results, string callee);
+
+	static void getProcstmt(vector<string>& results, string stmt);
+
 	/*	Procedures
 		Constant
 		Variable
@@ -105,9 +126,9 @@ public:
 
 private:
 	// the connection pointer to the database
-	static sqlite3* dbConnection; 
+	static sqlite3* dbConnection;
 	// a vector containing the results from the database
-	static vector<vector<string>> dbResults; 
+	static vector<vector<string>> dbResults;
 	// the error message from the database
 	static char* errorMessage;
 	// callback method to put one row of results from the database into the dbResults vector

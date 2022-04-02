@@ -22,6 +22,7 @@ public:
 	void parseProcedure();
 	void parseStatement();
 	void parseVariable();
+	void parseFactorCondition();
 	void parseFactor();
 	void parseConstant();
 

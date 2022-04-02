@@ -7,6 +7,8 @@
 #include "UsesClauseEvaluator.h"
 #include "Tokenizer.h"
 #include "Database.h"
+#include "QueryTable.cpp"
+#include "QueryPlan.cpp"
 #include <iostream>
 #include <algorithm> 
 
@@ -22,164 +24,86 @@ QueryProcessor::~QueryProcessor() {}
 // You should modify this method to complete the logic for handling all required queries.
 
 
+
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
-	// clear the output vector
-
-	// query sorter here
-
 	output.clear();
+
+	QueryPlan queryPlan = QueryPlan();
+	queryPlan.plan(queryObj);
 
 	vector<string> selectClauseResults;
 	vector<vector<string>> suchThatResults;
 	vector<vector<string>> patternClauseResults;
-	vector<vector<vector<string>>> suchThatMaster;
-	vector<vector<vector<string>>> patternClauseMaster;
 
-	evaluateSelectClause(queryObj, selectClauseResults, 0);
+	// evaluate select clause first
+	evaluateSelectClause(queryObj, selectClauseResults);
 
-	/// <summary>
-	/// Iterate through suchThatResults and parse results into suchThatMaster
-	/// </summary>
-
-	int suchThatCount = queryObj.suchThatClauses.size();
-	int iterator = -1;
-
-	while (queryObj.suchThatClauses.size() > 0 && suchThatCount > 0) {
-		iterator++;
-		// if rel ref == parent
-		// else if rel ref = modifies.. etc etc
-		string relRef = queryObj.suchThatClauses[iterator].relRef;
-
-
-		if (relRef == "Parent") {
-			evaluateParentClause(queryObj, suchThatResults, iterator);
+	// evaluate the meaningless queries next
+	for (SuchThatClause clause : queryPlan.meaninglessSuchThatClause) {
+		evaluateSuchThatClause(clause, suchThatResults);
+		if (suchThatResults.empty()) {
+			return;
 		}
-		else if (relRef == "Parent*") {
-			evaluateParentTClause(queryObj, suchThatResults, iterator);
+	}
+
+	for (PatternClause clause : queryPlan.meaninglessPatternClause) {
+		evaluatePatternClause(clause, queryObj.declarationList, patternClauseResults);
+		if (patternClauseResults.empty()) {
+			return;
 		}
-		else if (relRef == "Modifies") {
-			evaluateModifiesClause(queryObj, suchThatResults, iterator);
-		}
-		else if (relRef == "Uses") { //relRef == "Uses
-			evaluateUsesClause(queryObj, suchThatResults, iterator);
-		}
-		else {
+	}
+
+	// evaluate meaningful queries next
+	// create query table
+	vector<string> tempSelectSynonyms;
+	for (SelectClause select : queryObj.selectClauses) {
+		tempSelectSynonyms.push_back(select.name);
+	}
+	queryTable = QueryTable(tempSelectSynonyms);
+	
+	for (SuchThatClause clause : queryPlan.meaningfulSuchThatClause) {
+		evaluateSuchThatClause(clause, suchThatResults);
+		if (suchThatResults.empty()) {
 			return;
 		}
 
-		suchThatResults.clear();
-		suchThatCount--;
+		queryTable.evaluateIncomingSuchThat(clause, suchThatResults);
 	}
 
-	/// <summary>
-	/// Iterate through patternClauseResults and parse results into patternClauseMaster
-	/// </summary>
-
-	int patternCount = queryObj.patternClauses.size();
-	iterator = -1;
-
-	while (queryObj.patternClauses.size() > 0 && patternCount > 0) {
-		iterator++;
-		evaluatePatternClause(queryObj, patternClauseResults, iterator);
-
-		for (auto i : patternClauseResults) {
-			patternClauseMaster[iterator].push_back(i);
+	for (PatternClause clause : queryPlan.meaninglessPatternClause) {
+		evaluatePatternClause(clause, queryObj.declarationList, patternClauseResults);
+		if (patternClauseResults.empty()) {
+			return;
 		}
 
-		patternClauseResults.clear();
-		patternCount--;
+		//
 	}
 
-	//suchThatResults vector is empty but queryObj parser is not empty OR patternResults vector is empty but queryObj parser is not empty
-	if ((suchThatResults.empty() && !(queryObj.suchThatClauses.empty())) || (patternClauseResults.empty() && !(queryObj.patternClauses.empty()))) { //meaningless queries or pattern or such that supposed to return stuff but nothing 
-		return; // returns nothing. Takes into account meaningless queries for 1. queries with suchThat OR pattern, 2. queries with suchThat AND pattern
-	}
+	queryTable.dropColumns(queryObj);
+	queryTable.queryToOutput(output);
+}
 
-	else if ((suchThatResults.empty() && queryObj.suchThatClauses.empty()) && (patternClauseResults.empty() && queryObj.patternClauses.empty())) { // only select clause exists
-		for (string row : selectClauseResults) { //only select clause
-			output.push_back(row);
-		}
-		return;
+void QueryProcessor::evaluateSuchThatClause(SuchThatClause clause, vector<vector<string>>& suchThatResults)
+{
+	if (clause.relRef == "Parent") {
+		evaluateParentClause(clause, suchThatResults);
+	}
+	else if (clause.relRef == "Parent*") {
+		evaluateParentTClause(clause, suchThatResults);
+	}
+	else if (clause.relRef == "Modifies") {
+		evaluateModifiesClause(clause, suchThatResults);
+	}
+	else if (clause.relRef == "Uses") {
+		evaluateUsesClause(clause, suchThatResults);
 	}
 	else {
-		//QP/database will return nothing when
-		//Meaningful query but no answer
-		//Meaningless query but no answer AKA false
-		filterEmptyResultsClause(queryObj, suchThatResults, patternClauseResults);
-
-		//everything else from this point on is a meaningful query or a meaningless query equating true
-		if (queryObj.suchThatClauses.size() > 0 && queryObj.patternClauses.size() > 0) {
-			//filterSuchThatPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-			filterSuchThatPatternClause2(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-		}
-		else if (queryObj.patternClauses.size() > 0) {
-			filterOnlyPatternClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-		}
-		else { //suchThat
-			filterOnlySuchThatClause(queryObj, selectClauseResults, suchThatResults, patternClauseResults, output);
-		}
+		return;
 	}
-	
+
+	suchThatResults.clear();
 }
 
-void QueryProcessor::filterEmptyResultsClause(Query query, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults)
-{
-	//if there is an empty vector from suchThatResults or patternClauseResults, the query should return nothing;
-	for (auto i : suchThatResults) {
-		if (i.empty()) {
-			return;
-		}
-	}
-
-	for (auto i : patternClauseResults) {
-		if (i.empty()) {
-			return;
-		}
-	}
-}
-
-void QueryProcessor::filterSuchThatPatternClause2(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output)
-{
-	//WIP resume after implementing vector 3x
-	vector<vector<string>> parseResults;
-	int j = -1;
-	//loop through suchThatResults
-	for (vector<string> i : suchThatResults) {
-		j++;
-		if (queryObj.selectClauses[0].name != queryObj.suchThatClauses[j].firstArgument[1]) { //check if meaningless i.e. Select a Modifies (b,..)
-			continue;
-		}
-		else { //not meaningless
-			if (queryObj.selectClauses[0].designEntity == "assign") {
-				//parseResults[j].push_back(i[0]);
-			}
-			else { // designEntity == "variable"
-				//parseResults[j].push_back(i[1]);
-			}
-			
-		}
-	}
-
-	j = -1;
-	//loop through suchThatResults
-	for (auto i : patternClauseResults) {
-		j++;
-		if (queryObj.selectClauses[0].name != queryObj.patternClauses[j].patternSynonym) { //check if meaningless i.e. Select a pattern b (a,..)
-			continue;
-		}
-		else {
-			//parseResults[j].push_back(i[0]);
-
-		}
-	}
-
-
-	return;
-	//find intersection between all results in parseResults
-	//WIP
-
-
-}
 
 void QueryProcessor::filterSuchThatPatternClause(Query queryObj, vector<string>& selectClauseResults, vector<vector<string>>& suchThatResults, vector<vector<string>>& patternClauseResults, vector<string>& output){
 	//suchThat + Pattern, but Pattern is meaningless
@@ -317,42 +241,50 @@ void QueryProcessor::filterOnlyPatternClause(Query queryObj, vector<string>& sel
 	}
 }
 
-void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results, int iterator)
+void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results)
 {
 	SelectClauseEvaluator selectClauseEvaluator;
-	selectClauseEvaluator.evaluate(results, query.selectClauses[0].designEntity); 
+	int selectCount = query.selectClauses.size();
+	int iterator = 0;
+
+	while (selectCount > 0 && iterator > selectCount) {
+		selectClauseEvaluator.evaluate(results, query.selectClauses[iterator].designEntity);
+		iterator++;
+	}
 }
 
-void QueryProcessor::evaluatePatternClause(Query query, vector<vector<string>>& results, int iterator)
+void QueryProcessor::evaluatePatternClause(PatternClause clause, map<string, string> declarationList, vector<vector<string>>& results)
 {
 	PatternClauseEvaluator patternClauseEvaluator;
-	patternClauseEvaluator.evaluate(results, query.patternClauses[iterator].LHS, query.patternClauses[iterator].RHS, query.declarationList);
+	patternClauseEvaluator.evaluate(results, clause.LHS, clause.RHS, declarationList);
 }
 
-void QueryProcessor::evaluateParentClause(Query query, vector<vector<string>>& results, int iterator)
+void QueryProcessor::evaluateParentClause(SuchThatClause clause, vector<vector<string>>& results)
 {
 	ParentClauseEvaluator parentClauseEvaluator;
-	parentClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
+	parentClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
-void QueryProcessor::evaluateParentTClause(Query query, vector<vector<string>>& results, int iterator)
+void QueryProcessor::evaluateParentTClause(SuchThatClause clause, vector<vector<string>>& results)
 {
 	ParentTClauseEvaluator parentTClauseEvaluator;
-	parentTClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
+	parentTClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 
 }
 
-void QueryProcessor::evaluateModifiesClause(Query query, vector<vector<string>>& results, int iterator)
+void QueryProcessor::evaluateModifiesClause(SuchThatClause clause, vector<vector<string>>& results)
 {
 	ModifiesClauseEvaluator modifiesClauseEvaluator;
-	modifiesClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
+	modifiesClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
-void QueryProcessor::evaluateUsesClause(Query query, vector<vector<string>>& results, int iterator)
+void QueryProcessor::evaluateUsesClause(SuchThatClause clause, vector<vector<string>>& results)
 {
 	UsesClauseEvaluator usesClauseEvaluator;
-	usesClauseEvaluator.evaluate(results, query.suchThatClauses[iterator].firstArgument[0], query.suchThatClauses[iterator].firstArgument[1], query.suchThatClauses[iterator].secondArgument[0], query.suchThatClauses[iterator].secondArgument[1]);
+	usesClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
+
+
 
 
 

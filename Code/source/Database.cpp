@@ -105,7 +105,7 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create modifies table
-	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	string createModifiesTableSQL = "CREATE TABLE modifies ( modifiesLine VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(modifiesLine,variableN) );";
 	sqlite3_exec(dbConnection, createModifiesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// drop the existing uses table (if any)
@@ -117,8 +117,48 @@ void Database::initialize() {
 	sqlite3_exec(dbConnection, dropUsesTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// create uses table
-	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) );";
+	string createUsesTableSQL = "CREATE TABLE uses ( usesLine VARCHAR(255) , variableN VARCHAR(255) , UNIQUE(usesLine,variableN) );";
 	sqlite3_exec(dbConnection, createUsesTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing calls table (if any)
+	string dropCallsTableSQL = "DROP TABLE IF EXISTS calls";
+	sqlite3_exec(dbConnection, dropCallsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create calls table
+	string createCallsTableSQL = "CREATE TABLE calls ( proc1 VARCHAR(255) , proc2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createCallsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing callst table (if any)
+	string dropCallstTableSQL = "DROP TABLE IF EXISTS callst";
+	sqlite3_exec(dbConnection, dropCallstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create callst table
+	string createCallstTableSQL = "CREATE TABLE callst ( proc1 VARCHAR(255) , proc2 VARCHAR(255) , UNIQUE(proc1,proc2) );";
+	sqlite3_exec(dbConnection, createCallstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing nexts table (if any)
+	string dropNextsTableSQL = "DROP TABLE IF EXISTS nexts";
+	sqlite3_exec(dbConnection, dropNextsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create nexts table
+	string createNextsTableSQL = "CREATE TABLE nexts ( stmt1 VARCHAR(255) , stmt2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createNextsTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing nextst table (if any)
+	string dropNextstTableSQL = "DROP TABLE IF EXISTS nextst";
+	sqlite3_exec(dbConnection, dropNextstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create callst table
+	string createNextstTableSQL = "CREATE TABLE nextst ( stmt1 VARCHAR(255) , stmt2 VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createNextstTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// drop the existing procstmt table (if any)
+	string dropProcstmtTableSQL = "DROP TABLE IF EXISTS procstmt";
+	sqlite3_exec(dbConnection, dropProcstmtTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create procstmt table
+	string createProcstmtTableSQL = "CREATE TABLE procstmt ( proc VARCHAR(255) , stmt VARCHAR(255) );";
+	sqlite3_exec(dbConnection, createProcstmtTableSQL.c_str(), NULL, 0, &errorMessage);
 
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
@@ -146,7 +186,7 @@ void Database::insertVariable(string variableName) {
 
 // method to insert an assignment into the database
 void Database::insertAssignment(string assignmentLine, string lhs, string rhs) {
-	string insertAssignmentSQL = "INSERT INTO assignments ('line' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs +"'); ";
+	string insertAssignmentSQL = "INSERT INTO assignments ('line' , 'lhs' , 'rhs') VALUES ('" + assignmentLine + "' , '" + lhs + "' , '" + rhs + "'); ";
 	sqlite3_exec(dbConnection, insertAssignmentSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -216,7 +256,7 @@ void Database::insertGrandchild(string grandparentLine, string childLine) {
 
 // method to insert into the modifies table
 void Database::insertModifies(string modifiesLine, string variableN) {
-	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '"+ modifiesLine +"', '" + variableN + "' ); ";
+	string insertModifiesSQL = "INSERT INTO modifies ('modifiesLine', 'variableN') VALUES ( '" + modifiesLine + "', '" + variableN + "' ); ";
 	sqlite3_exec(dbConnection, insertModifiesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
@@ -226,9 +266,39 @@ void Database::insertUses(string usesLine, string variableN) {
 	sqlite3_exec(dbConnection, insertUsesSQL.c_str(), NULL, 0, &errorMessage);
 }
 
+// method to insert into the calls table
+void Database::insertCalls(string proc1, string proc2) {
+	string insertCallsSQL = "INSERT INTO calls ('proc1', 'proc2') VALUES ( '" + proc1 + "', '" + proc2 + "' ); ";
+	sqlite3_exec(dbConnection, insertCallsSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the callst table
+void Database::insertCallst(string proc1, string proc2) {
+	string insertCallstSQL = "INSERT INTO callst ('proc1', 'proc2') VALUES ( '" + proc1 + "', '" + proc2 + "' ); ";
+	sqlite3_exec(dbConnection, insertCallstSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the nexts table
+void Database::insertNexts(string stmt1, string stmt2) {
+	string insertNextsSQL = "INSERT INTO nexts ('stmt1', 'stmt2') VALUES ( '" + stmt1 + "', '" + stmt2 + "' ); ";
+	sqlite3_exec(dbConnection, insertNextsSQL.c_str(), NULL, 0, &errorMessage);
+
+}
+
+// method to insert into the nextst table
+void Database::insertNextst(string stmt1, string stmt2) {
+	string insertNextstSQL = "INSERT INTO nextst ('stmt1', 'stmt2') VALUES ( '" + stmt1 + "', '" + stmt2 + "' ); ";
+	sqlite3_exec(dbConnection, insertNextstSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert into the procstmt table
+void Database::insertProcstmt(string proc, string stmt) {
+	string insertProcstmtSQL = "INSERT INTO procstmt ('proc', 'stmt') VALUES ( '" + proc + "', '" + stmt + "' ); ";
+	sqlite3_exec(dbConnection, insertProcstmtSQL.c_str(), NULL, 0, &errorMessage);
+}
 
 // method to get all the procedures from the database
-void Database::getProcedure(vector<string>& results){
+void Database::getProcedure(vector<string>& results) {
 	// clear the existing results
 	dbResults.clear();
 
@@ -417,7 +487,7 @@ void Database::getParent(vector<vector<string>>& results, string parentType, str
 			getParentSQL = "SELECT parentLine, childLine FROM parents;";
 		}
 		else if (childType == "line number") {
-			getParentSQL = "SELECT parentLine, childLine from parents WHERE childLine = " +  childValue + ";";
+			getParentSQL = "SELECT parentLine, childLine from parents WHERE childLine = " + childValue + ";";
 		}
 		else {  // child is synonym
 			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
@@ -532,6 +602,22 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 	}
 }
 
+// method to get variableN from the database modifies for specific modifiesLine
+void Database::getCallsTmodifies(vector<string>& results, string callee) {
+	// clear the existing results
+	dbResults.clear();
+
+	string getCallsTmodifiesSQL = "SELECT variableN FROM modifies WHERE modifiesLine = '" + callee + "';";
+	sqlite3_exec(dbConnection, getCallsTmodifiesSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
+	}
+}
+
 void Database::getUses(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
 {
 	// clear the existing results
@@ -564,6 +650,39 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 	}
 }
 
+// method to get variableN from the database modifies for specific usesLine
+void Database::getCallsTuses(vector<string>& results, string callee) {
+	// clear the existing results
+	dbResults.clear();
+
+	string getCallsTusesSQL = "SELECT variableN FROM uses WHERE usesLine = '" + callee + "';";
+	sqlite3_exec(dbConnection, getCallsTusesSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
+	}
+}
+
+// method to get procedure from the database procstmt for specific statement line
+void Database::getProcstmt(vector<string>& results, string stmt) {
+	// clear the existing results
+	dbResults.clear();
+
+	string getProcstmtSQL = "SELECT proc FROM procstmt WHERE stmt = '" + stmt + "';";
+	sqlite3_exec(dbConnection, getProcstmtSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
+	}
+	
+}
+
 // callback method to put one row of results from the database into the dbResults vector
 // This method is called each time a row of results is returned from the database
 int Database::callback(void* NotUsed, int argc, char** argv, char** azColName) {
@@ -590,7 +709,7 @@ string Database::convertToDbName(string designEntity)
 	}
 	else if (designEntity == "assign") {
 		return "assignments";
-	} 
+	}
 	else {
 		return designEntity + "s";
 	}

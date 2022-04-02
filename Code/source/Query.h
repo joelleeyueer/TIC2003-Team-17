@@ -3,8 +3,6 @@
 #include <vector>
 #include <map>
 
-#include "Clause.h"
-
 using namespace std;
 
 struct SelectClause {
@@ -18,11 +16,10 @@ struct SuchThatClause {
     vector<string> secondArgument;
 };
 
-struct PatternClause {
+struct PatternClause  {
     string patternSynonym;
     vector<string> LHS; //index 0 is design entity/undeclared/IDENT, index 1 is entity Reference (synonym, _ or "IDENT")
-    vector<vector<string>> RHS; //vector 0 is partial match/exact match/undeclared, vector 1 is the expression
-    
+    vector<string> RHS; //index 0 is partial match/exact match/undeclared, index 1 is the expression
 };
 
 class Query

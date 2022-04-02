@@ -18,6 +18,7 @@
     <ClCompile Include="..\source\Query.cpp" />
     <ClCompile Include="..\source\QueryParser.cpp" />
     <ClCompile Include="..\source\QueryProcessor.cpp" />
+    <ClCompile Include="..\source\QueryTable.cpp" />
     <ClCompile Include="..\source\SelectClauseEvaluator.cpp" />
     <ClCompile Include="..\source\SourceProcessor.cpp" />
     <ClCompile Include="..\source\Database.cpp" />
@@ -34,6 +35,7 @@
     <ClInclude Include="..\source\Query.h" />
     <ClInclude Include="..\source\QueryParser.h" />
     <ClInclude Include="..\source\QueryProcessor.h" />
+    <ClInclude Include="..\source\QueryTable.h" />
     <ClInclude Include="..\source\SelectClauseEvaluator.h" />
     <ClInclude Include="..\source\SourceProcessor.h" />
     <ClInclude Include="..\source\sqlite3.h" />
