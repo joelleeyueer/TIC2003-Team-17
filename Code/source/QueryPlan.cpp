@@ -4,18 +4,19 @@
 
 QueryPlan::QueryPlan()
 {
-	meaningfulSuchThatClause = vector<SuchThatClause>{};
+	sortedSuchThatClause = vector<SuchThatClause>();
+	/*meaningfulSuchThatClause = vector<SuchThatClause>{};
 	meaningfulPatternClause = vector<PatternClause>{};
 	meaninglessSuchThatClause = vector<SuchThatClause>{};
-	meaninglessPatternClause = vector<PatternClause>{};
+	meaninglessPatternClause = vector<PatternClause>{};*/
 }
 
 void QueryPlan::plan(Query& query)
 {
-	categorize(query);
+	//categorize(query);
 
 	// prioritize the meaningful such that clause because meaningless doesn't matter since we won't add it to the table
-	std::sort(std::begin(meaningfulSuchThatClause), std::end(meaningfulSuchThatClause), [&](const SuchThatClause& a, const SuchThatClause& b) {
+	std::sort(std::begin(query.suchThatClauses), std::end(query.suchThatClauses), [&](const SuchThatClause& a, const SuchThatClause& b) {
 		return getPriority(a.relRef) < getPriority(b.relRef);
 		});
 }

@@ -46,22 +46,6 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		evaluateSelectClause(clause, selectClauseResults);
 	}
 
-	// evaluate the meaningless queries next
-	for (SuchThatClause clause : queryPlan.meaninglessSuchThatClause) {
-		evaluateSuchThatClause(clause, suchThatResults);
-		if (suchThatResults.empty()) {
-			return;
-		}
-	}
-
-	for (PatternClause clause : queryPlan.meaninglessPatternClause) {
-		evaluatePatternClause(clause, queryObj.declarationList, patternClauseResults);
-		if (patternClauseResults.empty()) {
-			return;
-		}
-	}
-
-	// evaluate meaningful queries next
 	// create query table
 	vector<string> tempSelectSynonyms;
 	for (SelectClause select : queryObj.selectClauses) {
@@ -69,7 +53,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	}
 	queryTable = QueryTable(tempSelectSynonyms);
 	
-	for (SuchThatClause clause : queryPlan.meaningfulSuchThatClause) {
+	for (SuchThatClause clause : queryObj.suchThatClauses) {
 		evaluateSuchThatClause(clause, suchThatResults);
 		if (suchThatResults.empty()) {
 			return;
@@ -78,13 +62,13 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		queryTable.evaluateIncomingSuchThat(clause, suchThatResults);
 	}
 
-	for (PatternClause clause : queryPlan.meaninglessPatternClause) {
+	for (PatternClause clause : queryObj.patternClauses) {
 		evaluatePatternClause(clause, queryObj.declarationList, patternClauseResults);
 		if (patternClauseResults.empty()) {
 			return;
 		}
 
-		//
+		queryTable.evaluateIncomingPattern(clause, patternClauseResults);
 	}
 
 	queryTable.dropColumns(queryObj);

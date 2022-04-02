@@ -13,6 +13,8 @@ class QueryPlan
 public:
 	QueryPlan();
 
+	vector<SuchThatClause> sortedSuchThatClause;
+
 	vector<SuchThatClause> meaningfulSuchThatClause;
 	vector<PatternClause> meaningfulPatternClause;
 	vector<SuchThatClause> meaninglessSuchThatClause;
