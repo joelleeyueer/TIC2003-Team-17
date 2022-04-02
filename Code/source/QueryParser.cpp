@@ -127,6 +127,12 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 	else if (firstArgument == "_"){
 		firstArgumentPair = { "undeclared", firstArgument };
 	}
+	else if (firstArgument == "\"") { //usesP or modifiesP
+		next();
+		firstArgument = remainingTokens.front();
+		expect("\"");
+		firstArgumentPair = { "procedure name", firstArgument };
+	}
 	else {
 		firstArgumentPair = { "line number", firstArgument };
 	}
