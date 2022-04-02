@@ -11,7 +11,7 @@ using namespace std;
 class SelectClauseEvaluator
 {
 public:
-    void evaluate(vector<string>& results, string designEntityString);
+    void evaluate(vector<vector<string>>& results, string designEntityString);
 
 private:
     void removeDupe(vector<string>& results);

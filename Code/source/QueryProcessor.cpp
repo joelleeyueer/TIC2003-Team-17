@@ -31,12 +31,14 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	QueryPlan queryPlan = QueryPlan();
 	queryPlan.plan(queryObj);
 
-	vector<string> selectClauseResults;
+	vector<vector<string>> selectClauseResults;
 	vector<vector<string>> suchThatResults;
 	vector<vector<string>> patternClauseResults;
 
 	// evaluate select clause first
-	evaluateSelectClause(queryObj, selectClauseResults);
+	for (SelectClause clause : queryObj.selectClauses) {
+		evaluateSelectClause(clause, selectClauseResults);
+	}
 
 	// evaluate the meaningless queries next
 	for (SuchThatClause clause : queryPlan.meaninglessSuchThatClause) {
@@ -83,6 +85,12 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	queryTable.queryToOutput(output);
 }
 
+void QueryProcessor::evaluateSelectClause(SelectClause clause, vector<vector<string>>& results)
+{
+	SelectClauseEvaluator selectClauseEvaluator;
+	selectClauseEvaluator.evaluate(results, clause.designEntity);
+}
+
 void QueryProcessor::evaluateSuchThatClause(SuchThatClause clause, vector<vector<string>>& suchThatResults)
 {
 	if (clause.relRef == "Parent") {
@@ -92,10 +100,32 @@ void QueryProcessor::evaluateSuchThatClause(SuchThatClause clause, vector<vector
 		evaluateParentTClause(clause, suchThatResults);
 	}
 	else if (clause.relRef == "Modifies") {
-		evaluateModifiesClause(clause, suchThatResults);
+		if ((clause.firstArgument[0] == "IDENT") || (clause.firstArgument[0] == "call") || (clause.firstArgument[0] == "procedure")) {
+			evaluateModifiesPClause(clause, suchThatResults);
+		}
+		else {
+			evaluateModifiesClause(clause, suchThatResults);
+		}
 	}
 	else if (clause.relRef == "Uses") {
-		evaluateUsesClause(clause, suchThatResults);
+		if ((clause.firstArgument[0] == "IDENT") || (clause.firstArgument[0] == "call") || (clause.firstArgument[0] == "procedure")) {
+			evaluateUsesPClause(clause, suchThatResults);
+		}
+		else {
+			evaluateUsesClause(clause, suchThatResults);
+		}
+	}
+	else if (clause.relRef == "Next") {
+		evaluateNextClause(clause, suchThatResults);
+	}
+	else if (clause.relRef == "Next*") {
+		evaluateNextTClause(clause, suchThatResults);
+	}
+	else if (clause.relRef == "Calls") {
+		evaluateCallsClause(clause, suchThatResults);
+	}
+	else if (clause.relRef == "Calls*") {
+		evaluateCallsTClause(clause, suchThatResults);
 	}
 	else {
 		return;
@@ -241,18 +271,6 @@ void QueryProcessor::filterOnlyPatternClause(Query queryObj, vector<string>& sel
 	}
 }
 
-void QueryProcessor::evaluateSelectClause(Query query, vector<string>& results)
-{
-	SelectClauseEvaluator selectClauseEvaluator;
-	int selectCount = query.selectClauses.size();
-	int iterator = 0;
-
-	while (selectCount > 0 && iterator > selectCount) {
-		selectClauseEvaluator.evaluate(results, query.selectClauses[iterator].designEntity);
-		iterator++;
-	}
-}
-
 void QueryProcessor::evaluatePatternClause(PatternClause clause, map<string, string> declarationList, vector<vector<string>>& results)
 {
 	PatternClauseEvaluator patternClauseEvaluator;
@@ -278,10 +296,36 @@ void QueryProcessor::evaluateModifiesClause(SuchThatClause clause, vector<vector
 	modifiesClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
 
+void QueryProcessor::evaluateModifiesPClause(SuchThatClause clause, vector<vector<string>>& results)
+{
+}
+
 void QueryProcessor::evaluateUsesClause(SuchThatClause clause, vector<vector<string>>& results)
 {
 	UsesClauseEvaluator usesClauseEvaluator;
 	usesClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
+}
+
+
+
+void QueryProcessor::evaluateUsesPClause(SuchThatClause clause, vector<vector<string>>& results)
+{
+}
+
+void QueryProcessor::evaluateNextClause(SuchThatClause clause, vector<vector<string>>& results)
+{
+}
+
+void QueryProcessor::evaluateNextTClause(SuchThatClause clause, vector<vector<string>>& results)
+{
+}
+
+void QueryProcessor::evaluateCallsClause(SuchThatClause clause, vector<vector<string>>& results)
+{
+}
+
+void QueryProcessor::evaluateCallsTClause(SuchThatClause clause, vector<vector<string>>& results)
+{
 }
 
 

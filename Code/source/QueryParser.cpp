@@ -131,7 +131,7 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 		next();
 		firstArgument = remainingTokens.front();
 		expect("\"");
-		firstArgumentPair = { "procedure name", firstArgument };
+		firstArgumentPair = { "IDENT", firstArgument };
 	}
 	else {
 		firstArgumentPair = { "line number", firstArgument };
@@ -168,7 +168,7 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 void QueryParser::parsePatternClause(Query& currentQuery)
 {
 	vector<string> LHSPair;
-	vector<vector<string>> RHSPair;
+	vector<string> RHSPair;
 	expect("pattern");
 	string patternSynonym = remainingTokens.front();
 	next();
@@ -196,7 +196,7 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 		next();
 		string RHSnext = remainingTokens.front();
 		if (RHSnext == ")") {
-			RHSPair = { {"undeclared"}, {RHSnext} };
+			RHSPair = { "undeclared", RHSnext };
 			next();
 		}
 		else { //has to be partial match
@@ -205,7 +205,8 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 			expect("\"");
 			expect("_");
 			expect(")");
-			RHSPair = { {"partial match"}, expression };
+			RHSPair = { "partial match", expr };
+			expr = "";
 		}
 	}
 	else if (RHSinitial == "\"") { //(sth,"abc")
@@ -213,7 +214,8 @@ void QueryParser::parsePatternClause(Query& currentQuery)
 		parseExpression(currentQuery);
 		expect("\"");
 		expect(")");
-		RHSPair = { {"exact match"}, expression };
+		RHSPair = { "exact match", expr };
+		expr = "";
 
 	}
 
@@ -258,6 +260,11 @@ void QueryParser::parseExpression(Query& currentQuery)
 			}
 		}
 	}
+
+	for (string i : expression) {
+		expr += i;
+	}
+
 }
 
 int QueryParser::precedence(string symbol) {

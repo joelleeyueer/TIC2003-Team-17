@@ -29,7 +29,7 @@ public:
 
     void addSelectClause(string name, string designEntity);
     void addSuchThatClause(string relRef, vector<string> firstArgument, vector<string> secondArgument);
-    void addPatternClause(string synonymName, vector<string> LHS, vector<vector<string>> RHS);
+    void addPatternClause(string synonymName, vector<string> LHS, vector<string> RHS);
     void addDeclarationList(map<string, string> declarationList);
 
     vector<SelectClause> selectClauses;

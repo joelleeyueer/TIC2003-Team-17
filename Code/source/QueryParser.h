@@ -15,6 +15,7 @@ public:
 	list<string> remainingTokens;
 	map<string, string> currentDeclarationList;
 	vector<string> expression;
+	string expr;
 
 	void parse(list<string> tokens, Query& query);
 

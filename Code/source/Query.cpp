@@ -18,7 +18,7 @@ void Query::addSuchThatClause(string relRef, vector<string> firstArgument, vecto
 	suchThatClauses.push_back(SuchThatClause{ relRef, firstArgument, secondArgument });
 }
 
-void Query::addPatternClause(string relRef, vector<string> LHS, vector<vector<string>> RHS)
+void Query::addPatternClause(string relRef, vector<string> LHS, vector<string> RHS)
 {
 	patternClauses.push_back(PatternClause{ relRef, LHS, RHS });
 }

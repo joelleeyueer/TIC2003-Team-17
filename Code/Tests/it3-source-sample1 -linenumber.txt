@@ -1,0 +1,37 @@
+procedure first {
+	
+1	z = c + 4;
+
+2	while (g < 8) {
+3		print k;
+4		read j;
+5		if (x > 1) then {
+6	    		read d; 
+7			read t;
+		} else {
+8			read s;
+9			print y;
+		}	
+	}
+10	call second;
+
+}
+
+procedure second {
+11	read b;
+12	print y;
+13	call third;
+
+14	while (g < 8) {
+15	print k;
+16	read j;
+	}
+
+}
+
+
+procedure third {
+17	print t;
+18	read c;
+	
+}

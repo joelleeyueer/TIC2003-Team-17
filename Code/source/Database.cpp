@@ -490,7 +490,7 @@ void Database::getParent(vector<vector<string>>& results, string parentType, str
 			getParentSQL = "SELECT parentLine, childLine from parents WHERE childLine = " + childValue + ";";
 		}
 		else {  // child is synonym
-			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE childLine IN (SELECT * FROM " + convertToDbName(childType) + ");";
+			getParentSQL = "SELECT parentLine, childLine FROM parents WHERE childLine IN (SELECT line FROM " + convertToDbName(childType) + ");";
 		}
 	}
 	else if (parentType == "line number") {
@@ -602,6 +602,40 @@ void Database::getModifies(vector<vector<string>>& results, string firstArgument
 	}
 }
 
+void Database::getModifiesP(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	// clear the existing results
+	dbResults.clear();
+	string getModifiesPSQL;
+
+	// The first argument for Modifies and Uses cannot be �_� because it is unclear whether the �_� stands for a statement or a procedure.
+
+	if (firstArgumentType == "IDENT") {
+		if (secondArgumentType == "IDENT") {
+			getModifiesPSQL = "SELECT modifiesProc, variableN FROM modifiesproc WHERE modifiesProc = \"" + firstArgumentValue + "\" AND variableN = \"" + secondArgumentValue + "\";";
+		}
+		else { // secondArgumentType is a _ OR synonym i.e. variable design entity
+			getModifiesPSQL = "SELECT modifiesProc, variableN FROM modifiesproc WHERE modifiesProc = \"" + firstArgumentValue + "\";";
+		}
+	}
+	else { //synonym
+		string tableName = convertToDbName(firstArgumentType);
+		string columnName = tableName == "calls" ? "proc1" : "procedureName";
+		if (secondArgumentType == "IDENT") {
+			getModifiesPSQL = "SELECT modifiesProc, variableN FROM modifiesproc WHERE variableN = \"" + secondArgumentValue + "\" AND modifiesProc IN (SELECT " + columnName + " FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
+			getModifiesPSQL = "SELECT modifiesProc, variableN FROM modifiesproc WHERE modifiesProc IN (SELECT " + columnName + " FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getModifiesPSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+}
+
 // method to get variableN from the database modifies for specific modifiesLine
 void Database::getCallsTmodifies(vector<string>& results, string callee) {
 	// clear the existing results
@@ -648,6 +682,227 @@ void Database::getUses(vector<vector<string>>& results, string firstArgumentType
 	for (vector<string> dbRow : dbResults) {
 		results.push_back(dbRow);
 	}
+}
+
+void Database::getUsesP(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	// clear the existing results
+	dbResults.clear();
+	string getUsesPSQL;
+
+	// The first argument for Modifies and Uses cannot be �_� because it is unclear whether the �_� stands for a statement or a procedure.
+
+	if (firstArgumentType == "IDENT") {
+		if (secondArgumentType == "IDENT") {
+			getUsesPSQL = "SELECT usesProc, variableN FROM usesproc WHERE usesProc = \"" + firstArgumentValue + "\" AND variableN = \"" + secondArgumentValue + "\";";
+		}
+		else { // secondArgumentType is a _ OR synonym i.e. variable design entity
+			getUsesPSQL = "SELECT usesProc, variableN FROM usesproc WHERE usesProc = \"" + firstArgumentValue + "\";";
+		}
+	}
+	else { //synonym
+		string tableName = convertToDbName(firstArgumentType);
+		string columnName = tableName == "calls" ? "proc1" : "procedureName";
+		if (secondArgumentType == "IDENT") {
+			getUsesPSQL = "SELECT usesProc, variableN FROM usesproc WHERE variableN = \"" + secondArgumentValue + "\" AND usesProc IN (SELECT " + columnName + " FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+		else {  // secondArgumentType is a _ OR synonym i.e. variable design entity
+			getUsesPSQL = "SELECT usesProc, variableN FROM usesproc WHERE usesProc IN (SELECT " + columnName + " FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getUsesPSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+}
+
+void Database::getNext(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	dbResults.clear();
+	string getNextSQL;
+
+	if (firstArgumentType == "undeclared") {
+		if (secondArgumentType == "undeclared") {
+			getNextSQL = "SELECT stmt1, stmt2 FROM nexts;";
+		}
+		else if (secondArgumentType == "line number") {
+			getNextSQL = "SELECT stmt1, stmt2 from nexts WHERE stmt2 = " + secondArgumentValue + ";";
+		}
+		else { 
+			getNextSQL = "SELECT stmt1, stmt2 FROM nexts WHERE stmt2 IN (SELECT line FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+	else if (firstArgumentType == "line number") {
+		if (secondArgumentType == "undeclared") {
+			getNextSQL = "SELECT stmt1, stmt2 FROM nexts WHERE stmt1 = " + firstArgumentValue + ";";
+		}
+		else if (secondArgumentType == "line number") {
+			getNextSQL = "SELECT stmt1, stmt2 from nexts WHERE stmt1 = " + firstArgumentValue + " AND stmt2 = " + secondArgumentValue + ";";
+		}
+		else { 
+			getNextSQL = "SELECT stmt1, stmt2 FROM nexts WHERE stmt1 = " + firstArgumentValue + " AND stmt2 IN (SELECT line FROM " + convertToDbName(secondArgumentType) + "); ";
+		}
+	}
+	else { //parent is a synonym
+		if (secondArgumentType == "undeclared") {
+			getNextSQL = "SELECT stmt1, stmt2 FROM nexts WHERE stmt1 IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+		else if (secondArgumentType == "line number") {
+			getNextSQL = "SELECT stmt1, stmt2 from nexts WHERE stmt1 IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ") AND stmt2 = " + secondArgumentValue + ";";
+		}
+		else {  
+			getNextSQL = "SELECT stmt1, stmt2 FROM nexts WHERE stmt1 IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ") AND stmt2 IN (SELECT line FROM " + convertToDbName(secondArgumentType) + "); ";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getNextSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+}
+
+void Database::getNextT(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	dbResults.clear();
+	string getNextTSQL = "SELECT stmt1, stmt2 FROM nextst";
+
+
+	if (firstArgumentType == "undeclared") {
+		// child is undeclared not written because it just returns the current "temporary" union table
+		if (secondArgumentType == "line number") {
+			getNextTSQL += " WHERE stmt2 = " + secondArgumentValue + "; ";
+		}
+		else { // child is synonym
+			getNextTSQL += " WHERE stmt2 IN (SELECT line FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+	else if (firstArgumentType == "line number") {
+		if (secondArgumentType == "undeclared") {
+			getNextTSQL += " WHERE stmt1 = " + firstArgumentValue + ";";
+		}
+		else if (secondArgumentType == "line number") {
+			getNextTSQL += " WHERE stmt1 = " + firstArgumentValue + " AND stmt2 = " + secondArgumentValue + ";";
+		}
+		else { // child is synonym
+			getNextTSQL += " WHERE stmt1 = " + firstArgumentValue + " AND stmt2 IN (SELECT line FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+	else { //parent is a synonym
+		if (secondArgumentType == "undeclared") {
+			getNextTSQL += " WHERE stmt1 IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ");";
+		}
+		else if (secondArgumentType == "line number") {
+			getNextTSQL += " WHERE stmt1 IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ") AND stmt2 = " + secondArgumentValue + ";";
+		}
+		else { // child is synonym
+			getNextTSQL += " WHERE stmt1 IN (SELECT line FROM " + convertToDbName(firstArgumentType) + ") AND stmt2 IN (SELECT line FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getNextTSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+}
+
+void Database::getCalls(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	dbResults.clear();
+	string getCallSQL;
+
+	if (firstArgumentType == "undeclared") {
+		if (secondArgumentType == "undeclared") {
+			getCallSQL = "SELECT proc1, proc2 FROM calls;";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getCallSQL = "SELECT proc1, proc2 from calls WHERE proc2 = \"" + secondArgumentValue + "\";";
+		}
+		else {
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+		
+	}
+	else if (firstArgumentType == "IDENT") {
+		if (secondArgumentType == "undeclared") {
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 = \"" + firstArgumentValue + "\";";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getCallSQL = "SELECT proc1, proc2 from calls WHERE proc1 = \"" + firstArgumentValue + "\" AND proc2 = \"" + secondArgumentValue + "\";";
+		}
+		else {
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 = \"" + firstArgumentValue + "\" AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + "); ";
+		}
+	}
+	else { //parent is a synonym
+		if (secondArgumentType == "undeclared") {
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getCallSQL = "SELECT proc1, proc2 from calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 = \"" + secondArgumentValue + "\";";
+		}
+		else {
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getCallSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+
+}
+
+void Database::getCallsT(vector<vector<string>>& results, string firstArgumentType, string firstArgumentValue, string secondArgumentType, string secondArgumentValue)
+{
+	dbResults.clear();
+	string getCallTSQL;
+
+	if (firstArgumentType == "undeclared") {
+		if (secondArgumentType == "undeclared") {
+			getCallTSQL = "SELECT proc1, proc2 FROM callst;";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getCallTSQL = "SELECT proc1, proc2 from callst WHERE proc2 = \"" + secondArgumentValue + "\";";
+		}
+		else {
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+
+	}
+	else if (firstArgumentType == "IDENT") {
+		if (secondArgumentType == "undeclared") {
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 = \"" + firstArgumentValue + "\";";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getCallTSQL = "SELECT proc1, proc2 from callst WHERE proc1 = \"" + firstArgumentValue + "\" AND proc2 = \"" + secondArgumentValue + "\";";
+		}
+		else {
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 = \"" + firstArgumentValue + "\" AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + "); ";
+		}
+	}
+	else { //parent is a synonym
+		if (secondArgumentType == "undeclared") {
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+		else if (secondArgumentType == "IDENT") {
+			getCallTSQL = "SELECT proc1, proc2 from callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 = \"" + secondArgumentValue + "\";";
+		}
+		else {
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+		}
+	}
+
+	sqlite3_exec(dbConnection, getCallTSQL.c_str(), callback, 0, &errorMessage);
+
+	for (vector<string> dbRow : dbResults) {
+		results.push_back(dbRow);
+	}
+
 }
 
 // method to get variableN from the database modifies for specific usesLine
