@@ -1,0 +1,49 @@
+procedure proc {
+1	i = 5;
+2	x = 2;
+3	y = x;
+4	bx = 0;
+5	bx = 0;
+6	i = i;
+7	z = x;
+8	x = y;
+9	i = i;
+10	i = 5;
+11	read x;
+12	bx = 0;
+13	y = 3;
+14	i = i;
+15	y = 3; 
+16	uses orange5;
+17	y = 3;
+18	bx = 0;
+19	y = 3;
+20	i = i;
+21	i = 5; 
+22	y = 3;
+23	call yellow;
+}
+
+procedure yellow {
+24	while (r < s) {
+25		x = y;
+26		i = i;
+27		i = 5;
+28		while (a > 88) {
+29			read a;
+30			print b;
+31			z = 5;
+32			if (bx < 2) then {
+33				i = a;
+34				a = 1;
+			} else {
+35				y = 3;
+36				i = i;
+37				i = 5;
+			}
+		}
+	}
+}
+
+
+

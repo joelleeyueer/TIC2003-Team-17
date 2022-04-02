@@ -60,6 +60,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		}
 
 		queryTable.evaluateIncomingSuchThat(clause, suchThatResults);
+		suchThatResults.clear();
 	}
 
 	for (PatternClause clause : queryObj.patternClauses) {
@@ -69,6 +70,7 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		}
 
 		queryTable.evaluateIncomingPattern(clause, patternClauseResults);
+		patternClauseResults.clear();
 	}
 
 	queryTable.dropColumns(queryObj);
@@ -121,7 +123,7 @@ void QueryProcessor::evaluateSuchThatClause(SuchThatClause clause, vector<vector
 		return;
 	}
 
-	suchThatResults.clear();
+	
 }
 
 

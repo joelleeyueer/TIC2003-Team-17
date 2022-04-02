@@ -1,0 +1,49 @@
+procedure proc {
+	i = 5;
+	x = 2;
+	y = x + 1 + i* 3/(5-7);
+	bx = 0;
+	bx = 0;
+	i = i - 1;
+	z = x;
+	x = y;
+	i = i + 1;
+	i = 5;
+	read x;
+	bx = 0;
+	y = 3;
+	i = i - 1;
+	y = 3; 
+	uses orange5;
+	y = 3;
+	bx = 0;
+	y = 3;
+	i = i - 1;
+	i = 5; 
+	y = 3;
+	call yellow;
+}
+
+procedure yellow {
+	while (r < s) {
+		x = y;
+		i = i + 1;
+		i = 5;
+		while (a > 88) {
+			read a;
+			print b;
+			z = (5*5)%8*(578-(4/2));
+			if (bx < 2) then {
+				i = a + 1;
+				a = 1 + b;
+			} else {
+				y = 3;
+				i = i - 1;
+				i = 5;
+			}
+		}
+	}
+}
+
+
+
