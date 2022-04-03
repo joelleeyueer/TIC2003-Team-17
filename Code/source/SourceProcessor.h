@@ -7,12 +7,14 @@
 #include <list>
 #include <stdexcept>
 
+
 using namespace std;
 
 class SourceProcessor {
 public:
 	// method for processing the source program
 	list<string> remainingTokens;
+	string expr;
 
 	void process(string program);
 	void parse(list<string> tokens);
@@ -25,9 +27,14 @@ public:
 	void parseFactorCondition();
 	void parseFactor();
 	void parseConstant();
+	void parseExpression();
+	bool validateNumber(string symbol);
+	bool validateIdent(string symbol);
+	bool isOperator(string symbol);
 
 private:
 	void expect(string symbol);
 	bool match(string symbol);
 	void next();
+	int precedence(string symbol);
 };
