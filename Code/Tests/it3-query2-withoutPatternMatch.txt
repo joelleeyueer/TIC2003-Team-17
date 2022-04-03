@@ -1,0 +1,13 @@
+1 - Select clause tuple, COMMON synonyms across ALL THREE CLAUSES
+assign a, al; variable v;
+Select <a,v> such that Parent(a,a1) such that Next(a,a1) pattern a(v,_) pattern a("y",_)
+35 y
+5000
+
+2 - Select clause tuple, NO COMMON synonyms across ALL THREE CLAUSES
+assign a, al, a2, b; variable v; call c;
+Select <a,v> such that Parent(a1,a2) such that Modifies(a,a1) pattern b(v,_"3"_) pattern a("bx",_)
+4 y, 4 i, 4 y, 4 bx, 4 y, 4 y, 5 y, 5 i, 5 y, 5 bx, 5 y, 5 y, 12 y, 12 i, 12 y, 12 bx, 12 y, 12 y, 18 y, 18 i, 18 y, 18 bx, 18 y, 18 y
+5000
+
+3 - 

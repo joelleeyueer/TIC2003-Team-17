@@ -1,0 +1,5 @@
+1 - Procedure
+assign a;
+Select a pattern a(_,_"(a+b)/5"_)
+lambda
+5000

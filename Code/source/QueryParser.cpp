@@ -227,7 +227,7 @@ void QueryParser::parseExpression(Query& currentQuery)
 	stack<string> operands;
 	expression.clear();
 
-	while ((remainingTokens.front() != "\"") || remainingTokens.front() != "_") {
+	while ((remainingTokens.front() != "\"") && (remainingTokens.front() != "_")) {
 		string exprToken = remainingTokens.front();
 
 		if (exprToken == "(") {
@@ -243,7 +243,7 @@ void QueryParser::parseExpression(Query& currentQuery)
 			operands.pop(); // to pop the last "("
 			next();
 		}
-		else if (validateNumber(exprToken)) {
+		else if (validateIdent(exprToken) || validateNumber(exprToken)) {
 			expression.push_back(exprToken);
 			next();
 		}
@@ -259,6 +259,11 @@ void QueryParser::parseExpression(Query& currentQuery)
 				next();
 			}
 		}
+	}
+
+	while (!operands.empty()) {
+		expression.push_back(operands.top());
+		operands.pop();
 	}
 
 	for (string i : expression) {
