@@ -23,7 +23,6 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 		queryTableName.push_back(clause.firstArgument[1]);
 		queryTableName.push_back(clause.secondArgument[1]);
 	}
-
 	else {
 		if (oneColSimilar == true && allColSimilar == true) {
 			join(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
@@ -35,6 +34,72 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 			crossProduct(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
 		}
 	}
+
+	//if (queryTable.empty()) {
+	//	if (bothIsSynonym(clause)) {
+	//		queryTable = incomingData;
+	//		queryTableName.push_back(clause.firstArgument[1]);
+	//		queryTableName.push_back(clause.secondArgument[1]);
+	//	}
+	//	else {
+	//		// if there's only one synonym
+	//		// find out which column is the synonym
+	//		int indexToKeep = 0;
+	//		if (clause.secondArgument[0] != "undeclared" && clause.secondArgument[0] != "line number" && clause.secondArgument[0] != "IDENT") {
+	//			indexToKeep = 1;
+	//			queryTableName.push_back(clause.secondArgument[1]);
+	//		}
+	//		else {
+	//			queryTableName.push_back(clause.firstArgument[1]);
+	//		}
+	//		
+	//		// store the column with the synonym in a multidimensional array
+	//		vector<vector<string>> tempTable(incomingData.size(), vector<string>(1));
+
+	//		for (int row = 0; row < incomingData.size(); row++) {
+	//			tempTable[row][0] = incomingData[row][indexToKeep];
+	//		}
+
+	//		queryTable = tempTable;
+	//	}
+	//}
+	//else { // if query table is not empty
+	//	if (bothIsSynonym(clause)) {
+	//		if (oneColSimilar == true && allColSimilar == true) {
+	//			join(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
+	//		}
+	//		else if (oneColSimilar == true && allColSimilar == false) {
+	//			insert(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
+	//		}
+	//		else if (oneColSimilar == false && allColSimilar == false) {
+	//			crossProduct(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
+	//		}
+	//	}
+	//	else {
+	//		// if there's only one synonym
+	//		int indexToKeep = 0;
+	//		if (clause.secondArgument[0] != "undeclared" && clause.secondArgument[0] != "line number" && clause.secondArgument[0] != "IDENT") {
+	//			indexToKeep = 1;
+	//			queryTableName.push_back(clause.secondArgument[1]);
+	//		}
+	//		else {
+	//			queryTableName.push_back(clause.firstArgument[1]);
+	//		}
+
+	//		vector<string> columnToKeep;
+	//		dropNonSynColumns(indexToKeep, columnToKeep, incomingData);
+
+	//		if (oneColSimilar == true && allColSimilar == true) {
+	//			join(columnToKeep, queryTableName[queryTableName.size()-1]);
+	//		}
+	//		else if (oneColSimilar == true && allColSimilar == false) {
+	//			insert(columnToKeep, queryTableName[queryTableName.size() - 1]);
+	//		}
+	//		else if (oneColSimilar == false && allColSimilar == false) {
+	//			crossProduct(columnToKeep, queryTableName[queryTableName.size() - 1]);
+	//		}
+	//	}	
+	//}
 }
 
 void QueryTable::evaluateIncomingPattern(PatternClause clause, vector<vector<string>> incomingData)
@@ -344,6 +409,25 @@ void QueryTable::dropColumns(Query queryObj)
 
 	queryTable.clear();
 	queryTable = tempTable;
+}
+
+void QueryTable::dropNonSynColumns(int indexToKeep, vector<string> columnToKeep, vector<vector<string>> incomingData)
+{
+	vector<string> tempColumnToKeep;
+
+	// actually drop the columns
+	for (int row = 0; row < incomingData.size(); row++) {
+		tempColumnToKeep.push_back(incomingData[row][indexToKeep]);
+	}
+	columnToKeep = tempColumnToKeep;
+}
+
+bool QueryTable::bothIsSynonym(SuchThatClause clause)
+{
+	if ((clause.firstArgument[0] != "undeclared" && clause.firstArgument[0] != "line number" && clause.firstArgument[0] != "IDENT") && (clause.secondArgument[0] != "undeclared" && clause.secondArgument[0] != "line number" && clause.secondArgument[0] != "IDENT")) {
+		return true;
+	}
+	return false;
 }
 
 void QueryTable::sortColumns(Query queryObj)

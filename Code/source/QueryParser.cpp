@@ -123,21 +123,25 @@ void QueryParser::parseSuchThatClause(Query& currentQuery)
 
 	if (validateSynonym(firstArgument, true)) {
 		firstArgumentPair = { currentDeclarationList[firstArgument], firstArgument };
+		next();
 	}
 	else if (firstArgument == "_"){
 		firstArgumentPair = { "undeclared", firstArgument };
+		next();
 	}
 	else if (firstArgument == "\"") { //usesP or modifiesP
 		next();
 		firstArgument = remainingTokens.front();
+		next();
 		expect("\"");
 		firstArgumentPair = { "IDENT", firstArgument };
 	}
 	else {
 		firstArgumentPair = { "line number", firstArgument };
+		next();
 	}
 
-	next();
+	
 	expect(",");
 	string secondArgument = remainingTokens.front();
 

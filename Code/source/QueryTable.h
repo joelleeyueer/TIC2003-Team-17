@@ -32,6 +32,8 @@ public:
 	void crossProduct(vector<string> incomingData, string incomingSynonyms);
 
 	void dropColumns(Query queryObj);
+	void dropNonSynColumns(int indexToKeep, vector<string> columnToKeep, vector<vector<string>> incomingData);
+	bool bothIsSynonym(SuchThatClause clause);
 	void sortColumns(Query queryObj);
 	void queryToOutput(vector<string>& output);
 };

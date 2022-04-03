@@ -161,11 +161,6 @@ void SourceProcessor::parseStatement()
 			cc << countlines;
 			cc >> childLine;
 
-			//string grandparentLine;
-			//stringstream gg;
-			//gg << parentChild;
-			//gg >> grandparentLine;
-
 			Database::insertChild(parentLine, childLine); // parent table
 			//Database::insertGrandchild(grandparentLine, childLine); // parent* table
 			for (int i = 0; i < ancestors.size(); i++)
@@ -210,7 +205,7 @@ void SourceProcessor::parseStatement()
 		ss << countlines;
 		ss >> statementLine;
 		Database::insertStatement(statementLine);
-		Database::insertProcstmt(procedureList.back() , statementLine);
+		Database::insertProcstmt(procedureList.back(), statementLine);
 
 		if (remainingTokens.front() == "while")
 		{
@@ -229,7 +224,7 @@ void SourceProcessor::parseStatement()
 			ss << countlines;
 			ss >> whileLine;
 			Database::insertWhile(whileLine);
-			
+
 
 			string prevLine;
 			string currentLine;
@@ -341,16 +336,6 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				//string parentLine;
-				//stringstream pp;
-				//pp << countparent;
-				//pp >> parentLine;
-
-				//string grandparentLine;
-				//stringstream gg;
-				//gg << parentChild;
-				//gg >> grandparentLine;
-
 				while (nestedconditionTokens.front() != ")")
 				{
 					if (checkName(nestedconditionTokens.front())) // if it is a variable
@@ -494,7 +479,7 @@ void SourceProcessor::parseStatement()
 			list<string> conditionTokens = remainingTokens;
 			list<string> nestedconditionTokens = remainingTokens;
 			parseFactorCondition();
-			expect("then");
+			//expect("then");
 			expect("{");
 			countlines++;
 			currentlines++;
@@ -541,16 +526,6 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				//string parentLine;
-				//stringstream pp;
-				//pp << countparent;
-				//pp >> parentLine;
-
-				//string grandparentLine;
-				//stringstream gg;
-				//gg << parentChild;
-				//gg >> grandparentLine;
-
 				while (nestedconditionTokens.front() != ")")
 				{
 					if (checkName(nestedconditionTokens.front())) // if it is a variable
@@ -595,8 +570,6 @@ void SourceProcessor::parseStatement()
 				}
 
 			}
-
-
 
 		}
 		else if (remainingTokens.front() == "call")
@@ -681,7 +654,7 @@ void SourceProcessor::parseStatement()
 				elsevector.clear();
 				whilesvector.clear();
 				thenvector.clear();
-				
+
 
 				countlines++;
 				currentlines++;
@@ -785,18 +758,6 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				//string parentLine;
-				//stringstream pp;
-				//pp << countparent;
-				//pp >> parentLine;
-
-				//string grandparentLine;
-				//stringstream gg;
-				//gg << parentChild;
-				//gg >> grandparentLine;
-
-				//Database::insertModifies(parentLine, variableToken); // 
-				//Database::insertModifies(grandparentLine, variableToken); // 
 				for (int i = 0; i < ancestors.size(); i++)
 				{
 					string ancestorsLine;
@@ -922,18 +883,6 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				//string parentLine;
-				//stringstream pp;
-				//pp << countparent;
-				//pp >> parentLine;
-
-				//string grandparentLine;
-				//stringstream gg;
-				//gg << parentChild;
-				//gg >> grandparentLine;
-
-				//Database::insertUses(parentLine, variableToken); // 
-				//Database::insertUses(grandparentLine, variableToken); // 
 				for (int i = 0; i < ancestors.size(); i++)
 				{
 					string ancestorsLine;
@@ -1087,18 +1036,6 @@ void SourceProcessor::parseStatement()
 
 			if (countparent > 0 && parentChild > 0) // 5(sub parent) and 3(bigger parent)
 			{
-				//string parentLine;
-				//stringstream pp;
-				//pp << countparent;
-				//pp >> parentLine;
-
-				//string grandparentLine;
-				//stringstream gg;
-				//gg << parentChild;
-				//gg >> grandparentLine;
-
-				//Database::insertModifies(parentLine, variableToken);
-				//Database::insertModifies(grandparentLine, variableToken);
 				for (int i = 0; i < ancestors.size(); i++)
 				{
 					string ancestorsLine;
@@ -1115,8 +1052,6 @@ void SourceProcessor::parseStatement()
 					if (checkName(nestedexpressionTokens.front())) // if it is a variable
 					{
 						string useVariableToken = nestedexpressionTokens.front();
-						//Database::insertUses(parentLine, useVariableToken);
-						//Database::insertUses(grandparentLine, useVariableToken);
 						for (int i = 0; i < ancestors.size(); i++)
 						{
 							string ancestorsLine;
@@ -1161,33 +1096,6 @@ void SourceProcessor::parseStatement()
 			currentlines++;
 		}
 
-		//if (!nextst.empty())
-		//{
-		//	cout << "THIS IS THE 2D VECTOR" << endl;
-		//	for (int i = 0; i < nextst.size(); i++)
-		//	{
-		//		for (int j = 0; j < nextst[i].size(); j++)
-		//		{
-		//			cout << nextst[i].at(j) << ",";
-		//		}
-		//		cout << endl;
-		//	}
-		//	cout << endl;
-		//}
-
-
-		//if (!nextstTemp.empty())
-		//{
-		//	cout << "THIS IS THE TEMP VECTOR" << endl;
-		//	for (int i = 0; i < nextstTemp.size(); i++)
-		//	{
-		//		cout << nextstTemp.at(i) << ",";
-		//	}
-		//	cout << endl;
-		//}
-
-
-
 		while (!nextstTemp.empty())
 		{
 
@@ -1223,10 +1131,10 @@ void SourceProcessor::parseStatement()
 			{
 				Database::insertNextst(nextst[i].at(0), nextst[i].at(j)); // insert indirect next into database
 				int num2 = stoi(nextst[i].at(j));
-				int num1 = stoi(nextst[i].at(j-1));
+				int num1 = stoi(nextst[i].at(j - 1));
 				if (num2 < num1)
 				{
-					for (int k = num2; k < num1 + 1 ; k++)
+					for (int k = num2; k < num1 + 1; k++)
 					{
 						string insert;
 						stringstream ii;
@@ -1237,7 +1145,7 @@ void SourceProcessor::parseStatement()
 				}
 			}
 		}
-		//nextst.clear();
+
 
 		for (int i = 0; i < procedureCalls.size(); i++) // iterating through the rows of the 2D vector
 		{
@@ -1273,17 +1181,14 @@ void SourceProcessor::parseStatement()
 				{
 					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
 					{
-						procedureCalls[procedureList.size()-1].push_back(procedureCalls[k].at(col));
+						procedureCalls[procedureList.size() - 1].push_back(procedureCalls[k].at(col));
 						//procedureTemp.push_back(procedureCalls[k].at(col));
 					}
 				}
 			}
 		}
 
-		
 		procedureTemp.clear(); // clear away temp vector
-		//Database::insertCallst(procedureCalls[0].at(0), procedureCalls[0].at(1)); // insert indirect calls into database
-		//Database::insertCallst("test1", "test2");
 		parseProcedure();
 	}
 
@@ -1312,13 +1217,11 @@ void SourceProcessor::parseStatement()
 			for (int j = 1; j < procedureCalls[i].size(); j++)
 			{
 				Database::insertCallst(caller, procedureCalls[i].at(j)); // insert indirect calls into database
-				//Database::insertCallst("test3", "test4");
-				//Database::insertCallst(procedureCalls[2].at(0), procedureCalls[2].at(0));
-	
+
 				string callee = procedureCalls[i].at(j);
 				vector<string> results;
 
-				Database::getCallsTmodifies(results,callee);
+				Database::getCallsTmodifies(results, callee);
 				for (int k = 0; k < results.size(); k++)
 				{
 					Database::insertModifiesproc(caller, results.at(k));
@@ -1355,30 +1258,6 @@ void SourceProcessor::parseStatement()
 				}
 			}
 		}
-
-
-		//for (int i = 0; i < procedureCalls.size(); i++) // iterate through the rows of the 2D vector
-		//{	
-		//	string caller = procedureCalls[i].at(0); // to capture the first item in each row of vector as caller
-		//	for (int j = 1; j < procedureCalls[i].size(); j++) // iterate through the columns of the 2D vector, starting from 2nd column
-		//	{
-		//		string callee = procedureCalls[i].at(j);
-		//		for (int k = 1; k < procedureCalls.size(); k++)
-		//		{
-		//			if (callee == procedureCalls[k].at(0))
-		//			{
-		//				for (int col = 1; col < procedureCalls[k].size(); col++)
-		//				{
-		//					Database::insertCallst(caller, procedureCalls[k].at(col));
-		//				}
-
-
-		//				
-		//			}
-		//		}
-		//	}
-		//}
-
 	}
 }
 
@@ -1399,6 +1278,11 @@ void SourceProcessor::parseVariable()
 
 void SourceProcessor::parseFactorCondition()
 {
+	if (match("then"))
+	{
+		next();
+	}
+
 	if (checkName(remainingTokens.front())) // if it is a variable
 	{
 		parseVariable();
@@ -1408,15 +1292,10 @@ void SourceProcessor::parseFactorCondition()
 		parseConstant();
 	}
 
-
-	if (match(">") || match("<")) // should be a real expression
+	if (match("+") || match("-") || match("*") || match("/") || match("%") || match("(") || match(")") || match(">") || match("<")) // should be a real expression
 	{
 		next();
 		parseFactorCondition();
-	}
-	else if (match(")"))
-	{
-		next();
 	}
 }
 
@@ -1457,7 +1336,7 @@ void SourceProcessor::parseConstant()
 
 void SourceProcessor::parseExpression()
 {
-	//stack<string> operands;
+
 	stack<string> operators;
 	vector<string> expression;
 	list<string> remainingExprTokens;
@@ -1465,12 +1344,6 @@ void SourceProcessor::parseExpression()
 
 	while (remainingExprTokens.front() != ";") {
 
-		cout << "expression character: " << remainingExprTokens.front();
-		cout << endl;
-		cout << "operands size: " << operators.size();
-		cout << endl;
-		cout << "postfix size: " << expression.size();
-		cout << endl;
 		string exprToken = remainingExprTokens.front();
 
 		if (exprToken == "(")
@@ -1481,13 +1354,13 @@ void SourceProcessor::parseExpression()
 		else if (exprToken == ")")
 		{
 			while (operators.top() != "(")
-				{
+			{
 				expression.push_back(operators.top());
 				operators.pop();
 				//remainingExprTokens.pop_front();
-				}
-				operators.pop();
-				remainingExprTokens.pop_front();
+			}
+			operators.pop();
+			remainingExprTokens.pop_front();
 		}
 		else if (validateIdent(exprToken) || validateNumber(exprToken)) {
 			expression.push_back(exprToken);
@@ -1503,8 +1376,6 @@ void SourceProcessor::parseExpression()
 			operators.push(exprToken);
 			remainingExprTokens.pop_front();
 		}
-
-
 	}
 
 	while (!operators.empty())
@@ -1512,7 +1383,7 @@ void SourceProcessor::parseExpression()
 		expression.push_back(operators.top());
 		operators.pop();
 	}
-	
+
 	for (string i : expression) {
 		expr += i;
 	}

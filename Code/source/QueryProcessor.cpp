@@ -30,8 +30,6 @@ QueryProcessor::~QueryProcessor() {}
 // using some highly simplified logic.
 // You should modify this method to complete the logic for handling all required queries.
 
-
-
 void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	output.clear();
 
