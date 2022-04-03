@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void SelectClauseEvaluator::evaluate(vector<vector<string>>& results, string designEntityString)
+void SelectClauseEvaluator::evaluate(vector<string>& results, string designEntityString)
 {
 	vector<string> tempDatabaseResult;
 	if (designEntityString == "procedure") {
@@ -48,7 +48,9 @@ void SelectClauseEvaluator::evaluate(vector<vector<string>>& results, string des
 	removeDupe(tempDatabaseResult);
 
 	// post process the results to fill in the output vector
-	results.push_back({ tempDatabaseResult });
+	for (string value : tempDatabaseResult) {
+		results.push_back(value);
+	}
 }
 
 void SelectClauseEvaluator::removeDupe(vector<string>& results)

@@ -13,7 +13,7 @@ QueryPlan::QueryPlan()
 
 void QueryPlan::plan(Query& query)
 {
-	//categorize(query);
+	categorize(query);
 
 	// prioritize the meaningful such that clause because meaningless doesn't matter since we won't add it to the table
 	std::sort(std::begin(query.suchThatClauses), std::end(query.suchThatClauses), [&](const SuchThatClause& a, const SuchThatClause& b) {
@@ -23,7 +23,22 @@ void QueryPlan::plan(Query& query)
 
 void QueryPlan::categorize(Query& query)
 {
-	unordered_set<string> selectSynonyms;
+	for (SuchThatClause clause : query.suchThatClauses) {
+		string firstArgumentType = clause.firstArgument[0];
+		string secondArgumentType = clause.secondArgument[0];
+
+		if ((firstArgumentType != "IDENT") && (firstArgumentType != "line number ") && (firstArgumentType != "undeclared")) {
+			meaningfulSuchThatClause.push_back(clause);
+		}
+		else if ((secondArgumentType != "IDENT") && (secondArgumentType != "line number ") && (secondArgumentType != "undeclared")) {
+			meaningfulSuchThatClause.push_back(clause);
+		}
+		else {
+			meaninglessSuchThatClause.push_back(clause);
+		}
+	}
+
+/*	unordered_set<string> selectSynonyms;
 	for (SelectClause select : query.selectClauses) {
 		selectSynonyms.insert(select.name);
 	}
@@ -49,8 +64,7 @@ void QueryPlan::categorize(Query& query)
 		}
 		else {
 			meaninglessPatternClause.push_back(clause);
-		}
-	}
+		*/
 }
 
 int QueryPlan::getPriority(string clauseType)

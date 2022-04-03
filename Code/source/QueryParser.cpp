@@ -238,7 +238,7 @@ void QueryParser::parseExpression(Query& currentQuery)
 			while (operands.top() != "(") {
 				expression.push_back(operands.top());
 				operands.pop();
-				next();
+				
 			}
 			operands.pop(); // to pop the last "("
 			next();
@@ -252,7 +252,7 @@ void QueryParser::parseExpression(Query& currentQuery)
 				operands.push(exprToken);
 				next();
 			}
-			else if (precedence(operands.top()) > precedence(exprToken)) {
+			else if (precedence(operands.top()) >= precedence(exprToken)) {
 				expression.push_back(operands.top());
 				operands.pop();
 				operands.push(exprToken);

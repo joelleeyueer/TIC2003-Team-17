@@ -4,10 +4,9 @@
 #include <vector>
 #include <unordered_set>
 
-QueryTable::QueryTable(vector<string> selectSynonyms)
+QueryTable::QueryTable()
 {
 	vector<vector<string>> queryTable = {};
-	queryTableName = selectSynonyms;
 }
 
 void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<string>> incomingData)
@@ -35,29 +34,6 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 		else if (oneColSimilar == false && allColSimilar == false) {
 			crossProduct(incomingData, { clause.firstArgument[1], clause.secondArgument[1] });
 		}
-	}
-}
-
-void QueryTable::compareSuchThatSynonym(SuchThatClause clause, bool &oneColSimilar, bool &allColSimilar)
-{
-	int count = 0;
-	for (string synonym: queryTableName) {
-		if (clause.firstArgument[1] == synonym) {
-			count++;
-		}
-		if (clause.secondArgument[1] == synonym) {
-			count++;
-		}
-	}
-
-	int selectClausesQty = queryTableName.size();
-	if (count >= selectClausesQty) {
-		oneColSimilar = true;
-		allColSimilar = true;
-	}
-
-	else if (count > 0) {
-		oneColSimilar = true;
 	}
 }
 
@@ -89,6 +65,56 @@ void QueryTable::evaluateIncomingPattern(PatternClause clause, vector<vector<str
 	}
 }
 
+void QueryTable::evaluateIncomingSelect(SelectClause clause, vector<string> incomingData)
+{
+	bool similar = false;
+
+	compareSelectSynonym(clause, similar);
+
+	if (queryTable.empty()) {
+		vector<vector<string>> tempTable(incomingData.size(), vector<string>(1));
+
+		for (int row = 0; row < incomingData.size(); row++) {
+			tempTable[row][0] = incomingData[row];
+		}
+
+		queryTableName.push_back(clause.name);
+		queryTable = tempTable;
+	}
+	else {
+		if (similar != true) {
+			crossProduct(incomingData, clause.name);
+		}
+	}
+}
+
+void QueryTable::compareSuchThatSynonym(SuchThatClause clause, bool& oneColSimilar, bool& allColSimilar)
+{
+	if (queryTableName.size() == 0) {
+		return;
+	}
+
+	int count = 0;
+	for (string synonym : queryTableName) {
+		if (clause.firstArgument[1] == synonym) {
+			count++;
+		}
+		if (clause.secondArgument[1] == synonym) {
+			count++;
+		}
+	}
+
+	int selectClausesQty = queryTableName.size();
+	if (count >= selectClausesQty) {
+		oneColSimilar = true;
+		allColSimilar = true;
+	}
+
+	else if (count > 0) {
+		oneColSimilar = true;
+	}
+}
+
 void QueryTable::comparePatternSynonym(PatternClause clause, bool& oneColSimilar, bool& allColSimilar)
 {
 	int count = 0;
@@ -112,14 +138,36 @@ void QueryTable::comparePatternSynonym(PatternClause clause, bool& oneColSimilar
 	}
 }
 
+void QueryTable::compareSelectSynonym(SelectClause clause, bool& similar)
+{
+	for (string synonym : queryTableName) {
+		if (clause.name == synonym) {
+			similar = true;
+			break;
+		}
+	}
+}
+
 void QueryTable::join(vector<vector<string>> incomingData, vector<string> incomingSynonyms)
 {
+	bool swap = false;
+	if (incomingSynonyms[0] != queryTableName[0]) {
+		swap = true;
+	}
+
 	vector<vector<string>> tempJoinTable;
 	//oneColSimilar == true && allColSimilar == true
 	for (vector<string> incomingRow : incomingData) {
 		for (vector<string> queryTableRow : queryTable) {
-			if (incomingRow[0] == queryTableRow[0] && incomingRow[1] == queryTableRow[1]) {
-				tempJoinTable.push_back({ incomingRow[0], incomingRow[1] });
+			if (swap) {
+				if (incomingRow[0] == queryTableRow[1] && incomingRow[1] == queryTableRow[0]) {
+					tempJoinTable.push_back({ incomingRow[1], incomingRow[0] });
+				}
+			}
+			else {
+				if (incomingRow[0] == queryTableRow[0] && incomingRow[1] == queryTableRow[1]) {
+					tempJoinTable.push_back({ incomingRow[0], incomingRow[1] });
+				}
 			}
 		}
 	}
@@ -203,6 +251,68 @@ void QueryTable::crossProduct(vector<vector<string>> incomingData, vector<string
 	queryTable = tempCrossProductTable;
 }
 
+void QueryTable::join(vector<string> incomingData, string incomingSynonym)
+{
+	vector<vector<string>> tempJoinTable;
+	for (int row = 0; row < queryTable.size(); row++) {
+		if (queryTable[row][0] == incomingData[row]) {
+			tempJoinTable.push_back(queryTable[row]);
+		}
+	}
+
+	queryTable.clear();
+	queryTable = tempJoinTable;
+}
+
+void QueryTable::insert(vector<string> incomingData, string incomingSynonym)
+{
+	// map the similar synonym in the incoming data to the correct column with the same synonym in the queryTable
+	int similarColumn = 0;
+	for (int currentIndex = 0; currentIndex < queryTableName.size(); currentIndex++) {
+		if (incomingSynonym == queryTableName[currentIndex]) {
+			similarColumn = currentIndex;
+		}
+	}
+
+	vector<vector<string>> tempInsertTable;
+	for (int currentRow = 0; currentRow < queryTable.size(); currentRow++) {
+		if (queryTable[currentRow][similarColumn] == incomingData[currentRow]) {
+			tempInsertTable.push_back(queryTable[currentRow]);
+		}
+	}
+
+	queryTable.clear();
+	queryTable = tempInsertTable;
+}
+
+void QueryTable::crossProduct(vector<string> incomingData, string incomingSynonym)
+{
+	//add the extra synonym to the current query table
+	queryTableName.push_back(incomingSynonym);
+
+	vector<vector<string>> tempCrossProductTable;
+
+	if (queryTable.size() >= incomingData.size()) {
+		for (int currentRow = 0; currentRow < queryTable.size(); currentRow++) {
+			for (int incomingRow = 0; incomingRow < incomingData.size(); incomingRow++) {
+				tempCrossProductTable.push_back(queryTable[currentRow]);
+				tempCrossProductTable[tempCrossProductTable.size() - 1].push_back(incomingData[incomingRow]);
+			}
+		}
+	}
+	else {
+		for (int incomingRow = 0; incomingRow < incomingData.size(); incomingRow++) {
+			for (int currentRow = 0; currentRow < queryTable.size(); currentRow++) {
+				tempCrossProductTable.push_back(queryTable[currentRow]);
+				tempCrossProductTable[tempCrossProductTable.size() - 1].push_back(incomingData[incomingRow]);
+			}
+		}
+	}
+
+	queryTable.clear();
+	queryTable = tempCrossProductTable;
+}
+
 void QueryTable::dropColumns(Query queryObj)
 {
 	// find columns to keep
@@ -214,6 +324,10 @@ void QueryTable::dropColumns(Query queryObj)
 				break;
 			}
 		}
+	}
+
+	if (indexOfColumnsToKeep.size() == queryTableName.size()) {
+		return;
 	}
 
 	// actually drop the columns
@@ -232,15 +346,39 @@ void QueryTable::dropColumns(Query queryObj)
 	queryTable = tempTable;
 }
 
+void QueryTable::sortColumns(Query queryObj)
+{
+	vector<string> TEMPqueryTableName;
+	vector<vector<string>> TEMPqueryTable;
+
+	for (int scIter = 0; scIter < queryObj.selectClauses.size(); scIter++) {
+		for (int col = 0; col < queryTableName.size(); col++) {
+				if (queryObj.selectClauses[scIter].name == queryTableName[col]) {
+					TEMPqueryTableName.push_back(queryTableName[col]);
+					for (int row = 0; row < queryTable.size(); row++) {
+						TEMPqueryTable[scIter].push_back(queryTable[row][col]);
+					}
+				}
+		}
+	}
+	queryTableName.clear();
+	queryTable.clear();
+	queryTableName = TEMPqueryTableName;
+	queryTable = TEMPqueryTable;
+}
+
 void QueryTable::queryToOutput(vector<string>& output)
 {
+	//compare selectclause synonym with the query table name and sort accordingly 
 	for (int row = 0; row < queryTable.size(); row++) {
 		string temp = "";
 		for (int column = 0; column < queryTable[row].size(); column++) {
 			if (column == queryTable[row].size() - 1) {
 				temp += queryTable[row][column];
 			}
-			temp += queryTable[row][column] + " ";
+			else {
+				temp += queryTable[row][column] + " ";
+			}
 		}
 		output.push_back(temp);
 	} 

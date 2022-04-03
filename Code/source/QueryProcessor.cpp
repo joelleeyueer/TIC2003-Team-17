@@ -13,6 +13,7 @@
 #include "CallsTClauseEvaluator.h"
 #include "Tokenizer.h"
 #include "Database.h"
+#include "QueryTable.h"
 #include "QueryTable.cpp"
 #include "QueryPlan.cpp"
 #include <iostream>
@@ -37,23 +38,30 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	QueryPlan queryPlan = QueryPlan();
 	queryPlan.plan(queryObj);
 
-	vector<vector<string>> selectClauseResults;
-	vector<vector<string>> suchThatResults;
-	vector<vector<string>> patternClauseResults;
+	vector<vector<string>> selectClauseResults; //stores results of multiple select clauses
+	vector<vector<string>> suchThatResults; //stores results of one such that clause
+	vector<vector<string>> patternClauseResults; //stores results of one pattern clause
 
 	// evaluate select clause first
 	for (SelectClause clause : queryObj.selectClauses) {
-		evaluateSelectClause(clause, selectClauseResults);
+		vector<string> tempResult;
+		evaluateSelectClause(clause, tempResult);
+		if (tempResult.empty()) {
+			return;
+		}
+		selectClauseResults.push_back(tempResult);
+	}
+
+	//evaluate meaningless such that clause next
+	for (SuchThatClause suchThatClause : queryPlan.meaninglessSuchThatClause) {
+		evaluateSuchThatClause(suchThatClause, suchThatResults);
+		if (suchThatResults.empty()) {
+			return;
+		}
 	}
 
 	// create query table
-	vector<string> tempSelectSynonyms;
-	for (SelectClause select : queryObj.selectClauses) {
-		tempSelectSynonyms.push_back(select.name);
-	}
-	queryTable = QueryTable(tempSelectSynonyms);
-	
-	for (SuchThatClause clause : queryObj.suchThatClauses) {
+	for (SuchThatClause clause : queryPlan.meaningfulSuchThatClause) {
 		evaluateSuchThatClause(clause, suchThatResults);
 		if (suchThatResults.empty()) {
 			return;
@@ -73,11 +81,22 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 		patternClauseResults.clear();
 	}
 
+	for (int selectClauseResultRow = 0; selectClauseResultRow < selectClauseResults.size(); selectClauseResultRow++) {
+		queryTable.evaluateIncomingSelect(queryObj.selectClauses[selectClauseResultRow], selectClauseResults[selectClauseResultRow]);
+	}
+
 	queryTable.dropColumns(queryObj);
+
+	//vector<string> SelectSynonymName;
+	//for (SelectClause i : queryObj.selectClauses) {
+	//	SelectSynonymName.push_back(i.name);
+	//}
+
+	//queryTable.sortColumns(queryObj);
 	queryTable.queryToOutput(output);
 }
 
-void QueryProcessor::evaluateSelectClause(SelectClause clause, vector<vector<string>>& results)
+void QueryProcessor::evaluateSelectClause(SelectClause clause, vector<string>& results)
 {
 	SelectClauseEvaluator selectClauseEvaluator;
 	selectClauseEvaluator.evaluate(results, clause.designEntity);
@@ -122,8 +141,6 @@ void QueryProcessor::evaluateSuchThatClause(SuchThatClause clause, vector<vector
 	else {
 		return;
 	}
-
-	
 }
 
 
@@ -299,8 +316,6 @@ void QueryProcessor::evaluateUsesClause(SuchThatClause clause, vector<vector<str
 	UsesClauseEvaluator usesClauseEvaluator;
 	usesClauseEvaluator.evaluate(results, clause.firstArgument[0], clause.firstArgument[1], clause.secondArgument[0], clause.secondArgument[1]);
 }
-
-
 
 void QueryProcessor::evaluateUsesPClause(SuchThatClause clause, vector<vector<string>>& results)
 {

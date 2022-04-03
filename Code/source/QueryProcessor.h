@@ -20,7 +20,7 @@ public:
 
 	// method for evaluating a query
 	void evaluate(Query query, vector<string>& results);
-	void evaluateSelectClause(SelectClause clause, vector<vector<string>>& results);
+	void evaluateSelectClause(SelectClause clause, vector<string>& results);
 	void evaluateSuchThatClause(SuchThatClause clause, vector<vector<string>>& suchThatResults);
 	void evaluatePatternClause(PatternClause clause, map<string, string> declarationList, vector<vector<string>>& patternClauseResults);
 	
