@@ -1409,7 +1409,7 @@ void SourceProcessor::parseFactorCondition()
 	}
 
 
-	if (match(">") || match("<")) // should be a real expression
+	if (match("+") || match("-") || match("*") || match("/") || match("%") || match("(") || match(")") || match(">") || match("<")) // should be a real expression
 	{
 		next();
 		parseFactorCondition();

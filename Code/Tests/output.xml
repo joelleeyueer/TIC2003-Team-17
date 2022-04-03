@@ -1,14 +1,14 @@
 <?xml-stylesheet type="text/xsl" href="analysis.xsl"?>
 <test_results>
 <info>
-<name>AutoTester</name><parsing_time_taken>1594.000000</parsing_time_taken>
+<name>AutoTester</name><parsing_time_taken>2470.000000</parsing_time_taken>
 </info>
 <queries>
 <query>
 <id ReturnTuple="1" Uses="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select all print statement that Uses something">1</id><querystr><![CDATA[variable v; print r; Select r such that Uses(r, v)]]></querystr>
 <stuans>13,16,19,22,3,9</stuans>
 <correct>3,5,8,12,13,14</correct>
-<time_taken>7.000000</time_taken>
+<time_taken>13.000000</time_taken>
 <failed>
 <missing>12,14,5,8</missing>
 <additional>16,19,22,9</additional>
@@ -24,14 +24,14 @@
 <id ReturnTuple="1" Uses="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select specific print statement that Uses something">2</id><querystr><![CDATA[variable v; print r; Select r such that Uses(3, r)]]></querystr>
 <stuans>3</stuans>
 <correct>3</correct>
-<time_taken>8.000000</time_taken>
+<time_taken>9.000000</time_taken>
 <passed/>
 </query>
 <query>
 <id ReturnTuple="1" Uses="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select specific assignment statement that Uses an ident">3</id><querystr><![CDATA[variable v1, v; assign r; Select r such that Uses(r, "b")]]></querystr>
 <stuans></stuans>
 <correct>2</correct>
-<time_taken>5.000000</time_taken>
+<time_taken>12.000000</time_taken>
 <failed>
 <missing>2</missing>
 <additional></additional>
@@ -47,7 +47,7 @@
 <id ReturnTuple="1" Uses="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select variables being Used in a specific assignment statement">4</id><querystr><![CDATA[variable v1, v; assign r; Select v1 such that Uses(7, v1)]]></querystr>
 <stuans></stuans>
 <correct>d,c</correct>
-<time_taken>7.000000</time_taken>
+<time_taken>13.000000</time_taken>
 <failed>
 <missing>c,d</missing>
 <additional></additional>
@@ -61,9 +61,9 @@
 </query>
 <query>
 <id ReturnTuple="1" Uses="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select variables being Used in a in all while loops">5</id><querystr><![CDATA[while w; variable v; Select v such that Uses(w, v)]]></querystr>
-<stuans>g,k,g,k,x,y</stuans>
+<stuans>g,k,k,x,y</stuans>
 <correct>x,a,c,d,y,k</correct>
-<time_taken>10.000000</time_taken>
+<time_taken>9.000000</time_taken>
 <failed>
 <missing>a,c,d</missing>
 <additional>g</additional>
@@ -79,7 +79,7 @@
 <id ReturnTuple="1" Uses="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select variable being Used in a specific if">6</id><querystr><![CDATA[if ifs; variable v; Select v such that Uses(10, v)]]></querystr>
 <stuans></stuans>
 <correct>y,k,a</correct>
-<time_taken>7.000000</time_taken>
+<time_taken>8.000000</time_taken>
 <failed>
 <missing>a,k,y</missing>
 <additional></additional>
@@ -95,7 +95,7 @@
 <id ReturnTuple="1" Parent="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select all reads if there is a assignment statement in a while">7</id><querystr><![CDATA[read r; while w; assign a; Select r such that Parent(w, a)]]></querystr>
 <stuans></stuans>
 <correct>9,11,16</correct>
-<time_taken>10.000000</time_taken>
+<time_taken>12.000000</time_taken>
 <failed>
 <missing>11,16,9</missing>
 <additional></additional>
@@ -111,7 +111,7 @@
 <id ReturnTuple="1" Parentstar="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select all reads if line 7 is a descendent of line 4">8</id><querystr><![CDATA[read r; while w; assign a; Select r such that Parent*(4, 7)]]></querystr>
 <stuans></stuans>
 <correct>9,11,16</correct>
-<time_taken>6.000000</time_taken>
+<time_taken>10.000000</time_taken>
 <failed>
 <missing>11,16,9</missing>
 <additional></additional>
@@ -127,14 +127,14 @@
 <id ReturnTuple="1" Parent="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select all assignments if line 7 is a child of line 4 (meaningless query)">9</id><querystr><![CDATA[read r; while w; assign a; Select r such that Parent(4, 7)]]></querystr>
 <stuans></stuans>
 <correct></correct>
-<time_taken>7.000000</time_taken>
+<time_taken>13.000000</time_taken>
 <passed/>
 </query>
 <query>
 <id ReturnTuple="1" Parentstar="1" SuchThat="1" CondNum="3" RelNum="1" comment="Select all descendents of line 4">10</id><querystr><![CDATA[while w; stmt s; Select s such that Parent*(4, s)]]></querystr>
 <stuans></stuans>
 <correct>5,6,7,8,9,10,11,12,13</correct>
-<time_taken>7.000000</time_taken>
+<time_taken>12.000000</time_taken>
 <failed>
 <missing>10,11,12,13,5,6,7,8,9</missing>
 <additional></additional>
