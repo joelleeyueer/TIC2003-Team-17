@@ -1465,12 +1465,12 @@ void SourceProcessor::parseExpression()
 
 	while (remainingExprTokens.front() != ";") {
 
-		cout << "expression character: " << remainingExprTokens.front();
-		cout << endl;
-		cout << "operands size: " << operators.size();
-		cout << endl;
-		cout << "postfix size: " << expression.size();
-		cout << endl;
+		//cout << "expression character: " << remainingExprTokens.front();
+		//cout << endl;
+		//cout << "operands size: " << operators.size();
+		//cout << endl;
+		//cout << "postfix size: " << expression.size();
+		//cout << endl;
 		string exprToken = remainingExprTokens.front();
 
 		if (exprToken == "(")
@@ -1503,8 +1503,6 @@ void SourceProcessor::parseExpression()
 			operators.push(exprToken);
 			remainingExprTokens.pop_front();
 		}
-
-
 	}
 
 	while (!operators.empty())
