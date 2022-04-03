@@ -3,9 +3,11 @@
 
 #include <regex>
 #include <iostream>
+#include <stack>
 
 #define INTEGER_PATTERN "[0-9]+"
 #define NAME_PATTERN "[a-zA-Z][a-zA-Z0-9]*"
+#define IDENT_PATTERN "[a-zA-Z][a-zA-Z0-9]*"
 
 // using namespace std;
 
@@ -1057,12 +1059,17 @@ void SourceProcessor::parseStatement()
 			parseVariable();
 			expect("=");
 			list<string> expressionTokens = remainingTokens;
+			//list<string> postfixexpressionTokens;
+			parseExpression();
+			rhs += expr;
+			expr = " ";
 			list<string> nestedexpressionTokens = remainingTokens;
 			parseFactor(); // factor can be either a variableName, Constant, Expre
 
 			while (expressionTokens.front() != ";")
 			{
-				rhs += expressionTokens.front();
+				//rhs += expressionTokens.front();
+				//rhs += postfixexpressionTokens.front();
 				if (checkName(expressionTokens.front())) // if it is a variable
 				{
 					string useVariableToken = expressionTokens.front();
@@ -1070,6 +1077,7 @@ void SourceProcessor::parseStatement()
 					Database::insertUsesproc(procedureList.back(), useVariableToken);
 				}
 				expressionTokens.pop_front();
+				//postfixexpressionTokens.pop_front();
 			}
 
 			Database::insertAssignment(assignmentLine, lhs, rhs);
@@ -1423,28 +1431,12 @@ void SourceProcessor::parseFactor()
 		parseConstant();
 	}
 
-	if (!match(";")) // this means it is an expression or real expression
+	if (match("+") || match("-") || match("*") || match("/") || match("%") || match("(") || match(")")) // should be an expression sign
 	{
-		if (match("+") || match("-") || match("*") || match("/") || match("%")) // should be an expression sign
-		{
-			next();
-			parseFactor(); // check again if it is an variable or integer or an expression
-		}
-		else if (match(">") || match("<")) // should be a real expression
-		{
-			next();
-			parseFactor();
-		}
-		else if (match(")"))
-		{
-			next();
-		}
-		else
-		{
-			// throw error
-		}
+		next();
+		parseFactor(); // check again if it is an variable or integer or an expression
 	}
-	else
+	else if (match(";"))
 	{
 		next();
 	}
@@ -1461,4 +1453,100 @@ void SourceProcessor::parseConstant()
 	{
 		//std::throw_with_nested("error in parseConstant");
 	}
+}
+
+void SourceProcessor::parseExpression()
+{
+	//stack<string> operands;
+	stack<string> operators;
+	vector<string> expression;
+	list<string> remainingExprTokens;
+	remainingExprTokens = remainingTokens;
+
+	while (remainingExprTokens.front() != ";") {
+
+		cout << "expression character: " << remainingExprTokens.front();
+		cout << endl;
+		cout << "operands size: " << operators.size();
+		cout << endl;
+		cout << "postfix size: " << expression.size();
+		cout << endl;
+		string exprToken = remainingExprTokens.front();
+
+		if (exprToken == "(")
+		{
+			operators.push(exprToken);
+			remainingExprTokens.pop_front();
+		}
+		else if (exprToken == ")")
+		{
+			while (operators.top() != "(")
+				{
+				expression.push_back(operators.top());
+				operators.pop();
+				//remainingExprTokens.pop_front();
+				}
+				operators.pop();
+				remainingExprTokens.pop_front();
+		}
+		else if (validateIdent(exprToken) || validateNumber(exprToken)) {
+			expression.push_back(exprToken);
+			remainingExprTokens.pop_front();
+		}
+		else if (isOperator(exprToken))
+		{
+			while (!operators.empty() && precedence(operators.top()) >= precedence(exprToken))
+			{
+				expression.push_back(operators.top());
+				operators.pop();
+			}
+			operators.push(exprToken);
+			remainingExprTokens.pop_front();
+		}
+
+
+	}
+
+	while (!operators.empty())
+	{
+		expression.push_back(operators.top());
+		operators.pop();
+	}
+	
+	for (string i : expression) {
+		expr += i;
+	}
+
+}
+
+int SourceProcessor::precedence(string symbol) {
+	if (symbol == "+" || symbol == "-") {
+		return 0;
+	}
+	else if (symbol == "%" || symbol == "*" || symbol == "/") {
+		return 1;
+	}
+	else {
+		return -1;
+	}
+}
+
+bool SourceProcessor::isOperator(string symbol) {
+	if (symbol == "+" || symbol == "-" || symbol == "*" || symbol == "/" || symbol == "%")
+	{
+		return true;
+	}
+	else
+	{
+		false;
+	}
+}
+
+bool SourceProcessor::validateNumber(string symbol) {
+	return regex_match(symbol, regex(INTEGER_PATTERN));
+}
+
+bool SourceProcessor::validateIdent(string symbol)
+{
+	return regex_match(symbol, regex(IDENT_PATTERN));
 }
