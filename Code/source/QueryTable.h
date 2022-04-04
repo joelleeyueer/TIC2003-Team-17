@@ -15,6 +15,7 @@ public:
 	vector<vector<string>> queryTable;
 	
 	void evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<string>> incomingData);
+	void evaluateIncomingSuchThatOneCol(SuchThatClause clause, vector<string> incomingData);
 	void evaluateIncomingPattern(PatternClause clause, vector<vector<string>> incomingData);
 	void evaluateIncomingSelect(SelectClause clause, vector<string> incomingData);
 
@@ -30,10 +31,9 @@ public:
 	void join(vector<string> incomingData, string incomingSynonym);
 	void insert(vector<string> incomingData, string incomingSynonym);
 	void crossProduct(vector<string> incomingData, string incomingSynonyms);
-
 	void dropColumns(Query queryObj);
 	void dropNonSynColumns(int indexToKeep, vector<string> columnToKeep, vector<vector<string>> incomingData);
-	bool bothIsSynonym(SuchThatClause clause);
+	void checkSynonym(SuchThatClause clause, vector<vector<string>> incomingData, bool &SynSyn);
 	void sortColumns(Query queryObj);
 	void queryToOutput(vector<string>& output);
 };

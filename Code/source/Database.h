@@ -106,6 +106,8 @@ public:
 
 	static void getAssignment(vector<string>& results);
 
+	static void getCall(vector<string>& results);
+
 	static void getAssignmentPattern(vector<vector<string>>& results);
 
 	static void getParent(vector<vector<string>>& results, string parentType, string parentValue, string childType, string childValue);

@@ -44,6 +44,10 @@ void SelectClauseEvaluator::evaluate(vector<string>& results, string designEntit
 		Database::getIf(tempDatabaseResult);
 	}
 
+	else if (designEntityString == "call") {
+		Database::getCall(tempDatabaseResult);
+	}
+
 	//remove duplicates from vector before pushing it into databaseResult string
 	removeDupe(tempDatabaseResult);
 

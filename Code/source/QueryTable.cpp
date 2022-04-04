@@ -15,6 +15,11 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 	//if it doesnt match, program auto terminate
 	bool oneColSimilar = false;
 	bool allColSimilar = false;
+	bool synSyn = true;
+
+	checkSynonym(clause, incomingData, synSyn);
+
+	if (synSyn == false) return;
 
 	compareSuchThatSynonym(clause, oneColSimilar, allColSimilar);
 
@@ -100,6 +105,10 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 	//		}
 	//	}	
 	//}
+}
+
+void QueryTable::evaluateIncomingSuchThatOneCol(SuchThatClause clause, vector<string> incomingData)
+{
 }
 
 void QueryTable::evaluateIncomingPattern(PatternClause clause, vector<vector<string>> incomingData)
@@ -422,12 +431,18 @@ void QueryTable::dropNonSynColumns(int indexToKeep, vector<string> columnToKeep,
 	columnToKeep = tempColumnToKeep;
 }
 
-bool QueryTable::bothIsSynonym(SuchThatClause clause)
+void QueryTable::checkSynonym(SuchThatClause clause, vector<vector<string>> incomingData, bool &synSyn)
 {
 	if ((clause.firstArgument[0] != "undeclared" && clause.firstArgument[0] != "line number" && clause.firstArgument[0] != "IDENT") && (clause.secondArgument[0] != "undeclared" && clause.secondArgument[0] != "line number" && clause.secondArgument[0] != "IDENT")) {
-		return true;
+		return;
 	}
-	return false;
+
+	else {
+		synSyn = false;
+
+
+
+	}
 }
 
 void QueryTable::sortColumns(Query queryObj)

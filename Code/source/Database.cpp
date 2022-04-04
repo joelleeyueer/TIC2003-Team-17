@@ -488,6 +488,24 @@ void Database::getAssignment(vector<string>& results) {
 	}
 }
 
+void Database::getCall(vector<string>& results)
+{
+	// clear the existing results
+	dbResults.clear();
+
+	// retrieve the procedures from the procedure table
+	// The callback method is only used when there are results to be returned.
+	string getCallSQL = "SELECT line FROM call;";
+	sqlite3_exec(dbConnection, getCallSQL.c_str(), callback, 0, &errorMessage);
+
+	// postprocess the results from the database so that the output is just a vector of procedure names
+	for (vector<string> dbRow : dbResults) {
+		string result;
+		result = dbRow.at(0);
+		results.push_back(result);
+	}
+}
+
 // method to get all the assignment statement patterns from the database
 void Database::getAssignmentPattern(vector<vector<string>>& results) {
 	// clear the existing results
@@ -915,13 +933,13 @@ void Database::getCallsT(vector<vector<string>>& results, string firstArgumentTy
 	}
 	else { //parent is a synonym
 		if (secondArgumentType == "undeclared") {
-			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 		else if (secondArgumentType == "IDENT") {
-			getCallTSQL = "SELECT proc1, proc2 from callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 = \"" + secondArgumentValue + "\";";
+			getCallTSQL = "SELECT proc1, proc2 from callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(firstArgumentType) + ") AND proc2 = \"" + secondArgumentValue + "\";";
 		}
 		else {
-			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+			getCallTSQL = "SELECT proc1, proc2 FROM callst WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(firstArgumentType) + ") AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
 		}
 	}
 
@@ -993,6 +1011,9 @@ string Database::convertToDbName(string designEntity)
 	}
 	else if (designEntity == "assign") {
 		return "assignments";
+	}
+	else if (designEntity == "call") {
+		return "call";
 	}
 	else {
 		return designEntity + "s";
