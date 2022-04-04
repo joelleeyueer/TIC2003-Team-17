@@ -2,7 +2,7 @@ procedure first {
 	
 	z = (2-3+4)*(5+6*7);
 
-	while (g < 8) {
+	while ((g*f) > (z+v)) {
 		print k;
 		read j;
 		if (x > 1) then {
@@ -26,6 +26,8 @@ procedure second {
 	print k;
 	read j;
 	}
+	
+	call fourth;
 
 }
 
@@ -33,5 +35,15 @@ procedure second {
 procedure third {
 	print t;
 	read c;
+	a = (r+4)/(e-7);
 	
+}
+
+procedure fourth {
+	print h;
+	call third;
+}
+
+procedure fifth {
+	read y;
 }

@@ -1,41 +1,32 @@
-procedure first {
+procedure main{ 
+ 	call findGCFLCM;		
+ 	call output;			
+  }
 
-	read x;
-	read y;
-	read h;
-	print n;
+  procedure input{			
+	read num1;			
+	read num2;			
+  }
 
-	while (y < q) {
-		print y;
-		if (y > 1) then { 
-			print g;
-			read f;
-		} else {
-			print k;
-		}
-	} 
+  procedure output{
+	print num1;			
+	print num2;			
+	print GCF;			
+	print LCM;			
+  }
 
-	read z;
-	x = r + 2;
-	print a;
-	print b;
-
-	if (x > 1) then {
-	    	read d; 
-	} else {
-		read s;
-	}	
-
-	read m;
-
-}
-
-procedure second {
-	read z;
-	print o;
-}
-
-procedure third {
-	read s;
-	print t;
-}
+  procedure findGCFLCM{ 
+	call input;			
+	x = num1;			
+	y = num2;			
+	GCF = 0;			
+	LCM = 0;			
+	temp = 0;			
+	while(y > 0){			
+		temp = y;		
+		y = x % y;		
+		x = temp;		
+	}
+	GCF = x;			
+	LCM = (num1 * num2) / GCF;		
+  }

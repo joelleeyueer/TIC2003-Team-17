@@ -1,15 +1,23 @@
-procedure p {
-
-1	if (x > 1) then {
-2	    	read a; 
-	} else {
-3		while (a > 0) {
-4			read b;
+procedure aran {
+	x = y;
+	a = b + 1;
+	print k;
+	while (x < a) {
+		print a;
+		while (a < 1) {
+			a = d + c;
+			print c;
+			read b;
+		}
+		if (y > a) then{
+			read y;
+			print k;
+		} else {
+			print a;
 		}
 	}
-	
-5	read d;
-6	d = a + 1;
-7	print d;
-
+	print s;
+	s = s + y;
+	read y;
 }
+
