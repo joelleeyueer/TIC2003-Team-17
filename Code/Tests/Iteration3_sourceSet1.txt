@@ -1,0 +1,32 @@
+procedure main{ 
+ 	call findGCFLCM;		
+ 	call output;			
+  }
+
+  procedure input{			
+	read num1;			
+	read num2;			
+  }
+
+  procedure output{
+	print num1;			
+	print num2;			
+	print GCF;			
+	print LCM;			
+  }
+
+  procedure findGCFLCM{ 
+	call input;			
+	x = num1;			
+	y = num2;			
+	GCF = 0;			
+	LCM = 0;			
+	temp = 0;			
+	while(y > 0){			
+		temp = y;		
+		y = x % y;		
+		x = temp;		
+	}
+	GCF = x;			
+	LCM = (num1 * num2) / GCF;		
+  }

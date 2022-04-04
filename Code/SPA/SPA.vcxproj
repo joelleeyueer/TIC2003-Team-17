@@ -11,12 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\source\CallsClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\CallsTClauseEvaluator.cpp" />
     <ClCompile Include="..\source\ModifiesClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\ModifiesPClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\NextClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\NextTClauseEvaluator.cpp" />
     <ClCompile Include="..\source\ParentClauseEvaluator.cpp" />
     <ClCompile Include="..\source\ParentTClauseEvaluator.cpp" />
     <ClCompile Include="..\source\PatternClauseEvaluator.cpp" />
     <ClCompile Include="..\source\Query.cpp" />
     <ClCompile Include="..\source\QueryParser.cpp" />
+    <ClCompile Include="..\source\QueryPlan.cpp" />
     <ClCompile Include="..\source\QueryProcessor.cpp" />
     <ClCompile Include="..\source\QueryTable.cpp" />
     <ClCompile Include="..\source\SelectClauseEvaluator.cpp" />
@@ -25,15 +31,23 @@
     <ClCompile Include="..\source\sqlite3.c" />
     <ClCompile Include="..\source\Tokenizer.cpp" />
     <ClCompile Include="..\source\UsesClauseEvaluator.cpp" />
+    <ClCompile Include="..\source\UsesPClauseEvaluator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\source\CallsClauseEvaluator.h" />
+    <ClInclude Include="..\source\CallsTClauseEvaluator.h" />
+    <ClInclude Include="..\source\Clause.h" />
     <ClInclude Include="..\source\Database.h" />
     <ClInclude Include="..\source\ModifiesClauseEvaluator.h" />
+    <ClInclude Include="..\source\ModifiesPClauseEvaluator.h" />
+    <ClInclude Include="..\source\NextClauseEvaluator.h" />
+    <ClInclude Include="..\source\NextTClauseEvaluator.h" />
     <ClInclude Include="..\source\ParentClauseEvaluator.h" />
     <ClInclude Include="..\source\ParentTClauseEvaluator.h" />
     <ClInclude Include="..\source\PatternClauseEvaluator.h" />
     <ClInclude Include="..\source\Query.h" />
     <ClInclude Include="..\source\QueryParser.h" />
+    <ClInclude Include="..\source\QueryPlan.h" />
     <ClInclude Include="..\source\QueryProcessor.h" />
     <ClInclude Include="..\source\QueryTable.h" />
     <ClInclude Include="..\source\SelectClauseEvaluator.h" />
@@ -41,6 +55,7 @@
     <ClInclude Include="..\source\sqlite3.h" />
     <ClInclude Include="..\source\Tokenizer.h" />
     <ClInclude Include="..\source\UsesClauseEvaluator.h" />
+    <ClInclude Include="..\source\UsesPClauseEvaluator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC21A1EA-D2C6-4D14-A2B4-E025B64BDE81}</ProjectGuid>

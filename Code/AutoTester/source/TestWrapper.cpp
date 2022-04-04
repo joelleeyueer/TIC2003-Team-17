@@ -32,6 +32,7 @@ void TestWrapper::parse(std::string filename) {
 	// call the source processor to process it
 	SourceProcessor sp;
 	sp.process(program);
+	bool test = true;
 }
 
 // method to evaluating a query

@@ -1,0 +1,53 @@
+procedure iter3s1{		
+  paper = 0;				
+  call met2;				
+  call met3;				
+  while ((x * y) > (z + y)) {		
+        paper = flag - 1;		
+    	if (paper < 0) then {		
+            paper = flag;			
+    	} else {			
+            flag = paper;		
+    	}
+	while(paper < 0) {		
+	    num1 = 1;			
+	    while(paper < 1) {		
+	    	num1 = 2;		
+		while(paper < 2) {	
+	    	    num1 = 3;		
+		}
+	    }
+	}		
+    }
+}
+procedure met1 {	
+    read num1;				
+    print num2;				
+}
+procedure met2 {	
+    print paper;			
+    print packA;			
+    print packB;			
+}
+procedure met3 {	
+    count = 0;				
+    packA = 0;				
+    packB = 0;				
+    call met1;				
+    while ((x * x + y * y) > 0) {	
+        paper = paper + 1;		
+        packA = packA + x;		
+        packB = packB + y;		
+	while(a < b) {			
+	    num1 = num1 + num2;		
+	}
+        read flag;			
+    }
+    if (count > 0) then {		
+        flag = 1;			
+    } else {			
+        packA = packA / paper;		
+        packB = packB / paper;		
+    }
+    bag = packA * packA + packB * packB;	
+}

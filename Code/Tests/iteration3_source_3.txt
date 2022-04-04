@@ -1,0 +1,36 @@
+procedure satu { 
+ 	print mula;                              
+	call tiga;
+}
+
+procedure dua {
+	print a;		
+	print b;	  
+	print c;
+	print mula;
+}
+
+procedure tiga { 			
+	x = a;                                 			
+	y = b;
+	z = c;			          
+	
+	if (x < y) then {                       
+		mula = 0;                         
+	} else {                                  
+		mula = 1;                         
+	}                             	
+	while(y > 0){			          
+		z = (x+y)*x;                      
+		y = y % x;	                  
+		while (mula < 100) {                
+			y = y-x;	          
+			x = z;                    
+			while ((z + 1) > (y + 2)) {           
+				z = z % 2;	         
+			}
+			mula = 1;                 
+		}
+	}
+	call dua;                                			
+}

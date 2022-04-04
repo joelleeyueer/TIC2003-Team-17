@@ -1,0 +1,50 @@
+1 - simple call
+procedure p;
+Select p such that Calls("calculate", p)
+input, output
+5000
+2 - simple call
+procedure p;
+Select p such that Calls(p, "input")
+calculate
+5000
+3 - simple call*
+procedure p1, p2;
+Select p2 such that Calls(p1, p2)
+calculate, input, output
+5000
+4 - simple call*
+procedure p;
+Select p such that Calls*("main", p)
+calculate, output, input
+5000
+5 - simple call*
+procedure p;
+Select p such that Calls*(p, "input")
+main, calculate
+5000
+6 - tuple call*
+procedure p1, p2, p3;
+Select <p1, p2, p3> such that Calls*(p1, p2) such that Calls*(p2, p3)
+main calculate input, main calculate output
+5000
+7 - simple next
+assign a; while w;
+Select a such that Next(w, a)
+10, 11
+5000
+8 - tuple next
+stmt s; while w
+Select <w, s> such that Next(w, s)
+9 10, 9 11, 9 12, 9 4, 9 5
+5000
+9 - next with pattern expression
+assign a; while w
+Select a such that Next(w, a) pattern a (_, _"num1 * num2"_)
+11
+5000
+10 - tuple next with pattern expression
+assign a; while w
+Select a such that Next(w, a) pattern a (_, _"num1 * num2"_)
+9 11
+5000

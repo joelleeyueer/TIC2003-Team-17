@@ -1,0 +1,50 @@
+1 - simple uses p
+procedure p; 
+Select p such that Uses(p, "a")
+tiga, dua
+5000
+2 - simple uses p 
+variable v;
+Select v such that Uses("tiga", v)
+x, y, z, a, b, c, mula
+5000
+3 - uses p multiple clause
+variable v; while w; assign a;
+Select v such that Uses("tiga", v) such that Parent(w, a) pattern a (v, _)
+y, z
+5000
+4 - tuple uses p 
+variable v; print pr;
+Select <pr, v> such that Uses("dua", v)
+3 a, 3 b, 3 c, 3 mula, 4 a, 4 b, 4 c, 4 mula, 5 a, 5 b, 5 c, 5 mula, 6 a, 6 b, 6 c, 6 mula
+5000
+5 - tuple uses p multiple clause
+variable v; while w; assign a; if ifs;
+Select <ifs, v> such that Uses("tiga", v) such that Parent(w, a) pattern a (v, _)
+10 y, 10 z
+5000
+6 - simple modifies p
+procedure p;
+Select p such that Modifies(p, "z")
+tiga
+5000
+7 - simple modifies p
+procedure p;
+Select p such that Modifies(p, "a")
+
+5000
+8 - modifies p multiple clause
+variable v; while w; assign a;
+Select v such that Modifies("tiga", v) such that Parent(w, a) pattern a (v, _)
+x, y, z
+5000
+9 - tuple modifies p 
+variable v; print pr;
+Select <pr, v> such that Modifies("tiga", v)
+3 x, 3 y, 3 z, 3 mula, 4 x, 4 y, 4 z, 4 mula, 5 x, 5 y, 5 z, 5 mula, 6 x, 6 y, 6 z, 6 mula
+5000
+10 - tuple modifies p multiple clause
+variable v; while w; assign a; if ifs;
+Select <ifs, v> such that Modifies("tiga", v) such that Parent(w, a) pattern a (v, _)
+10 x, 10 y, 10 z
+5000

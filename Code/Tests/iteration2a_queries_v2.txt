@@ -1,5 +1,230 @@
+1001-  comment
+stmt s;
+Select s
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33
+5000
+1002-  comment
+assign a;
+Select a
+1, 2, 3, 6, 7, 8, 9, 10, 13, 14, 15, 17, 19, 20, 21, 23, 24, 25, 27, 28, 30, 31, 32, 33, 12, 16, 22, 29, 4, 5
+5000
+1003-  comment
+constant c;
+Select c
+5, 2, 3, 7, 1, 0
+5000
+1004-  comment
+while w;
+Select w
+none
+5000
+1005-  comment
+if ifs;
+Select ifs
+none
+5000
+1006-  comment
+read re; 
+Select re
+11, 18
+5000
+1007-  comment
+print pn;
+Select pn
+26
+5000
+1008-  comment
+procedure p;
+Select p
+proc
+5000
+1009-  comment
+variable v;
+Select v
+i, x, y, z, bx
+5000
 1026-  comment
 stmt s; variable v;
 Select s such that Modifies(s, v)
 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33
+5000
+1027-  comment
+stmt s; variable v;
+Select v such that Modifies(s, v)
+i, x, y, z, bx
+5000
+1028-  comment
+stmt s; 
+Select s such that Modifies(s, _)
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10 , 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29, 30, 31, 32, 33
+5000
+1029-  comment
+stmt s; 
+Select s such that Modifies(s, "i")
+1, 6, 9, 10, 14, 19, 20, 24, 25, 31, 32
+5000
+1030-  comment
+variable v;
+Select v such that Modifies(6, v)
+i
+5000
+1031-  comment
+procedure p; variable v;
+Select p such that Modifies(p, v)
+proc
+5000
+1032-  comment
+procedure p; variable v;
+Select v such that Modifies(p, v)
+i, x, y, z, bx
+5000
+1033-  comment
+procedure p;
+Select p such that Modifies(p, "i")
+proc
+5000
+1034-  comment
+read re; variable v;
+Select re such that Modifies(re, v)
+11, 18
+5000
+1035-  comment
+read re; variable v;
+Select v such that Modifies(re, v)
+x, y
+5000
+1036-  comment
+read re; 
+Select re such that Modifies(re, _)
+11, 18
+5000
+1037-  comment
+stmt s; variable v;
+Select s such that Uses(s, v)
+3, 6, 7, 8, 9, 14, 17, 19, 20, 21, 24, 25, 26, 31
+5000
+1038-  comment
+stmt s; variable v;
+Select v such that Uses(s, v)
+i, x, y
+5000
+1039-  comment
+stmt s; 
+Select s such that Uses(s, _)
+3, 6, 7, 8, 9, 14, 17, 19, 20, 21, 24, 25, 26, 31
+5000
+1040-  comment
+stmt s; 
+Select s such that Uses(s, "i")
+3, 6, 9, 14, 17, 19, 21, 24, 26, 31
+5000
+1041-  comment
+variable v;
+Select v such that Uses(3, v)
+i, x
+5000
+1042-  comment
+procedure p; variable v;
+Select p such that Uses(p, v)
+proc
+5000
+1043-  comment
+procedure p; variable v;
+Select v such that Uses(p, v)
+i, x, y
+5000
+1044-  comment
+print pn; variable v;
+Select pn such that Uses(pn, v)
+26
+5000
+1045-  comment
+print pn; variable v;
+Select v such that Uses(pn, v)
+i
+5000
+1046-  comment
+assign a; variable v;
+Select a such that Uses(a, v)
+3, 6, 7, 8, 9, 14, 17, 19, 20, 21, 24, 25, 31
+5000
+1047-  comment
+assign a; variable v;
+Select v such that Uses(a, v)
+i, x, y
+5000
+1048-  comment
+variable v;
+Select v such that Uses("proc", "i")
+bx, i, x, y, z
+5000
+1049-  comment
+stmt s, s1;
+Select s such that Parent(s, s1)
+none
+5000
+1050-  comment
+stmt s, s1;
+Select s1 such that Parent*(s, s1)
+none
+5000
+1051-  comment
+stmt s;
+Select s such that Parent(s, _)
+none
+5000
+1052-  comment
+assign a;
+Select a pattern a(_, _"i"_)
+6, 14, 17, 24, 31, 19, 21, 3, 9
+5000
+1053-  comment
+assign a;
+Select a pattern a(_, _)
+1, 2, 3, 6, 7, 8, 9, 10, 13, 14,15, 17, 19, 20, 21, 23, 24, 25, 27, 28, 30, 31, 32, 33, 12, 16, 22, 29, 4, 5
+5000
+1054-  comment
+assign a;  variable v;
+Select a pattern a(v, _)
+1, 2, 3, 6, 7, 8, 9, 10, 13, 14,15, 17, 19, 20, 21, 23, 24, 25, 27, 28, 30, 31, 32, 33, 12, 16, 22, 29, 4, 5
+5000
+1055-  comment
+assign a;
+Select a pattern a("i", _"i"_)
+6, 14, 24, 31, 19, 9
+5000
+1056-  comment
+assign a;
+Select a pattern a("i", _)
+1, 6, 9, 10, 14, 19, 20, 24, 25, 31, 32
+5000
+1059-  comment
+assign a;
+Select a such that Parent(12, a) pattern a("i", _"i"_)
+none
+5000
+1060-  comment
+variable v; assign a, a1;
+Select v such that Modifies(a, v) pattern a1(v, _"i"_)
+i, y, z
+5000
+1061-  comment
+variable v; assign a;
+Select a such that Uses(3, v) pattern a(v, _"i"_)
+6, 14, 24, 31, 19, 9
+5000
+1062-  comment
+variable v; assign a, a1;
+Select v such that Modifies(a, v) pattern a1("z", _)
+i, x, y, z, bx
+5000
+1064-  comment
+stmt s; assign a;
+Select s such that Parent(s, _) pattern a(_, _"y"_)
+none
+5000
+1067-  comment
+print pn; variable v; assign a;
+Select v such that Uses(pn, v) pattern a("i", _"y"_)
+i
 5000

@@ -1,0 +1,215 @@
+﻿1 - Query1
+variable v;
+Select v such that Modifies (2, v)
+none
+5000
+2 - Query2
+procedure p;
+Select p such that Modifies (p, "paper")
+iter3s1, met3
+5000
+3 - Query3
+stmt s;
+Select s such that Modifies (s, "packA")
+3, 21, 24, 26, 31, 33
+5000
+4 - Query4
+variable v;
+Select v such that Uses (11, v)
+paper
+5000
+5 - Query5
+print pr;
+Select pr such that Uses (pr, "packB") such that Next (18, pr)
+19
+5000
+6 - Query6
+variable v;
+Select v such that Uses (2, v)
+paper, packA, packB
+5000
+7 - Query7
+assign a;
+Select a pattern a("packB",_)
+22, 27, 34
+5000
+8 - Query8
+assign a;
+Select a pattern a(_,_"paper"_)
+8, 25, 33, 34
+5000
+9 - Query9
+assign a; 
+Select a pattern a("packA",_"packA"_)
+26, 33
+5000
+10 - Query10
+stmt s;
+Select s such that Parent (s, 5)
+4
+5000
+11 - Query11
+stmt s;
+Select s such that Parent (s, 11)
+9
+5000
+12 - Query12
+stmt s;
+Select s such that Parent (s, 9)
+4
+5000
+13 - Query13
+stmt s;
+Select s such that Parent* (_, 5)
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+5000
+14 - Query14
+stmt s;
+Select s such that Parent (9, s)
+10, 11
+5000
+15 - Query15
+stmt s; 
+Select s such that Parent* (9, s)
+10, 11, 12, 13, 14
+5000
+16 - Query16
+stmt s; while w;
+Select s such that Parent* (w, s)
+5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 25, 26, 27, 28, 29, 30
+5000
+17 - Query17
+stmt s; while w;
+Select s such that Parent (w, s)
+5, 6, 9, 10, 11, 12, 13, 14, 25, 26, 27, 28, 29, 30
+5000
+18 - Query18
+stmt s; if ifs;
+Select s such that Parent (ifs, s)
+7, 8, 32, 33, 34
+5000
+19 - Query19
+stmt s; if ifs;
+Select ifs such that Parent* (ifs, s)
+6, 31
+5000
+20 - Query20
+assign a; if i;
+Select a such that Parent (i, a) pattern a(_,_"paper"_)
+8, 33, 34
+5000
+21 - Query21
+assign a; if i;
+Select a such that Parent* (i, a) pattern a(_,_"flag"_)
+7
+5000
+22 - Query22
+assign a; while w;
+Select a such that Parent (w, a) pattern a("paper",_)
+5, 25
+5000
+23 - Query23
+assign a; while w;
+Select a such that Parent* (w, a) pattern a("paper",_)
+5, 7, 25
+5000
+24 - Query24
+assign a; variable v;
+Select a such that Modifies (a, v) pattern a(_,_"packB"_)
+27, 34, 35
+5000
+25 - Query25
+assign a; variable v;
+Select v such that Uses (a, v) such that Modifies (a, "packA") pattern a(_,_"paper"_)
+paper, packA
+5000
+26 - Query26
+stmt s;
+Select s such that Uses("met2", _) such that Modifies(s,"num1")
+3, 4, 9, 10, 11, 12, 13, 14, 15, 23, 24, 28, 29
+5000
+27 - Query27
+stmt s;
+Select s such that Modifies("met1", "num1") such that Uses(7,"flag") such that Calls("met3",_)
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+5000
+28 - Query28
+assign asn; variable var;
+Select var such that Uses(15,_) such that Modifies(14,_) pattern asn(_,_)
+none
+5000
+29 - Query29
+assign a1, a2; variable v;
+Select <a1, a2> such that Uses(9, "paper") such that Modifies("iter3s1","count") pattern a1("paper",_"flag"_) pattern a2(_,_"packA*packA+packB*packB"_)
+5 35, 7 35
+5000
+30 - Query30
+print p; variable var; procedure proc;
+Select proc such that Uses(13,"paper") such that Uses(9, var) such that Parent*(_,_)
+iter3s1, met1, met2, met3
+5000
+31 - Query31
+while w1, w2, w3;
+Select <w1, w2, w3> such that Parent(w1,w2) such that Parent(w2,w3)
+4 9 11, 9 11 13
+5000
+31 - Query31
+while w1, w2, w3;
+Select <w1, w2, w3> such that Parent*(w1,w2) such that Parent*(w2,w3)
+4 9 11, 4 9 13, 4 11 13, 9 11 13
+5000
+32 - Query32
+stmt s;
+Select s such that Next(s,3)
+2
+5000
+33 - Query33
+stmt s;
+Select s such that Next*(s,3)
+1, 2
+5000
+34 - Query34
+stmt s;
+Select s such that Next(24,s)
+25, 31
+5000
+35 - Query35
+stmt s;
+Select s such that Next(7,s)
+9
+5000
+36 - Query36
+stmt s;
+Select s such that Next*(4,s) such that Next*(s,14)
+4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+5000
+37 - Query37
+stmt s;
+Select s such that Next*(24,s) such that Next*(s,35)
+24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34
+5000
+38 - Query38
+call c; variable v; stmt s;
+Select c
+2, 3, 23
+5000
+39 - Query39
+call c; variable v1, v2;
+Select c such that Uses(c, v1) such that Modifies(c, v2)
+3, 23
+5000
+40 - Query40
+call c; variable v;
+Select c such that Uses(c, v) such that Modifies(c, v)
+3
+5000
+41 - Query41
+call c1, c2; stmt s;
+Select c1 such that Next(c1, c2) such that Next(c1, s)
+2
+5000
+42 - Query42
+stmt s; call c1, c2;
+Select <c1, c2> such that Next(c1, c2) such that Next(c2, s)
+2 3
+5000

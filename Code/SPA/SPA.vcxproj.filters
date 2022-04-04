@@ -57,22 +57,22 @@
     <ClCompile Include="..\source\QueryTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\UsesPClauseEvaluator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\NextTClauseEvaluator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\NextClauseEvaluator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\ModifiesPClauseEvaluator.cpp">
+    <ClCompile Include="..\source\CallsClauseEvaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\CallsTClauseEvaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\CallsClauseEvaluator.cpp">
+    <ClCompile Include="..\source\ModifiesPClauseEvaluator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\NextClauseEvaluator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\NextTClauseEvaluator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\UsesPClauseEvaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\source\QueryPlan.cpp">
@@ -125,19 +125,22 @@
     <ClInclude Include="..\source\CallsTClauseEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\source\ModifiesPClauseEvaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\NextClauseEvaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\NextTClauseEvaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\UsesPClauseEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source\CallsClauseEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\NextTClauseEvaluator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\NextClauseEvaluator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\ModifiesPClauseEvaluator.h">
+    <ClInclude Include="..\source\Clause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source\QueryPlan.h">

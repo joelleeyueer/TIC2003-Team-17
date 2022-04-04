@@ -1,0 +1,115 @@
+1 - CallCase1
+procedure p1, p2, p3, p4; 
+Select <p1, p2, p3, p4> such that Calls (p1, p2) such that Calls (p2, p3) such that Calls (p3, p4)
+First Fourth Second Third
+5000
+2 - CallCase2
+procedure p; 
+Select p such that Calls* ("First", p)
+Fourth, Second, Third
+5000
+3 - CallCase3
+procedure p;
+Select p such that Calls* ("First", p) such that Calls* (p, "Third")
+Fourth, Second
+5000
+4 - CallCase4
+procedure p; 
+Select p such that Calls* (p, _)
+Second, First, Fourth
+5000
+5 - CallCase5
+procedure p1, p2, p3; 
+Select <p1, p2, p3> such that Calls* (p1, p2) such that Calls* (p2, p3)
+First Fourth Second, First Fourth Third, First Second Third, Fourth Second Third
+5000
+6 - NextCase1 
+while w1, w2;
+Select <w1, w2> such that Next (w2, w1) such that Parent* (w1, w2)
+20 23
+5000
+7 - NextCase2
+while w1, w2;
+Select <w1, w2> such that Next* (w1, w2) such that Parent (w1, w2)
+20 23, 23 26
+5000
+8 - NextCase3
+assign a; while w;
+Select <w, a> such that Next* (w, a) such that Modifies (a, "z") pattern a (_,_"x"_)
+20 21, 23 21, 26 21
+5000
+9 - NextCase4
+stmt s1, s2, s3;
+Select s1 such that Next (s1, s2) such that Next (s1, s3)
+1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
+5000
+10 - NextCase5
+stmt a1, a2; while w;
+Select <a1, a2> such that Next (a1, w) such that Next (a2, w) such that Modifies (a1, "flag") such that Modifies (a2, "flag")
+18 19, 19 18, 18 23, 23 18, 23 19, 19 23, 18 18, 19 19, 23 23, 28 28, 29 29
+5000
+11 - NextCase6
+stmt s;
+Select s such that Next* (22, s) such that Next* (s, 30)
+20, 21, 22, 23, 24, 25, 26, 27, 28, 29
+5000
+12 - UsesPCase1
+procedure p; 
+Select p such that Uses (p, "num1")
+First, Second, Third, Fourth
+5000
+13 - UsesPCase2
+procedure p; while w; assign a;
+Select p such that Uses (p, "flag")
+First, Second, Fourth
+5000
+14 - UsesPCase3
+procedure p; print pr;
+Select p such that Uses (p, _) such that Uses (pr, "num3")
+Third, Second, Fourth, First
+5000
+15 - UsesPCase4
+variable v;
+Select v such that Uses ("Second", v)
+flag, num1, num2, num3, result
+5000
+16 - ModifiesPCase1 
+procedure p;
+Select p such that Modifies (p, "num2")
+First
+5000
+17 - ModifiesPCase2
+variable v;
+Select v such that Modifies ("Third", v)
+none
+5000
+18 - ModifiesPCase3
+variable v;
+Select v such that Modifies (30, v)
+result
+5000
+19 - tupleCase1
+assign a1, a2; while w1, w2;
+Select <a1, a2> such that Next (a1, a2) such that Parent* (w2, a2) such that Parent* (w1, w2) 
+24 25, 27 28
+5000
+20 - tupleCase2 
+while w1, w2, w3;
+Select <w1, w2, w3> such that Parent* (w1, w2) such that Parent* (w2, w3)
+20 23 26
+5000
+21 - callEntity1
+call c; variable v; stmt s;
+Select c
+4, 8, 30
+5000
+22 - callEntityUse
+call c; variable v; stmt s;
+Select c such that Uses(c, v) such that Next(7, c)
+8
+5000
+23 - callEntityMod
+call c; variable v;
+Select c such that Modifies(c, v)
+4, 30
+5000

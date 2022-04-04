@@ -1,0 +1,120 @@
+1 - CallCase1
+procedure p; 
+Select p such that Calls ("main", p)
+findGCFLCM, output
+5000
+2 - CallCase2
+procedure p; 
+Select p such that Calls* (p, "input")
+main, findGCFLCM
+5000
+3 - CallCase3
+procedure p; 
+Select p such that Calls* ("main", p)
+findGCFLCM, output, input
+5000
+4 - CallCase4
+procedure p, q; 
+Select p such that Calls (p, _)
+main, findGCFLCM
+5000
+5 - CallCase5
+procedure p1, p2, p3; 
+Select <p1, p2, p3> such that Calls* (p1, p2) such that Calls* (p2, p3)
+main findGCFLCM input
+5000
+6 - NextCase1 
+assign a; while w;
+Select <w, a> such that Next (w, a)
+15 16, 15 19
+5000
+7 - NextCase2
+assign a; while w;
+Select <w, a> such that Next* (w, a) pattern a(_,_"x"_)
+15 17, 15 19
+5000
+8 - NextCase3
+stmt s;
+Select s such that Next* (17, s) such that Next* (s, 20)
+15, 16, 17, 18, 19
+5000
+9 - NextCase4
+stmt s; while w;
+Select s such that Next* (s, w) such that Uses (s, "y")
+15, 16, 17
+5000
+10 - UsesPCase1
+stmt s; 
+Select s such that Uses (s, "num1")
+1, 2, 5, 10, 20
+5000
+11 - UsesPCase2
+procedure p; 
+Select p such that Uses (p, "LCM")
+main, output
+5000
+12 - UsesPCase3
+variable v;
+Select v such that Uses ("output", v)
+num1, num2, GCF, LCM
+5000
+13 - ModifiesPCase1 
+procedure p;
+Select p such that Modifies (p, "num1")
+main, findGCFLCM, input
+5000
+14 - ModifiesPCase2
+variable v;
+Select v such that Modifies (9, v)
+num1, num2
+5000
+15 - ModifiesPCase3
+procedure p;
+Select p such that Modifies (p, _) such that Parent*(_,_)
+main, findGCFLCM, input
+5000
+16 - tupleCase1
+assign a1, a2;
+Select <a1, a2> such that Next* (a1, a2) pattern a1 ("x",_) pattern a2 (_, _"x"_)
+10 17, 10 19, 18 17, 18 19
+5000
+17 - tupleCase2_V1V2DISTINCT
+variable v1, v2; assign a; while w;
+Select <v1, v2> such that Parent* (w, a) such that Uses (w, v1) pattern a (v2, _"y"_)
+y temp, x temp, x y, temp y, temp temp, y y
+5000
+18 - tupleCase3
+variable v1, v2; assign a1, a2;
+Select <v1, v2> such that Next (a1, a2) such that Modifies (a1, v1) such that Modifies (a2, v2) 
+x y, y GCF, GCF LCM, LCM temp, temp y, y x
+5000
+19 - tupleCase4
+assign a1, a2; while w;
+Select <a1, a2> such that Parent (w, a1) such that Parent (w, a2) such that Uses (a1, "y") such that Uses (a2,"x") such that Next (a1, a2)
+16 17
+5000
+20 - tupleCase5
+assign a; variable v1, v2; while w;
+Select <v1, v2> such that Parent* (w, a) such that Modifies (w, v1) such that Uses (a, v2)
+temp y, temp x, y x, y temp, x y, x temp, temp temp, x x, y y
+5000
+21 - doublePattern
+assign a1, a2;
+Select a1 pattern a1 ("x",_) pattern a2 (_, _"x"_)
+10, 18
+5000
+22 - callStmt
+call c1;
+Select c1 such that Modifies(c1, "num1")
+1, 9
+5000
+23 - callAgain
+call c1;
+Select c1 such that Modifies(c1, "num2") such that Next(c1, 10) such that Next*(c1, 13)
+9
+5000
+24 - callEntity
+call c1, c2;
+Select <c1, c2> such that Next(c1, c2)
+1 2
+5000

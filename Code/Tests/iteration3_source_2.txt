@@ -1,0 +1,24 @@
+procedure main { 		
+ 	call calculate;			
+}
+
+procedure input {		
+	read num1;			
+	read num2;			
+}
+
+procedure output {
+	print num1;			
+	print num2;					
+}
+
+procedure calculate { 
+	call input;			
+	x = num1;			
+	y = num2;						
+	while(y > 0){				
+		y = x % y;			
+	}			
+	final = (num1 * num2) / 500; 
+	call output;		
+}

@@ -1,0 +1,49 @@
+procedure First{ 
+ 	read num1;		                   
+ 	read num2;		                   
+	read num3;                                 
+	call Fourth;                               
+}
+
+procedure Second{			
+	if (flag > 0) then {			   
+		result = num1 + num2 * num3;       
+	} else {
+		result = num1 - num2 / num3;       
+	}
+	call Third;	                           
+}
+
+procedure Third {
+	print num1;	                           		
+	print num2;		             	  
+	print num3;			          
+	print result;                             
+}
+
+procedure Fourth{ 			
+	x = num1;                                 			
+	y = num2;                                 
+	z = num3;                                 
+	result = 0;			          
+	
+	if (x < y) then {                       
+		flag = 0;                         
+	} else {                                  
+		flag = 1;                         
+	}                             	
+	while(y > 0){			          
+		z = (x+y)*x;                      
+		y = y % x;	                  
+		while (flag > 0) {                
+			y = y-x;	          
+			x = z;                    
+			while (z > 0) {           
+				z = z % 2;	  
+				flag = 1;         
+			}
+			flag = 1;                 
+		}
+	}
+	call Second;                                			
+}
