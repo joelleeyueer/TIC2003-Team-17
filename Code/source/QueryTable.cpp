@@ -17,9 +17,9 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 	bool allColSimilar = false;
 	bool synSyn = true;
 
-	checkSynonym(clause, incomingData, synSyn);
+	//checkSynonym(clause, incomingData, synSyn);
 
-	if (synSyn == false) return;
+	//if (synSyn == false) return;
 
 	compareSuchThatSynonym(clause, oneColSimilar, allColSimilar);
 
@@ -107,8 +107,45 @@ void QueryTable::evaluateIncomingSuchThat(SuchThatClause clause, vector<vector<s
 	//}
 }
 
-void QueryTable::evaluateIncomingSuchThatOneCol(SuchThatClause clause, vector<string> incomingData)
+void QueryTable::evaluateIncomingSuchThatOneCol(SuchThatClause clause, vector<string> incomingData, int indexToKeep)
 {
+	bool similar = false;
+
+	compareOneColSuchThatSynonym(clause, similar, indexToKeep);
+
+	if (queryTable.empty()) {
+		vector<vector<string>> tempTable(incomingData.size(), vector<string>(1));
+
+		for (int row = 0; row < incomingData.size(); row++) {
+			tempTable[row][0] = incomingData[row];
+		}
+		if (indexToKeep == 1) {
+			queryTableName.push_back(clause.firstArgument[1]);
+		}
+		else {
+			queryTableName.push_back(clause.secondArgument[1]);
+		}
+		queryTable = tempTable;
+	}
+	else {
+		if (indexToKeep == 0) {
+			if (similar != true) {
+				crossProduct(incomingData, clause.firstArgument[1]);
+			}
+			else {
+				join(incomingData, clause.firstArgument[1]);
+			}
+		}
+		else {
+			if (similar != true) {
+				crossProduct(incomingData, clause.secondArgument[1]);
+			}
+			else {
+				join(incomingData, clause.secondArgument[1]);
+			}
+		}
+		
+	}
 }
 
 void QueryTable::evaluateIncomingPattern(PatternClause clause, vector<vector<string>> incomingData)
@@ -189,6 +226,31 @@ void QueryTable::compareSuchThatSynonym(SuchThatClause clause, bool& oneColSimil
 	}
 }
 
+void QueryTable::compareOneColSuchThatSynonym(SuchThatClause clause, bool& similar, int indexToKeep)
+{
+	if (queryTableName.size() == 0) {
+		return;
+	}
+	
+	if (indexToKeep == 0) {
+		for (string synonym : queryTableName) {
+			if (clause.firstArgument[1] == synonym) {
+				similar = true;
+				break;
+			}
+		}
+	}
+
+	else {
+		for (string synonym : queryTableName) {
+			if (clause.secondArgument[1] == synonym) {
+				similar = true;
+				break;
+			}
+		}
+	}
+}
+
 void QueryTable::comparePatternSynonym(PatternClause clause, bool& oneColSimilar, bool& allColSimilar)
 {
 	int count = 0;
@@ -214,6 +276,10 @@ void QueryTable::comparePatternSynonym(PatternClause clause, bool& oneColSimilar
 
 void QueryTable::compareSelectSynonym(SelectClause clause, bool& similar)
 {
+	if (queryTableName.size() == 0) {
+		return;
+	}
+
 	for (string synonym : queryTableName) {
 		if (clause.name == synonym) {
 			similar = true;
@@ -439,6 +505,18 @@ void QueryTable::checkSynonym(SuchThatClause clause, vector<vector<string>> inco
 
 	else {
 		synSyn = false;
+		int indexToKeep = 1;
+		vector<string> tempColumnToKeep;
+
+		if (clause.firstArgument[0] != "undeclared" && clause.firstArgument[0] != "line number" && clause.firstArgument[0] != "IDENT") {
+			indexToKeep = 0;
+		 }
+
+		for (int row = 0; row < incomingData.size(); row++) {
+			tempColumnToKeep.push_back(incomingData[row][indexToKeep]);
+		}
+
+		evaluateIncomingSuchThatOneCol(clause, tempColumnToKeep, indexToKeep);
 
 
 
