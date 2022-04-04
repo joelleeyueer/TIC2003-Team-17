@@ -176,6 +176,14 @@ void Database::initialize() {
 	string createProcstmtTableSQL = "CREATE TABLE procstmt ( proc VARCHAR(255) , stmt VARCHAR(255) );";
 	sqlite3_exec(dbConnection, createProcstmtTableSQL.c_str(), NULL, 0, &errorMessage);
 
+	// drop the existing call table (if any)
+	string dropCallTableSQL = "DROP TABLE IF EXISTS call";
+	sqlite3_exec(dbConnection, dropCallTableSQL.c_str(), NULL, 0, &errorMessage);
+
+	// create a read table
+	string createCallTableSQL = "CREATE TABLE call ( line VARCHAR(255) PRIMARY KEY);";
+	sqlite3_exec(dbConnection, createCallTableSQL.c_str(), NULL, 0, &errorMessage);
+
 	// initialize the result vector
 	dbResults = vector<vector<string>>();
 }
@@ -323,6 +331,12 @@ void Database::insertNextst(string stmt1, string stmt2) {
 void Database::insertProcstmt(string proc, string stmt) {
 	string insertProcstmtSQL = "INSERT INTO procstmt ('proc', 'stmt') VALUES ( '" + proc + "', '" + stmt + "' ); ";
 	sqlite3_exec(dbConnection, insertProcstmtSQL.c_str(), NULL, 0, &errorMessage);
+}
+
+// method to insert a call into the database
+void Database::insertCall(string callLine) {
+	string insertCallSQL = "INSERT INTO call ('line') VALUES ('" + callLine + "');";
+	sqlite3_exec(dbConnection, insertCallSQL.c_str(), NULL, 0, &errorMessage);
 }
 
 // method to get all the procedures from the database

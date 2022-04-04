@@ -87,6 +87,9 @@ public:
 	// method to insert procstmt into the database
 	static void insertProcstmt(string proc, string stmt);
 
+	// method to insert a call into the database
+	static void insertCall(string callLine);
+
 	// method to get all the procedures from the database
 	static void getProcedure(vector<string>& results);
 

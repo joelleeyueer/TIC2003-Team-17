@@ -121,6 +121,7 @@ vector<string> elsevector;
 vector<vector<string>> nextst;
 vector<string> nextstTemp;
 vector<string> nextstInsert;
+vector <vector<string>> calllineproc;
 
 void SourceProcessor::parseProcedure()
 {
@@ -577,11 +578,6 @@ void SourceProcessor::parseStatement()
 			next();
 			if (checkName(remainingTokens.front())) // checks if it is a NAME grammer
 			{
-				Database::insertCalls(procedureList.back(), remainingTokens.front()); // insert direct calls into database
-				procedureTemp.push_back(remainingTokens.front()); // store its procedure call in the same temp vector
-				next();
-				expect(";");
-
 				string prevLine;
 				string currentLine;
 				stringstream pp;
@@ -591,6 +587,20 @@ void SourceProcessor::parseStatement()
 				pp >> prevLine;
 				cc << currentlines;
 				cc >> currentLine;
+
+				Database::insertCall(currentLine);
+				Database::insertCalls(procedureList.back(), remainingTokens.front()); // insert direct calls into database
+				procedureTemp.push_back(remainingTokens.front()); // store its procedure call in the same temp vector
+				vector<string> insertcalllineproc;
+				insertcalllineproc.push_back(currentLine);
+				insertcalllineproc.push_back(remainingTokens.front());
+				calllineproc.push_back(insertcalllineproc);
+				insertcalllineproc.clear();
+
+				next();
+				expect(";");
+
+
 				Database::getProcstmt(currentproc, currentLine);
 				Database::getProcstmt(prevproc, prevLine);
 
@@ -1156,11 +1166,11 @@ void SourceProcessor::parseStatement()
 				{
 					procedureCalls[i].push_back(procedureTemp.at(j)); // if it is, include its callee into previous vector
 
-					for (int k = 0; k < procedureCalls.size(); k++)
+					for (int k = 0; k < procedureCalls.size(); k++) // find the matching row 
 					{
-						if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+						if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee i temp is called in the first column of 2D vector
 						{
-							for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+							for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add the whole row from 2 onwards into 2D vector
 							{
 								procedureCalls[i].push_back(procedureCalls[k].at(col));
 								//procedureTemp.push_back(procedureCalls[k].at(col));
@@ -1172,14 +1182,15 @@ void SourceProcessor::parseStatement()
 		}
 
 		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
+
 		// check if the 2nd element in temp vector onwards is in the previous vector
 		for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
 		{
 			for (int k = 0; k < procedureCalls.size(); k++) // iterate through the first column of 2D vector
 			{
-				if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee is called elsewhere in the 2D vector
+				if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee in temp is called in the first column of 2D vector
 				{
-					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add callee's callee
+					for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add the entire row of the 2d vector 
 					{
 						procedureCalls[procedureList.size()-1].push_back(procedureCalls[k].at(col));
 						//procedureTemp.push_back(procedureCalls[k].at(col));
@@ -1194,6 +1205,31 @@ void SourceProcessor::parseStatement()
 
 	if (remainingTokens.empty()) // at the end of the source, extract from procedureCalls vector to determine callst 2d vector
 	{
+		for (int i = 0; i < procedureCalls.size(); i++) // iterating through the rows of the 2D vector
+		{
+			// check if the current procedure / first element in temp vector is in the previous vectors
+			if (find(procedureCalls[i].begin(), procedureCalls[i].end(), procedureList.back()) != procedureCalls[i].end())
+			{
+				for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
+				{
+					procedureCalls[i].push_back(procedureTemp.at(j)); // if it is, include its callee into previous vector
+
+					for (int k = 0; k < procedureCalls.size(); k++) // find the matching row 
+					{
+						if (procedureTemp.at(j) == procedureCalls[k].at(0)) // find if callee i temp is called in the first column of 2D vector
+						{
+							for (int col = 1; col < procedureCalls[k].size(); col++) // if it is, add the whole row from 2 onwards into 2D vector
+							{
+								procedureCalls[i].push_back(procedureCalls[k].at(col));
+								//procedureTemp.push_back(procedureCalls[k].at(col));
+							}
+						}
+					}
+				}
+			}
+		}
+
+
 		procedureCalls.push_back(procedureTemp); // transfer and store temp vector into vector of vector
 		// check if the 2nd element in temp vector onwards is in the previous vector
 		for (int j = 1; j < procedureTemp.size(); j++) // iterate through the temp vector from 2nd element onwards
@@ -1211,6 +1247,7 @@ void SourceProcessor::parseStatement()
 			}
 		}
 		procedureTemp.clear(); // clear away temp vector
+		
 		for (int i = 0; i < procedureCalls.size(); i++)
 		{
 			string caller = procedureCalls[i].at(0);
@@ -1235,6 +1272,26 @@ void SourceProcessor::parseStatement()
 					Database::insertUsesproc(caller, results.at(k));
 				}
 
+			}
+		}
+
+		for (int i = 0; i < calllineproc.size(); i++) // iterate through the column of 2D vector
+		{
+			string callline;
+			callline = calllineproc[i].at(0);
+			string callproc;
+			callproc = calllineproc[i].at(1);
+			vector<string> results;
+			Database::getCallsTmodifies(results, callproc);
+			for (int k = 0; k < results.size(); k++)
+			{
+				Database::insertModifies(callline, results.at(k));
+			}
+
+			Database::getCallsTuses(results, callproc);
+			for (int k = 0; k < results.size(); k++)
+			{
+				Database::insertUses(callline, results.at(k));
 			}
 		}
 

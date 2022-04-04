@@ -14,7 +14,6 @@ procedure first {
 		}	
 	}
 	call second;
-	call fourth;
 
 }
 
@@ -28,7 +27,7 @@ procedure second {
 	read j;
 	}
 	
-	call third;
+	call fourth;
 
 }
 
@@ -42,7 +41,7 @@ procedure third {
 
 procedure fourth {
 	print h;
-	call fifth;
+	call third;
 }
 
 procedure fifth {
