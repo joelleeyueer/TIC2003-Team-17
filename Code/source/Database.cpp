@@ -867,13 +867,13 @@ void Database::getCalls(vector<vector<string>>& results, string firstArgumentTyp
 	}
 	else { //parent is a synonym
 		if (secondArgumentType == "undeclared") {
-			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(firstArgumentType) + ");";
 		}
 		else if (secondArgumentType == "IDENT") {
-			getCallSQL = "SELECT proc1, proc2 from calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 = \"" + secondArgumentValue + "\";";
+			getCallSQL = "SELECT proc1, proc2 from calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(firstArgumentType) + ") AND proc2 = \"" + secondArgumentValue + "\";";
 		}
 		else {
-			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ") AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
+			getCallSQL = "SELECT proc1, proc2 FROM calls WHERE proc1 IN (SELECT procedureName FROM " + convertToDbName(firstArgumentType) + ") AND proc2 IN (SELECT procedureName FROM " + convertToDbName(secondArgumentType) + ");";
 		}
 	}
 

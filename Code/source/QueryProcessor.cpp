@@ -36,9 +36,9 @@ void QueryProcessor::evaluate(Query queryObj, vector<string>& output) {
 	QueryPlan queryPlan = QueryPlan();
 	queryPlan.plan(queryObj);
 
-	vector<vector<string>> selectClauseResults; //stores results of multiple select clauses
-	vector<vector<string>> suchThatResults; //stores results of one such that clause
-	vector<vector<string>> patternClauseResults; //stores results of one pattern clause
+	vector<vector<string>> selectClauseResults; //stores results of MULTIPLE select clauses. Do not clear.
+	vector<vector<string>> suchThatResults; //stores results of one such that clause. Can clear after every iteration.
+	vector<vector<string>> patternClauseResults; //stores results of one pattern clause. Can clear after every iteration.
 
 	// evaluate select clause first
 	for (SelectClause clause : queryObj.selectClauses) {
